@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pet Pantry – Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">🐾</div>
+    <h1>Pet <span style="color:var(--accent)">Pantry</span></h1>
+    <p class="auth-sub">Track your pet's food & meals — all in one place.</p>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input id="loginEmail" type="email" class="form-control" placeholder="you@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input id="loginPass" type="password" class="form-control" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
+      <p class="auth-toggle">New here? <a href="#" onclick="toggleAuth()">Create an account</a></p>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Name <span class="req">*</span></label>
+        <input id="regName" type="text" class="form-control" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input id="regEmail" type="email" class="form-control" placeholder="you@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input id="regPass" type="password" class="form-control" placeholder="Create a password"/>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Create Account</button>
+      <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuth()">Sign In</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+if (Auth.isLoggedIn()) window.location.href = 'inventory.html';
+
+function toggleAuth() {
+  const l = document.getElementById('loginForm');
+  const r = document.getElementById('registerForm');
+  l.style.display = l.style.display === 'none' ? '' : 'none';
+  r.style.display = r.style.display === 'none' ? '' : 'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { toast('Please fill all fields', 'danger'); return; }
+  const users = DB.get('users');
+  const u = users.find(u => u.email === email && u.password === pass);
+  if (!u) { toast('Invalid email or password', 'danger'); return; }
+  Auth.login(u);
+  window.location.href = 'inventory.html';
+}
+
+function doRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  if (!name || !email || !pass) { toast('Please fill all fields', 'danger'); return; }
+  const users = DB.get('users');
+  if (users.find(u => u.email === email)) { toast('Email already registered', 'danger'); return; }
+  const now = new Date().toISOString();
+  const u = { id: uuid(), name, email, password: pass, createdDate: now, lastModifiedDate: now };
+  users.push(u);
+  DB.set('users', users);
+  Auth.login(u);
+  window.location.href = 'inventory.html';
+}
+</script>
+</body>
+</html>

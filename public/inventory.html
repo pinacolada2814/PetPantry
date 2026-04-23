@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pet Pantry – Food Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="app-shell">
+
+<!-- Mobile top nav -->
+<nav class="topnav">
+  <a class="logo" href="inventory.html">🐾 Pet <span>Pantry</span></a>
+  <div class="topnav-spacer"></div>
+  <div class="nav-user">
+    <strong class="nav-user-name"></strong>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+  </div>
+</nav>
+
+<!-- Desktop sidebar -->
+<aside class="sidebar">
+  <a class="s-logo" href="inventory.html">🐾 Pet <span>Pantry</span></a>
+  <a class="s-link" href="inventory.html" data-page="inventory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+    Food Inventory
+  </a>
+  <a class="s-link" href="meals.html" data-page="meals">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    Meal Logs
+  </a>
+  <a class="s-link" href="pets.html" data-page="pets">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+    My Pets
+  </a>
+  <div class="s-divider"></div>
+  <a class="s-link" href="profile.html" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    My Profile
+  </a>
+  <a class="s-link" href="index.html" onclick="Auth.logout()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </a>
+</aside>
+
+<div class="sidebar-main">
+  <div class="page-content">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1>🥫 Food Inventory</h1>
+      <button class="btn btn-primary btn-sm" onclick="openAddFoodModal()">+ Add Food</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row" id="statRow"></div>
+
+    <!-- Search + Filter -->
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search brand or name…" oninput="renderInventory()"/>
+    </div>
+    <div class="filter-chips" id="typeFilter">
+      <button class="chip active" data-type="" onclick="setTypeFilter(this,'')">All</button>
+      <button class="chip" data-type="dry" onclick="setTypeFilter(this,'dry')">Dry</button>
+      <button class="chip" data-type="wet" onclick="setTypeFilter(this,'wet')">Wet</button>
+      <button class="chip" data-type="raw" onclick="setTypeFilter(this,'raw')">Raw</button>
+      <button class="chip" data-type="freeze dried" onclick="setTypeFilter(this,'freeze dried')">Freeze Dried</button>
+      <button class="chip" data-type="all home-cooked" onclick="setTypeFilter(this,'all home-cooked')">Home-Cooked</button>
+      <button class="chip" data-type="other" onclick="setTypeFilter(this,'other')">Other</button>
+    </div>
+
+    <!-- Inventory list -->
+    <div id="inventoryList"></div>
+
+  </div>
+</div>
+</div>
+
+<!-- Mobile bottom tab bar -->
+<nav class="tab-bar">
+  <a href="inventory.html" data-page="inventory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+    Pantry
+  </a>
+  <a href="meals.html" data-page="meals">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    Meals
+  </a>
+  <a href="pets.html" data-page="pets">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+    Pets
+  </a>
+  <a href="profile.html" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profile
+  </a>
+</nav>
+
+
+<!-- ══ ADD FOOD MODAL ══════════════════════════════════════ -->
+<div class="modal-backdrop" id="addFoodModal">
+<div class="modal">
+  <div class="modal-header">
+    <h2 id="addFoodTitle">Add Food Item</h2>
+    <button class="modal-close" onclick="closeModal('addFoodModal')">✕</button>
+  </div>
+
+  <!-- Step 1: brand search -->
+  <div id="step1">
+    <div class="form-group">
+      <label>Brand <span class="req">*</span></label>
+      <select id="brandSelect" class="form-control" onchange="onBrandChange()">
+        <option value="">— Select Brand —</option>
+        <option>home-made</option><option>Weruva</option><option>Weruva BFF</option>
+        <option>Instinct</option><option>Tiki Cat</option><option>Wellness CORE</option>
+        <option>Hill's</option><option>Purina Pro Plan</option><option>Orijen</option>
+        <option>Acana</option><option>Merrick</option><option>Rawz</option>
+        <option>Ziwi Peak</option><option>Stella &amp; Chewy's</option>
+        <option>Feline Natural</option><option>Open Farm</option>
+        <option>Vital Essentials</option><option>Blue Buffalo</option>
+        <option>Nulo</option><option>Royal Canin</option><option>other</option>
+      </select>
+    </div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">
+      Existing items for this brand will appear below. Pick one to add inventory, or add a new item.
+    </p>
+    <div id="existingItems"></div>
+    <button class="btn btn-ghost btn-full" id="newItemBtn" style="display:none;margin-top:.5rem" onclick="showStep2()">+ Add New Item for This Brand</button>
+  </div>
+
+  <!-- Step 2: full food item form -->
+  <div id="step2" style="display:none">
+    <input type="hidden" id="editFoodId"/>
+    <div class="form-group">
+      <label>Brand</label>
+      <input id="fBrand" class="form-control" readonly/>
+    </div>
+    <div class="form-group">
+      <label>Name <span class="req">*</span></label>
+      <input id="fName" class="form-control" placeholder="e.g. Paw Lickin' Chicken Pâté"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type <span class="req">*</span></label>
+        <select id="fType" class="form-control">
+          <option value="">— Select —</option>
+          <option>dry</option><option>wet</option><option>raw</option>
+          <option>freeze dried</option><option>all home-cooked</option><option>other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Can/Bag Color</label>
+        <select id="fColor" class="form-control">
+          <option value="">— None —</option>
+          <option>red</option><option>yellow</option><option>green</option>
+          <option>blue</option><option>pink</option><option>white</option>
+          <option>black</option><option>orange</option><option>purple</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1.5">
+        <label>Size <span class="req">*</span></label>
+        <input id="fSizeNum" type="number" min="0" step="any" class="form-control" placeholder="5.5"/>
+      </div>
+      <div class="form-group">
+        <label>Unit <span class="req">*</span></label>
+        <select id="fSizeUnit" class="form-control">
+          <option>oz</option><option>g</option><option>kg</option><option>lb</option><option>ml</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Protein Type <span class="req">*</span> <span style="font-weight:400;text-transform:none">(select all that apply)</span></label>
+      <div class="multi-chip-wrap" id="proteinChips">
+        <span class="multi-chip" data-val="chicken" onclick="toggleChip(this)">🐔 Chicken</span>
+        <span class="multi-chip" data-val="duck"    onclick="toggleChip(this)">🦆 Duck</span>
+        <span class="multi-chip" data-val="rabbit"  onclick="toggleChip(this)">🐇 Rabbit</span>
+        <span class="multi-chip" data-val="beef"    onclick="toggleChip(this)">🐄 Beef</span>
+        <span class="multi-chip" data-val="tuna"    onclick="toggleChip(this)">🐟 Tuna</span>
+        <span class="multi-chip" data-val="salmon"  onclick="toggleChip(this)">🐠 Salmon</span>
+        <span class="multi-chip" data-val="all other fish" onclick="toggleChip(this)">🐡 Other Fish</span>
+        <span class="multi-chip" data-val="shrimp"  onclick="toggleChip(this)">🦐 Shrimp</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Purchased From</label>
+      <input id="fPurchased" class="form-control" placeholder="e.g. Chewy, PetSmart…"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Expiration Date</label>
+        <input id="fExp" type="text" class="form-control" placeholder="MM/DD/YY"
+          pattern="\d{1,2}/\d{1,2}/\d{2,4}"
+          oninput="formatDateInput(this)"/>
+        <p class="form-hint">Type directly: MM/DD/YY</p>
+      </div>
+      <div class="form-group">
+        <label>Inventory Qty</label>
+        <input id="fQty" type="number" min="0" class="form-control" placeholder="Optional"/>
+        <p class="form-hint">Leave blank to skip tracking</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="showStep1()">← Back</button>
+      <button class="btn btn-primary" onclick="saveFoodItem()">Save Food Item</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ ADD EXPIRATION DATE MODAL ══════════════════════════ -->
+<div class="modal-backdrop" id="addExpModal">
+<div class="modal">
+  <div class="modal-header">
+    <h2>Add Expiration / Inventory</h2>
+    <button class="modal-close" onclick="closeModal('addExpModal')">✕</button>
+  </div>
+  <p id="addExpFoodName" style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem"></p>
+  <div class="form-group">
+    <label>Expiration Date</label>
+    <input id="newExpDate" type="text" class="form-control" placeholder="MM/DD/YY"
+      oninput="formatDateInput(this)"/>
+  </div>
+  <div class="form-group">
+    <label>Inventory Qty</label>
+    <input id="newExpQty" type="number" min="0" class="form-control" placeholder="Optional — leave blank to skip"/>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('addExpModal')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveNewExp()">Add</button>
+  </div>
+</div>
+</div>
+
+<script src="app.js"></script>
+<script>
+if (!Auth.require()) throw '';
+renderUserChip();
+highlightNav('inventory');
+
+const BRANDS = ['home-made','Weruva','Weruva BFF','Instinct','Tiki Cat','Wellness CORE',
+  "Hill's",'Purina Pro Plan','Orijen','Acana','Merrick','Rawz','Ziwi Peak',
+  "Stella & Chewy's",'Feline Natural','Open Farm','Vital Essentials',
+  'Blue Buffalo','Nulo','Royal Canin','other'];
+
+let typeFilter = '';
+let _addExpFoodId = null;
+
+// ── Render stats ──────────────────────────────────────────────
+function renderStats() {
+  const uid  = Auth.currentUser().id;
+  const invs = DB.get('inventory').filter(i => i.userId === uid);
+  const foods = DB.get('food_items').filter(f => f.userId === uid);
+  const tracked = invs.filter(i => i.inventoryNumber !== null && i.inventoryNumber !== '');
+  const total = tracked.reduce((s, i) => s + (Number(i.inventoryNumber)||0), 0);
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-chip"><div class="sc-val">${foods.length}</div><div class="sc-lbl">Items</div></div>
+    <div class="stat-chip"><div class="sc-val">${invs.length}</div><div class="sc-lbl">Entries</div></div>
+    <div class="stat-chip"><div class="sc-val">${total}</div><div class="sc-lbl">Units</div></div>`;
+}
+
+// ── Render inventory list ─────────────────────────────────────
+function renderInventory() {
+  const uid   = Auth.currentUser().id;
+  const q     = (document.getElementById('searchInput').value || '').toLowerCase();
+  let foods   = DB.get('food_items').filter(f => f.userId === uid);
+  if (typeFilter) foods = foods.filter(f => f.type === typeFilter);
+  if (q) foods = foods.filter(f =>
+    f.brand.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
+
+  const invAll = DB.get('inventory').filter(i => i.userId === uid);
+  const el = document.getElementById('inventoryList');
+
+  if (!foods.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🥫</div>
+      <p>No food items yet. Tap <strong>+ Add Food</strong> to get started!</p></div>`;
+    return;
+  }
+
+  // group foods by brand, sort each food's inv by expDate
+  const grouped = {};
+  foods.forEach(f => { (grouped[f.brand] = grouped[f.brand] || []).push(f); });
+
+  el.innerHTML = Object.keys(grouped).sort().map(brand => {
+    const items = grouped[brand];
+    return items.map(food => {
+      const invRows = invAll.filter(i => i.foodItemId === food.id)
+        .sort((a,b) => (a.expirationDate||'9999') > (b.expirationDate||'9999') ? 1 : -1);
+
+      const colorDot = food.color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${food.color};margin-left:4px;vertical-align:middle"></span>` : '';
+      const sizeStr  = food.sizeNum ? `${food.sizeNum} ${food.sizeUnit}` : '';
+      const proteins = (food.proteins||[]).join(', ');
+
+      const expHTML = invRows.length ? invRows.map(inv => {
+        const cls = expClass(inv.expirationDate);
+        const lbl = expLabel(inv.expirationDate);
+        const qtyDisplay = inv.inventoryNumber !== null && inv.inventoryNumber !== ''
+          ? `<span class="exp-qty">${inv.inventoryNumber} units</span>`
+          : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
+        return `<div class="exp-row" id="exprow-${inv.id}">
+          <span class="exp-badge ${cls}">${lbl}</span>
+          <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(inv.expirationDate)}</span>
+          ${qtyDisplay}
+          <div class="exp-actions">
+            <button class="btn btn-ghost btn-sm" onclick="startAdjust('${inv.id}')">Adjust</button>
+          </div>
+        </div>`;
+      }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
+
+      return `<div class="card">
+        <div class="card-header" onclick="toggleCard('cb-${food.id}')">
+          <div class="card-icon">${typeIcon(food.type)}</div>
+          <div class="card-title">
+            <h3>${food.brand} – ${food.name}${colorDot}</h3>
+            <p>${food.type} · ${sizeStr}${proteins ? ' · ' + proteins : ''}</p>
+          </div>
+          <svg class="card-chevron" id="chev-${food.id}" viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="card-body" id="cb-${food.id}">
+          ${expHTML}
+          <div style="display:flex;gap:.5rem;margin-top:.75rem">
+            <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${food.brand} ${food.name}')">+ Add Expiration Date</button>
+            <button class="btn btn-ghost btn-sm" onclick="editFood('${food.id}')">Edit Item</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }).join('');
+
+  renderStats();
+}
+
+function typeIcon(t) {
+  return {dry:'🌾',wet:'🥫',raw:'🥩','freeze dried':'❄️','all home-cooked':'🍳',other:'🐾'}[t] || '🐾';
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(id);
+  const chev = document.getElementById(id.replace('cb-','chev-'));
+  body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open');
+}
+
+// ── Type filter ───────────────────────────────────────────────
+function setTypeFilter(btn, val) {
+  typeFilter = val;
+  document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderInventory();
+}
+
+// ── Add Food modal – Step 1 ───────────────────────────────────
+function openAddFoodModal() {
+  document.getElementById('editFoodId').value = '';
+  document.getElementById('addFoodTitle').textContent = 'Add Food Item';
+  showStep1();
+  document.getElementById('brandSelect').value = '';
+  document.getElementById('existingItems').innerHTML = '';
+  document.getElementById('newItemBtn').style.display = 'none';
+  openModal('addFoodModal');
+}
+
+function onBrandChange() {
+  const brand = document.getElementById('brandSelect').value;
+  if (!brand) { document.getElementById('existingItems').innerHTML=''; document.getElementById('newItemBtn').style.display='none'; return; }
+  const uid  = Auth.currentUser().id;
+  const foods = DB.get('food_items').filter(f => f.userId === uid && f.brand === brand);
+  const el = document.getElementById('existingItems');
+  if (foods.length) {
+    el.innerHTML = `<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">You already have these items. Select one to add more inventory:</p>` +
+      foods.map(f => `<button class="btn btn-ghost btn-full" style="margin-bottom:.35rem;justify-content:flex-start"
+        onclick="quickAddExp('${f.id}','${f.brand} ${f.name}')">${f.name} <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted)">${f.type} · ${f.sizeNum} ${f.sizeUnit}</span></button>`).join('');
+  } else { el.innerHTML = ''; }
+  document.getElementById('newItemBtn').style.display = '';
+}
+
+function showStep1() {
+  document.getElementById('step1').style.display = '';
+  document.getElementById('step2').style.display = 'none';
+}
+
+function showStep2() {
+  const brand = document.getElementById('brandSelect').value;
+  if (!brand) { toast('Please select a brand first','danger'); return; }
+  document.getElementById('fBrand').value = brand;
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = '';
+}
+
+function toggleChip(el) { el.classList.toggle('sel'); }
+
+function formatDateInput(inp) {
+  // auto-insert slashes MM/DD/YY
+  let v = inp.value.replace(/\D/g,'');
+  if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5,7);
+  inp.value = v;
+}
+
+function parseMDY(str) {
+  // MM/DD/YY or MM/DD/YYYY → ISO yyyy-mm-dd
+  if (!str) return '';
+  const p = str.split('/');
+  if (p.length !== 3) return '';
+  const yr = p[2].length === 2 ? '20' + p[2] : p[2];
+  return `${yr}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
+}
+
+function saveFoodItem() {
+  const brand   = document.getElementById('fBrand').value;
+  const name    = document.getElementById('fName').value.trim();
+  const type    = document.getElementById('fType').value;
+  const sizeNum = document.getElementById('fSizeNum').value;
+  const sizeUnit= document.getElementById('fSizeUnit').value;
+  const proteins= [...document.querySelectorAll('#proteinChips .sel')].map(c=>c.dataset.val);
+  const color   = document.getElementById('fColor').value;
+  const purchased=document.getElementById('fPurchased').value.trim();
+  const expRaw  = document.getElementById('fExp').value.trim();
+  const qty     = document.getElementById('fQty').value;
+
+  if (!brand||!name||!type||!sizeNum||!proteins.length) {
+    toast('Please fill all required fields','danger'); return;
+  }
+
+  const uid = Auth.currentUser().id;
+  const now = new Date().toISOString();
+  const foods = DB.get('food_items');
+  let editId = document.getElementById('editFoodId').value;
+  let food;
+
+  if (editId) {
+    food = foods.find(f=>f.id===editId);
+    Object.assign(food,{brand,name,type,sizeNum,sizeUnit,proteins,color,purchased,lastModifiedDate:now});
+    DB.set('food_items',foods);
+  } else {
+    food = {id:uuid(),userId:uid,brand,name,type,sizeNum,sizeUnit,proteins,color,purchased,createdDate:now,lastModifiedDate:now};
+    foods.push(food);
+    DB.set('food_items',foods);
+  }
+
+  // create inventory entry if exp or qty provided
+  const expISO = parseMDY(expRaw);
+  if (expISO || qty) {
+    const invs = DB.get('inventory');
+    invs.push({id:uuid(),userId:uid,foodItemId:food.id,
+      expirationDate: expISO||null,
+      inventoryNumber: qty!==''? Number(qty): null});
+    DB.set('inventory',invs);
+  }
+
+  closeModal('addFoodModal');
+  toast(editId ? 'Food item updated!':'Food item added! 🎉','success');
+  renderInventory();
+}
+
+// ── Edit existing food ────────────────────────────────────────
+function editFood(foodId) {
+  const food = DB.get('food_items').find(f=>f.id===foodId);
+  if (!food) return;
+  document.getElementById('editFoodId').value = foodId;
+  document.getElementById('addFoodTitle').textContent = 'Edit Food Item';
+  document.getElementById('brandSelect').value = food.brand;
+  document.getElementById('fBrand').value = food.brand;
+  document.getElementById('fName').value  = food.name;
+  document.getElementById('fType').value  = food.type;
+  document.getElementById('fColor').value = food.color||'';
+  document.getElementById('fSizeNum').value  = food.sizeNum;
+  document.getElementById('fSizeUnit').value = food.sizeUnit;
+  document.getElementById('fPurchased').value= food.purchased||'';
+  document.querySelectorAll('#proteinChips .multi-chip').forEach(c=>{
+    c.classList.toggle('sel',(food.proteins||[]).includes(c.dataset.val));
+  });
+  document.getElementById('fExp').value = '';
+  document.getElementById('fQty').value = '';
+  showStep2();
+  openModal('addFoodModal');
+}
+
+// ── Adjust inline ─────────────────────────────────────────────
+function startAdjust(invId) {
+  const row = document.getElementById('exprow-'+invId);
+  const inv = DB.get('inventory').find(i=>i.id===invId);
+  if (!inv) return;
+  const cur = inv.inventoryNumber !== null ? inv.inventoryNumber : '';
+  const existing = row.querySelector('.inline-adjust');
+  if (existing) { existing.remove(); return; }
+  const div = document.createElement('div');
+  div.className='inline-adjust';
+  div.innerHTML=`<input type="number" min="0" value="${cur}" id="adj-${invId}" style="width:72px"/>
+    <button class="btn btn-primary btn-sm" onclick="saveAdjust('${invId}')">Update</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('exprow-${invId}').querySelector('.inline-adjust').remove()">Cancel</button>`;
+  row.appendChild(div);
+}
+
+function saveAdjust(invId) {
+  const val = document.getElementById('adj-'+invId).value;
+  const invs = DB.get('inventory');
+  const inv = invs.find(i=>i.id===invId);
+  inv.inventoryNumber = val===''? null : Number(val);
+  DB.set('inventory',invs);
+  toast('Inventory updated!','success');
+  renderInventory();
+}
+
+// ── Add new expiration date ───────────────────────────────────
+function openAddExp(foodId, foodName) {
+  _addExpFoodId = foodId;
+  document.getElementById('addExpFoodName').textContent = foodName;
+  document.getElementById('newExpDate').value='';
+  document.getElementById('newExpQty').value='';
+  openModal('addExpModal');
+}
+function quickAddExp(foodId,foodName) {
+  closeModal('addFoodModal');
+  openAddExp(foodId,foodName);
+}
+function saveNewExp() {
+  const expRaw = document.getElementById('newExpDate').value.trim();
+  const qty    = document.getElementById('newExpQty').value;
+  const uid    = Auth.currentUser().id;
+  const expISO = parseMDY(expRaw);
+  const invs   = DB.get('inventory');
+  invs.push({id:uuid(),userId:uid,foodItemId:_addExpFoodId,
+    expirationDate:expISO||null, inventoryNumber:qty!==''?Number(qty):null});
+  DB.set('inventory',invs);
+  closeModal('addExpModal');
+  toast('Inventory entry added!','success');
+  renderInventory();
+}
+
+// ── Modal helpers ─────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+renderInventory();
+</script>
+</body>
+</html>
