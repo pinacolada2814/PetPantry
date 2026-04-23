@@ -3,87 +3,694 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pet Pantry – Sign In</title>
+<title>Pet Pantry – Never Run Out of Cat Food Again 🐾</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="styles.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink:       #f9a8d4;
+  --pink-l:     #fce7f3;
+  --pink-d:     #ec4899;
+  --purple:     #c084fc;
+  --purple-l:   #f3e8ff;
+  --purple-d:   #9333ea;
+  --lavender:   #e9d5ff;
+  --peach:      #fed7aa;
+  --peach-l:    #fff7ed;
+  --mint:       #bbf7d0;
+  --mint-l:     #f0fdf4;
+  --sky:        #bae6fd;
+  --yellow:     #fef08a;
+  --cream:      #fffbf7;
+  --text:       #3b1f4a;
+  --text-muted: #9d7bb0;
+  --white:      #ffffff;
+  --radius:     20px;
+  --radius-lg:  32px;
+  --shadow:     0 4px 24px rgba(160,100,200,.13);
+  --shadow-lg:  0 8px 48px rgba(160,100,200,.18);
+  --font-body:  'Nunito', sans-serif;
+  --font-head:  'Playfair Display', serif;
+  --transition: .25s cubic-bezier(.4,0,.2,1);
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: none; /* custom cursor */
+}
+
+/* ── Custom paw cursor ── */
+.cursor {
+  width: 28px; height: 28px;
+  background: var(--pink-d);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  transition: transform .12s ease, background .2s;
+  opacity: .7;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+}
+.cursor-ring {
+  width: 44px; height: 44px;
+  border: 2px solid var(--pink);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0; z-index: 9998;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  transition: transform .22s ease;
+}
+
+/* ── Floating paws background ── */
+.paw-bg {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+.paw-bg span {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: .07;
+  animation: floatPaw linear infinite;
+  user-select: none;
+}
+
+@keyframes floatPaw {
+  from { transform: translateY(110vh) rotate(0deg); opacity: .07; }
+  to   { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* ── Scroll fade-in ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,251,247,.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--pink-l);
+  transition: box-shadow var(--transition);
+}
+nav.scrolled { box-shadow: var(--shadow); }
+.nav-logo {
+  font-family: var(--font-head);
+  font-size: 1.5rem; color: var(--purple-d);
+  text-decoration: none; display: flex; align-items: center; gap: .4rem;
+}
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links a {
+  font-weight: 700; font-size: .9rem; color: var(--text-muted);
+  text-decoration: none; transition: color var(--transition);
+}
+.nav-links a:hover { color: var(--purple-d); }
+.nav-cta {
+  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
+  color: #fff !important;
+  padding: .5rem 1.25rem; border-radius: 99px;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(200,100,200,.3);
+  transition: transform var(--transition), box-shadow var(--transition) !important;
+}
+.nav-cta:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 24px rgba(200,100,200,.4) !important; }
+
+/* mobile nav */
+.hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: none; }
+@media (max-width: 600px) {
+  .nav-links { display: none; flex-direction: column; position: absolute;
+    top: 100%; left: 0; right: 0; background: var(--cream);
+    padding: 1.5rem 2rem; border-bottom: 1px solid var(--pink-l); gap: 1rem; }
+  .nav-links.open { display: flex; }
+  .hamburger { display: block; }
+}
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 7rem 2rem 4rem;
+  position: relative; z-index: 1;
+  background: linear-gradient(160deg, var(--pink-l) 0%, var(--purple-l) 50%, var(--peach-l) 100%);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 70% 40%, rgba(192,132,252,.18) 0%, transparent 60%),
+              radial-gradient(circle at 20% 80%, rgba(249,168,212,.22) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+}
+@media (max-width: 768px) {
+  .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .hero-img-wrap { order: -1; }
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--white); border: 1.5px solid var(--pink);
+  border-radius: 99px; padding: .35rem 1rem;
+  font-size: .8rem; font-weight: 800; color: var(--pink-d);
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+.hero h1 .highlight {
+  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: 1.1rem; color: var(--text-muted);
+  line-height: 1.7; margin-bottom: 2rem; max-width: 460px;
+}
+@media (max-width: 768px) { .hero p { margin: 0 auto 2rem; } }
+
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+@media (max-width: 768px) { .hero-btns { justify-content: center; } }
+
+.btn-primary-lg {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
+  color: #fff; font-weight: 800; font-size: 1rem;
+  padding: .85rem 2rem; border-radius: 99px; border: none;
+  box-shadow: 0 6px 24px rgba(200,100,200,.35);
+  text-decoration: none;
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: none;
+}
+.btn-primary-lg:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(200,100,200,.45); }
+
+.btn-ghost-lg {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--white); color: var(--purple-d);
+  font-weight: 800; font-size: 1rem;
+  padding: .85rem 2rem; border-radius: 99px;
+  border: 2px solid var(--purple);
+  text-decoration: none;
+  transition: transform var(--transition), border-color var(--transition);
+  cursor: none;
+}
+.btn-ghost-lg:hover { transform: translateY(-3px); border-color: var(--purple-d); }
+
+/* hero image */
+.hero-img-wrap {
+  position: relative; display: flex; justify-content: center;
+}
+.hero-img-blob {
+  position: absolute; inset: -20px;
+  background: radial-gradient(circle, var(--pink-l) 0%, var(--lavender) 60%, transparent 80%);
+  border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+  animation: blobMorph 6s ease-in-out infinite alternate;
+  z-index: 0;
+}
+@keyframes blobMorph {
+  from { border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%; }
+  to   { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+}
+.hero-img {
+  position: relative; z-index: 1;
+  width: min(380px, 90vw); height: min(420px, 90vw);
+  object-fit: cover; object-position: center top;
+  border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
+  border: 5px solid var(--white);
+  box-shadow: var(--shadow-lg);
+  animation: floatImg 4s ease-in-out infinite alternate;
+}
+@keyframes floatImg {
+  from { transform: translateY(0px) rotate(-1deg); }
+  to   { transform: translateY(-14px) rotate(1deg); }
+}
+
+/* floating badges on hero image */
+.hero-float {
+  position: absolute; z-index: 2;
+  background: var(--white); border-radius: var(--radius);
+  padding: .55rem .9rem; box-shadow: var(--shadow);
+  font-weight: 800; font-size: .82rem; color: var(--text);
+  display: flex; align-items: center; gap: .4rem;
+  animation: floatBadge 3s ease-in-out infinite alternate;
+}
+.hero-float.f1 { top: 8%; left: -10%; animation-delay: 0s; }
+.hero-float.f2 { bottom: 18%; right: -12%; animation-delay: .8s; }
+.hero-float.f3 { top: 55%; left: -14%; animation-delay: 1.4s; }
+@keyframes floatBadge {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+@media (max-width: 768px) {
+  .hero-float.f1 { left: 0; top: 0; }
+  .hero-float.f2 { right: 0; bottom: 10%; }
+  .hero-float.f3 { display: none; }
+}
+
+/* ── Stat strip ── */
+.stat-strip {
+  background: var(--white);
+  border-top: 1px solid var(--pink-l);
+  border-bottom: 1px solid var(--pink-l);
+  padding: 1.5rem 2rem;
+  display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.stat-item { text-align: center; }
+.stat-item .sv { font-family: var(--font-head); font-size: 2rem; color: var(--purple-d); }
+.stat-item .sl { font-size: .82rem; font-weight: 700; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════ */
+.section {
+  padding: 5rem 2rem;
+  position: relative; z-index: 1;
+}
+.section-tag {
+  display: inline-block;
+  background: var(--pink-l); color: var(--pink-d);
+  border-radius: 99px; padding: .3rem .9rem;
+  font-size: .78rem; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: .75rem;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin-bottom: .75rem; line-height: 1.2;
+}
+.section-sub {
+  font-size: 1rem; color: var(--text-muted);
+  max-width: 520px; line-height: 1.7;
+}
+.center { text-align: center; }
+.center .section-sub { margin: 0 auto; }
+
+.features-grid {
+  max-width: 1100px; margin: 3rem auto 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.feat-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  box-shadow: var(--shadow);
+  border: 1.5px solid transparent;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  position: relative; overflow: hidden;
+}
+.feat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.feat-card.c1::before { background: linear-gradient(90deg, var(--pink), var(--purple)); }
+.feat-card.c2::before { background: linear-gradient(90deg, var(--purple), var(--sky)); }
+.feat-card.c3::before { background: linear-gradient(90deg, var(--peach), var(--pink)); }
+.feat-card.c4::before { background: linear-gradient(90deg, var(--mint), var(--sky)); }
+.feat-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--pink);
+  box-shadow: var(--shadow-lg);
+}
+.feat-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.75rem; margin-bottom: 1.25rem;
+}
+.feat-card.c1 .feat-icon { background: var(--pink-l); }
+.feat-card.c2 .feat-icon { background: var(--purple-l); }
+.feat-card.c3 .feat-icon { background: var(--peach-l); }
+.feat-card.c4 .feat-icon { background: var(--mint-l); }
+.feat-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: .5rem; }
+.feat-card p  { font-size: .9rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ═══════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════ */
+.how-section {
+  padding: 5rem 2rem;
+  background: linear-gradient(160deg, var(--purple-l), var(--pink-l));
+  position: relative; z-index: 1;
+}
+.steps {
+  max-width: 860px; margin: 3rem auto 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem; position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute; top: 44px; left: 15%; right: 15%; height: 2px;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  opacity: .3;
+}
+@media (max-width: 600px) { .steps::before { display: none; } }
+
+.step {
+  text-align: center;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition);
+}
+.step:hover { transform: translateY(-4px); }
+.step-num {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
+  color: #fff; font-weight: 900; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  box-shadow: 0 4px 16px rgba(200,100,200,.3);
+}
+.step h3 { font-size: 1rem; font-weight: 800; margin-bottom: .5rem; }
+.step p  { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ═══════════════════════════════════════
+   TESTIMONIALS (from cats 😂)
+═══════════════════════════════════════ */
+.testi-section {
+  padding: 5rem 2rem;
+  position: relative; z-index: 1;
+}
+.testi-grid {
+  max-width: 1000px; margin: 3rem auto 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.testi-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--pink-l);
+  transition: transform var(--transition);
+}
+.testi-card:hover { transform: translateY(-4px); }
+.testi-stars { font-size: 1rem; margin-bottom: .75rem; color: #f59e0b; }
+.testi-quote {
+  font-size: .95rem; color: var(--text); line-height: 1.7;
+  margin-bottom: 1.25rem; font-style: italic;
+}
+.testi-author {
+  display: flex; align-items: center; gap: .75rem;
+}
+.testi-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--pink-l); font-size: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--pink);
+}
+.testi-author h4 { font-size: .9rem; font-weight: 800; }
+.testi-author p  { font-size: .75rem; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   CTA SECTION
+═══════════════════════════════════════ */
+.cta-section {
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
+  text-align: center; position: relative; z-index: 1; overflow: hidden;
+}
+.cta-section::before {
+  content: '🐾';
+  position: absolute; font-size: 20rem; opacity: .04;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  pointer-events: none; user-select: none;
+}
+.cta-section h2 {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: #fff; margin-bottom: 1rem;
+}
+.cta-section p {
+  color: rgba(255,255,255,.85); font-size: 1.05rem;
+  margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto;
+}
+.btn-white {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: #fff; color: var(--purple-d);
+  font-weight: 900; font-size: 1rem;
+  padding: .9rem 2.25rem; border-radius: 99px;
+  text-decoration: none; box-shadow: 0 6px 24px rgba(0,0,0,.15);
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: none;
+}
+.btn-white:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,.2); }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer {
+  background: var(--text); color: rgba(255,255,255,.6);
+  padding: 2rem; text-align: center;
+  font-size: .85rem; position: relative; z-index: 1;
+}
+footer a { color: var(--pink); text-decoration: none; }
+footer .footer-logo {
+  font-family: var(--font-head); font-size: 1.3rem;
+  color: #fff; margin-bottom: .5rem; display: block;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE TWEAKS
+═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .stat-strip { gap: 1.5rem; }
+  .hero { padding: 6rem 1.25rem 3rem; }
+  .section { padding: 3.5rem 1.25rem; }
+  .how-section { padding: 3.5rem 1.25rem; }
+  .testi-section { padding: 3.5rem 1.25rem; }
+  .cta-section { padding: 3.5rem 1.25rem; }
+}
+</style>
 </head>
 <body>
-<div class="auth-wrap">
-  <div class="auth-card">
-    <div class="auth-logo">🐾</div>
-    <h1>Pet <span style="color:var(--accent)">Pantry</span></h1>
-    <p class="auth-sub">Track your pet's food & meals — all in one place.</p>
 
-    <!-- LOGIN FORM -->
-    <div id="loginForm">
-      <div class="form-group">
-        <label>Email <span class="req">*</span></label>
-        <input id="loginEmail" type="email" class="form-control" placeholder="you@email.com"/>
+<!-- Custom cursor -->
+<div class="cursor" id="cursor">🐾</div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Floating paws bg -->
+<div class="paw-bg" id="pawBg"></div>
+
+<!-- ══ NAV ══════════════════════════════════ -->
+<nav id="mainNav">
+  <a class="nav-logo" href="#">🐾 Pet Pantry</a>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#testimonials">Reviews</a>
+    <a href="index.html" class="nav-cta">Get Started Free 🐱</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text reveal">
+      <div class="hero-badge">🌸 Made with love for cat parents</div>
+      <h1>Your cat's pantry,<br/><span class="highlight">finally organized.</span></h1>
+      <p>Never scramble during a sale again. Pet Pantry helps you track your cat's food inventory, log every meal, and always know exactly what's in stock — all in one adorable app.</p>
+      <div class="hero-btns">
+        <a href="index.html" class="btn-primary-lg">Start for Free 🐾</a>
+        <a href="#features" class="btn-ghost-lg">See Features ✨</a>
       </div>
-      <div class="form-group">
-        <label>Password <span class="req">*</span></label>
-        <input id="loginPass" type="password" class="form-control" placeholder="••••••••"/>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
-      <p class="auth-toggle">New here? <a href="#" onclick="toggleAuth()">Create an account</a></p>
     </div>
-
-    <!-- REGISTER FORM -->
-    <div id="registerForm" style="display:none">
-      <div class="form-group">
-        <label>Name <span class="req">*</span></label>
-        <input id="regName" type="text" class="form-control" placeholder="Your name"/>
-      </div>
-      <div class="form-group">
-        <label>Email <span class="req">*</span></label>
-        <input id="regEmail" type="email" class="form-control" placeholder="you@email.com"/>
-      </div>
-      <div class="form-group">
-        <label>Password <span class="req">*</span></label>
-        <input id="regPass" type="password" class="form-control" placeholder="Create a password"/>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="doRegister()">Create Account</button>
-      <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuth()">Sign In</a></p>
+    <div class="hero-img-wrap reveal">
+      <div class="hero-img-blob"></div>
+      <img src="fenty.jpg" alt="Fenty the cat, Pet Pantry mascot" class="hero-img"/>
+      <div class="hero-float f1">🥫 12 cans in stock</div>
+      <div class="hero-float f2">⭐ Fenty gave it 5 stars</div>
+      <div class="hero-float f3">📅 Exp: Jun 2025</div>
     </div>
   </div>
+</section>
+
+<!-- ══ STAT STRIP ══════════════════════════ -->
+<div class="stat-strip reveal">
+  <div class="stat-item"><div class="sv">20+</div><div class="sl">Brands Supported</div></div>
+  <div class="stat-item"><div class="sv">∞</div><div class="sl">Meals Logged</div></div>
+  <div class="stat-item"><div class="sv">0</div><div class="sl">Sales Missed</div></div>
+  <div class="stat-item"><div class="sv">😻</div><div class="sl">Happy Cats</div></div>
 </div>
 
-<script src="app.js"></script>
+<!-- ══ FEATURES ═══════════════════════════ -->
+<section class="section" id="features">
+  <div class="center reveal">
+    <div class="section-tag">✨ Features</div>
+    <h2 class="section-title">Everything your cat's pantry needs</h2>
+    <p class="section-sub">From tracking what's expiring to logging every meal — Pet Pantry has you covered.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card c1 reveal">
+      <div class="feat-icon">🥫</div>
+      <h3>Smart Inventory Tracking</h3>
+      <p>Know exactly what you have, grouped by expiration date. Color-coded alerts tell you what's expiring soon so nothing goes to waste.</p>
+    </div>
+    <div class="feat-card c2 reveal">
+      <div class="feat-icon">🍽️</div>
+      <h3>Meal Logging</h3>
+      <p>Log every meal with one tap. Inventory auto-deducts when you feed your cat — or skip tracking entirely and just log meals for fun.</p>
+    </div>
+    <div class="feat-card c3 reveal">
+      <div class="feat-icon">🐱</div>
+      <h3>Multi-Pet Profiles</h3>
+      <p>Have more than one cat? No problem. Create profiles for all your pets and track each one's meals and food preferences separately.</p>
+    </div>
+    <div class="feat-card c4 reveal">
+      <div class="feat-icon">⭐</div>
+      <h3>Cat Ratings</h3>
+      <p>Let your cat rate their meals! Log a 1–5 star rating so you always remember which foods were a hit and which were a flop.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ═══════════════════════ -->
+<section class="how-section" id="how">
+  <div class="center reveal">
+    <div class="section-tag" style="background:var(--purple-l);color:var(--purple-d)">🐾 How It Works</div>
+    <h2 class="section-title">Up and running in minutes</h2>
+    <p class="section-sub">No apps to download, no subscriptions. Just open, set up, and start tracking.</p>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <h3>Create your profile</h3>
+      <p>Sign up in seconds. Add your cat's profile with name, breed, and age.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <h3>Add your food stash</h3>
+      <p>Log your food inventory by brand, type, size, and expiration date. Or skip quantities — totally optional!</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <h3>Log meals & track stock</h3>
+      <p>Hit "Meal Time!" after every feeding. Inventory updates automatically. Know what to buy before the next sale hits.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TESTIMONIALS ═══════════════════════ -->
+<section class="testi-section" id="testimonials">
+  <div class="center reveal">
+    <div class="section-tag">😻 Reviews</div>
+    <h2 class="section-title">Cats (and their humans) love it</h2>
+    <p class="section-sub">Don't just take our word for it.</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+      <p class="testi-quote">"I used to buy 6 cans of the same flavor we already had. Now I actually check Pet Pantry before shopping. Life. Changed."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">🐱</div>
+        <div><h4>Fenty's Mom</h4><p>American Curl cat parent 🐾</p></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+      <p class="testi-quote">"Meow meow meow meow meow. Meow meow meow meow. Meow. (Translation: finally, a 5-star Weruva logging experience.)"</p>
+      <div class="testi-author">
+        <div class="testi-avatar">😸</div>
+        <div><h4>Fenty</h4><p>Chief Taste Tester & CEO</p></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+      <p class="testi-quote">"I used to forget which proteins my cat preferred. Now I have a full log with ratings. My cat is thriving. I am thriving. 10/10."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">🐈</div>
+        <div><h4>A Very Organized Cat Parent</h4><p>Multi-cat household survivor</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ════════════════════════════════ -->
+<section class="cta-section reveal">
+  <h2>Ready to organize your cat's pantry? 🐾</h2>
+  <p>Free forever. No app store. No subscriptions. Just open your browser and go.</p>
+  <a href="index.html" class="btn-white">Get Started Free 🌸</a>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════ -->
+<footer>
+  <span class="footer-logo">🐾 Pet Pantry</span>
+  <p>Made with 💜 for cat parents everywhere &nbsp;·&nbsp; <a href="index.html">Open App</a></p>
+  <p style="margin-top:.5rem;font-size:.75rem">Fenty approved ⭐⭐⭐⭐⭐</p>
+</footer>
+
 <script>
-if (Auth.isLoggedIn()) window.location.href = 'inventory.html';
+// ── Custom cursor ──────────────────────────────────
+const cursor     = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+document.addEventListener('mousemove', e => {
+  cursor.style.left     = e.clientX + 'px';
+  cursor.style.top      = e.clientY + 'px';
+  cursorRing.style.left = e.clientX + 'px';
+  cursorRing.style.top  = e.clientY + 'px';
+});
 
-function toggleAuth() {
-  const l = document.getElementById('loginForm');
-  const r = document.getElementById('registerForm');
-  l.style.display = l.style.display === 'none' ? '' : 'none';
-  r.style.display = r.style.display === 'none' ? '' : 'none';
+// ── Floating paws ──────────────────────────────────
+const pawBg = document.getElementById('pawBg');
+const paws  = ['🐾','🐾','🌸','✨','🐾','💜','🐾'];
+for (let i = 0; i < 18; i++) {
+  const s = document.createElement('span');
+  s.textContent = paws[i % paws.length];
+  s.style.cssText = `
+    left: ${Math.random()*100}%;
+    animation-duration: ${8 + Math.random()*12}s;
+    animation-delay: ${-Math.random()*15}s;
+    font-size: ${1 + Math.random()*1.5}rem;
+  `;
+  pawBg.appendChild(s);
 }
 
-function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-  if (!email || !pass) { toast('Please fill all fields', 'danger'); return; }
-  const users = DB.get('users');
-  const u = users.find(u => u.email === email && u.password === pass);
-  if (!u) { toast('Invalid email or password', 'danger'); return; }
-  Auth.login(u);
-  window.location.href = 'inventory.html';
-}
+// ── Scroll reveal ──────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-function doRegister() {
-  const name  = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pass  = document.getElementById('regPass').value;
-  if (!name || !email || !pass) { toast('Please fill all fields', 'danger'); return; }
-  const users = DB.get('users');
-  if (users.find(u => u.email === email)) { toast('Email already registered', 'danger'); return; }
-  const now = new Date().toISOString();
-  const u = { id: uuid(), name, email, password: pass, createdDate: now, lastModifiedDate: now };
-  users.push(u);
-  DB.set('users', users);
-  Auth.login(u);
-  window.location.href = 'inventory.html';
+// ── Nav scroll shadow ──────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ── Mobile menu ────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
 }
 </script>
 </body>
