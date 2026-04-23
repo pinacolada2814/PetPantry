@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pet Pantry – My Pets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="app-shell">
+
+<nav class="topnav">
+  <a class="logo" href="inventory.html">🐾 Pet <span>Pantry</span></a>
+  <div class="topnav-spacer"></div>
+  <div class="nav-user">
+    <strong class="nav-user-name"></strong>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+  </div>
+</nav>
+<aside class="sidebar">
+  <a class="s-logo" href="inventory.html">🐾 Pet <span>Pantry</span></a>
+  <a class="s-link" href="inventory.html" data-page="inventory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>Food Inventory</a>
+  <a class="s-link" href="meals.html" data-page="meals">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Meal Logs</a>
+  <a class="s-link" href="pets.html" data-page="pets">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 10-16 0"/></svg>My Pets</a>
+  <div class="s-divider"></div>
+  <a class="s-link" href="profile.html" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
+  <a class="s-link" href="index.html" onclick="Auth.logout()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out</a>
+</aside>
+
+<div class="sidebar-main">
+<div class="page-content">
+
+  <div class="page-header">
+    <h1>🐱 My Pets</h1>
+    <button class="btn btn-primary btn-sm" onclick="openPetModal()">+ Add Pet</button>
+  </div>
+  <div id="petList"></div>
+
+</div>
+</div>
+</div>
+
+<nav class="tab-bar">
+  <a href="inventory.html" data-page="inventory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>Pantry</a>
+  <a href="meals.html" data-page="meals">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Meals</a>
+  <a href="pets.html" data-page="pets">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 10-16 0"/></svg>Pets</a>
+  <a href="profile.html" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile</a>
+</nav>
+
+
+<!-- ══ PET MODAL ══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="petModal">
+<div class="modal">
+  <div class="modal-header">
+    <h2 id="petModalTitle">Add Pet</h2>
+    <button class="modal-close" onclick="closeModal('petModal')">✕</button>
+  </div>
+  <input type="hidden" id="editPetId"/>
+  <div class="form-group">
+    <label>Name <span class="req">*</span></label>
+    <input id="pName" class="form-control" placeholder="e.g. Fenty"/>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Gender</label>
+      <select id="pGender" class="form-control">
+        <option value="">— —</option>
+        <option value="F">Female</option>
+        <option value="M">Male</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Age</label>
+      <input id="pAge" class="form-control" placeholder="e.g. 3 years"/>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Breed</label>
+    <input id="pBreed" class="form-control" placeholder="e.g. American Curl"/>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('petModal')">Cancel</button>
+    <button class="btn btn-primary" onclick="savePet()">Save Pet</button>
+  </div>
+</div>
+</div>
+
+<script src="app.js"></script>
+<script>
+if (!Auth.require()) throw '';
+renderUserChip();
+highlightNav('pets');
+
+const PET_EMOJIS = ['🐱','🐈','😸','😻','🐾','🦁'];
+
+function renderPets() {
+  const uid  = Auth.currentUser().id;
+  const pets = DB.get('pets').filter(p=>p.userId===uid);
+  const el   = document.getElementById('petList');
+  if (!pets.length) {
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">🐱</div><p>No pets added yet!</p><button class="btn btn-primary" onclick="openPetModal()">+ Add Your First Pet</button></div>`;
+    return;
+  }
+  el.innerHTML = pets.map((p,i)=>{
+    const emoji = PET_EMOJIS[i % PET_EMOJIS.length];
+    const gLabel = {M:'Male',F:'Female'}[p.gender]||'';
+    const meta = [gLabel, p.breed, p.age].filter(Boolean).join(' · ');
+    return `<div class="pet-card">
+      <div class="pet-avatar">${emoji}</div>
+      <div class="pet-info">
+        <h3>${p.name}</h3>
+        <p>${meta||'No details added'}</p>
+      </div>
+      <div class="pet-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="editPet('${p.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePet('${p.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPetModal(editId) {
+  document.getElementById('editPetId').value = editId||'';
+  document.getElementById('petModalTitle').textContent = editId ? 'Edit Pet' : 'Add Pet';
+  document.getElementById('pName').value='';
+  document.getElementById('pGender').value='';
+  document.getElementById('pAge').value='';
+  document.getElementById('pBreed').value='';
+  openModal('petModal');
+}
+
+function editPet(id) {
+  const p = DB.get('pets').find(p=>p.id===id);
+  if (!p) return;
+  document.getElementById('editPetId').value = id;
+  document.getElementById('petModalTitle').textContent = 'Edit Pet';
+  document.getElementById('pName').value   = p.name;
+  document.getElementById('pGender').value = p.gender||'';
+  document.getElementById('pAge').value    = p.age||'';
+  document.getElementById('pBreed').value  = p.breed||'';
+  openModal('petModal');
+}
+
+function savePet() {
+  const name   = document.getElementById('pName').value.trim();
+  const gender = document.getElementById('pGender').value;
+  const age    = document.getElementById('pAge').value.trim();
+  const breed  = document.getElementById('pBreed').value.trim();
+  if (!name) { toast('Name is required','danger'); return; }
+
+  const uid  = Auth.currentUser().id;
+  const now  = new Date().toISOString();
+  const pets = DB.get('pets');
+  const editId = document.getElementById('editPetId').value;
+
+  if (editId) {
+    const p = pets.find(p=>p.id===editId);
+    Object.assign(p,{name,gender,age,breed,lastModifiedDate:now});
+  } else {
+    pets.push({id:uuid(),userId:uid,name,gender,age,breed,createdDate:now,lastModifiedDate:now});
+  }
+  DB.set('pets',pets);
+  closeModal('petModal');
+  toast(editId?'Pet updated!':'Pet added! 🐾','success');
+  renderPets();
+}
+
+function deletePet(id) {
+  if (!confirm('Delete this pet?')) return;
+  const pets = DB.get('pets').filter(p=>p.id!==id);
+  DB.set('pets',pets);
+  toast('Pet removed','warning');
+  renderPets();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+renderPets();
+</script>
+</body>
+</html>
