@@ -91,13 +91,18 @@
 </nav>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 <script>
-if (!Auth.require()) throw '';
-renderUserChip();
-highlightNav('profile');
+(async () => {
+  if (!(await Auth.require())) return;
+  renderUserChip();
+  highlightNav('profile');
+  await loadProfile();
+})();
 
-function loadProfile() {
+async function loadProfile() {
   const u = Auth.currentUser();
   document.getElementById('bigAvatar').textContent = (u.name||'?')[0].toUpperCase();
   document.getElementById('userId').textContent     = u.id;
@@ -107,43 +112,37 @@ function loadProfile() {
   document.getElementById('profPass').value  = '';
 
   // stats
-  const uid   = u.id;
-  const foods = DB.get('food_items').filter(f=>f.userId===uid).length;
-  const meals = DB.get('meal_logs').filter(l=>l.userId===uid).length;
-  const pets  = DB.get('pets').filter(p=>p.userId===uid).length;
+  const foods = (await Store.list('food_items')).length;
+  const meals = (await Store.list('meal_logs')).length;
+  const pets  = (await Store.list('pets')).length;
   document.getElementById('profStats').innerHTML = `
     <div class="stat-chip"><div class="sc-val">${pets}</div><div class="sc-lbl">Pets</div></div>
     <div class="stat-chip"><div class="sc-val">${foods}</div><div class="sc-lbl">Foods</div></div>
     <div class="stat-chip"><div class="sc-val">${meals}</div><div class="sc-lbl">Meals Logged</div></div>`;
 }
 
-function saveProfile() {
+async function saveProfile() {
   const name  = document.getElementById('profName').value.trim();
   const email = document.getElementById('profEmail').value.trim();
   const pass  = document.getElementById('profPass').value;
   if (!name||!email) { toast('Name and email required','danger'); return; }
 
-  const users = DB.get('users');
-  const u = Auth.currentUser();
-  const idx = users.findIndex(x=>x.id===u.id);
-  if (idx<0) { toast('User not found','danger'); return; }
-  users[idx].name  = name;
-  users[idx].email = email;
-  if (pass) users[idx].password = pass;
-  users[idx].lastModifiedDate = new Date().toISOString();
-  DB.set('users', users);
-  Auth.login(users[idx]);
+  const patch = { data: { name } };
+  if (email !== Auth.currentUser().email) patch.email = email;
+  if (pass) patch.password = pass;
+
+  const { data, error } = await sb.auth.updateUser(patch);
+  if (error) { toast(error.message,'danger'); return; }
+  Auth._user = mapUser(data.user);
   toast('Profile saved!','success');
-  loadProfile();
+  await loadProfile();
   renderUserChip();
 }
 
-function doLogout() {
-  Auth.logout();
+async function doLogout() {
+  await Auth.logout();
   window.location.href='index.html';
 }
-
-loadProfile();
 </script>
 </body>
 </html>

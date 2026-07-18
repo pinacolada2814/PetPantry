@@ -96,17 +96,21 @@
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 <script>
-if (!Auth.require()) throw '';
-renderUserChip();
-highlightNav('pets');
+(async () => {
+  if (!(await Auth.require())) return;
+  renderUserChip();
+  highlightNav('pets');
+  await renderPets();
+})();
 
 const PET_EMOJIS = ['🐱','🐈','😸','😻','🐾','🦁'];
 
-function renderPets() {
-  const uid  = Auth.currentUser().id;
-  const pets = DB.get('pets').filter(p=>p.userId===uid);
+async function renderPets() {
+  const pets = await Store.list('pets');
   const el   = document.getElementById('petList');
   if (!pets.length) {
     el.innerHTML=`<div class="empty-state"><div class="empty-icon">🐱</div><p>No pets added yet!</p><button class="btn btn-primary" onclick="openPetModal()">+ Add Your First Pet</button></div>`;
@@ -140,8 +144,8 @@ function openPetModal(editId) {
   openModal('petModal');
 }
 
-function editPet(id) {
-  const p = DB.get('pets').find(p=>p.id===id);
+async function editPet(id) {
+  const p = (await Store.list('pets')).find(p=>p.id===id);
   if (!p) return;
   document.getElementById('editPetId').value = id;
   document.getElementById('petModalTitle').textContent = 'Edit Pet';
@@ -152,36 +156,31 @@ function editPet(id) {
   openModal('petModal');
 }
 
-function savePet() {
+async function savePet() {
   const name   = document.getElementById('pName').value.trim();
   const gender = document.getElementById('pGender').value;
   const age    = document.getElementById('pAge').value.trim();
   const breed  = document.getElementById('pBreed').value.trim();
   if (!name) { toast('Name is required','danger'); return; }
 
-  const uid  = Auth.currentUser().id;
   const now  = new Date().toISOString();
-  const pets = DB.get('pets');
   const editId = document.getElementById('editPetId').value;
 
   if (editId) {
-    const p = pets.find(p=>p.id===editId);
-    Object.assign(p,{name,gender,age,breed,lastModifiedDate:now});
+    await Store.update('pets', editId, {name,gender,age,breed,lastModifiedDate:now});
   } else {
-    pets.push({id:uuid(),userId:uid,name,gender,age,breed,createdDate:now,lastModifiedDate:now});
+    await Store.insert('pets', {name,gender,age,breed,createdDate:now,lastModifiedDate:now});
   }
-  DB.set('pets',pets);
   closeModal('petModal');
   toast(editId?'Pet updated!':'Pet added! 🐾','success');
-  renderPets();
+  await renderPets();
 }
 
-function deletePet(id) {
+async function deletePet(id) {
   if (!confirm('Delete this pet?')) return;
-  const pets = DB.get('pets').filter(p=>p.id!==id);
-  DB.set('pets',pets);
+  await Store.remove('pets', id);
   toast('Pet removed','warning');
-  renderPets();
+  await renderPets();
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
@@ -189,8 +188,6 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-backdrop').forEach(m=>{
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
 });
-
-renderPets();
 </script>
 </body>
 </html>

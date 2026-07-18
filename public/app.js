@@ -1,35 +1,78 @@
 
 /* ═══════════════════════════════════════════════════════════
-   Pet Pantry – app.js  (localStorage "database" + utilities)
+   Pet Pantry – app.js  (Supabase-backed data layer + utilities)
 ═══════════════════════════════════════════════════════════ */
 
-// ── DB helpers ──────────────────────────────────────────────
-const DB = {
-  get(key)       { try { return JSON.parse(localStorage.getItem('pp_' + key)) || []; } catch { return []; } },
-  set(key, val)  { localStorage.setItem('pp_' + key, JSON.stringify(val)); },
-  getObj(key)    { try { return JSON.parse(localStorage.getItem('pp_' + key)) || {}; } catch { return {}; } },
-  setObj(key, v) { localStorage.setItem('pp_' + key, JSON.stringify(v)); },
-};
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function mapUser(u) {
+  if (!u) return null;
+  return { id: u.id, name: u.user_metadata?.name || '', email: u.email, createdDate: u.created_at };
+}
 
 // ── Auth ─────────────────────────────────────────────────────
 const Auth = {
-  currentUser() { return DB.getObj('current_user'); },
-  login(user)   { DB.setObj('current_user', user); },
-  logout()      { localStorage.removeItem('pp_current_user'); },
-  isLoggedIn()  { return !!DB.getObj('current_user').id; },
-  require()     {
-    if (!Auth.isLoggedIn()) { window.location.href = 'index.html'; return false; }
+  _user: null,
+
+  async init() {
+    const { data: { session } } = await sb.auth.getSession();
+    this._user = mapUser(session?.user);
+    sb.auth.onAuthStateChange((_event, session) => { this._user = mapUser(session?.user); });
+    return this._user;
+  },
+
+  currentUser() { return this._user || {}; },
+  isLoggedIn()  { return !!this._user; },
+
+  async require() {
+    if (!this._user) await this.init();
+    if (!this._user) { window.location.href = 'index.html'; return false; }
     return true;
+  },
+
+  async login(email, password) {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    this._user = mapUser(data.user);
+    return {};
+  },
+
+  async register(name, email, password) {
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
+    if (error) return { error: error.message };
+    if (!data.session) return { needsConfirm: true };
+    this._user = mapUser(data.user);
+    return {};
+  },
+
+  async logout() {
+    await sb.auth.signOut();
+    this._user = null;
   }
 };
 
-// ── UUID ─────────────────────────────────────────────────────
-function uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-  });
-}
+// ── Store (Supabase-backed data access) ─────────────────────
+const Store = {
+  async list(table) {
+    const { data, error } = await sb.from(table).select('*');
+    if (error) { toast(error.message, 'danger'); return []; }
+    return data || [];
+  },
+  async insert(table, row) {
+    const { data, error } = await sb.from(table).insert({ ...row, userId: Auth.currentUser().id }).select().single();
+    if (error) { toast(error.message, 'danger'); throw error; }
+    return data;
+  },
+  async update(table, id, patch) {
+    const { data, error } = await sb.from(table).update(patch).eq('id', id).select().single();
+    if (error) { toast(error.message, 'danger'); throw error; }
+    return data;
+  },
+  async remove(table, id) {
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) { toast(error.message, 'danger'); throw error; }
+  }
+};
 
 // ── Toast ────────────────────────────────────────────────────
 function toast(msg, type = '') {

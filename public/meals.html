@@ -141,11 +141,16 @@
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 <script>
-if (!Auth.require()) throw '';
-renderUserChip();
-highlightNav('meals');
+(async () => {
+  if (!(await Auth.require())) return;
+  renderUserChip();
+  highlightNav('meals');
+  await renderMeals();
+})();
 
 let dateRange = 'week';
 let _mRating  = null;
@@ -158,13 +163,12 @@ function setDateRange(btn, val) {
   renderMeals();
 }
 
-function renderMeals() {
-  const uid   = Auth.currentUser().id;
+async function renderMeals() {
   const limit = Number(document.getElementById('limitSel').value);
-  const pets  = DB.get('pets').filter(p=>p.userId===uid);
-  const foods = DB.get('food_items').filter(f=>f.userId===uid);
-  const invs  = DB.get('inventory').filter(i=>i.userId===uid);
-  let logs    = DB.get('meal_logs').filter(l=>l.userId===uid)
+  const pets  = await Store.list('pets');
+  const foods = await Store.list('food_items');
+  const invs  = await Store.list('inventory');
+  let logs    = (await Store.list('meal_logs'))
                   .sort((a,b)=> new Date(b.dateTime)-new Date(a.dateTime));
 
   // date filter
@@ -201,9 +205,8 @@ function renderMeals() {
 }
 
 // ── Open meal modal ───────────────────────────────────────────
-function openMealModal() {
-  const uid  = Auth.currentUser().id;
-  const pets = DB.get('pets').filter(p=>p.userId===uid);
+async function openMealModal() {
+  const pets = await Store.list('pets');
   const petSel = document.getElementById('mPet');
   petSel.innerHTML = '<option value="">— Select pet —</option>';
 
@@ -229,11 +232,10 @@ function openMealModal() {
   openModal('mealModal');
 }
 
-function renderFoodSuggestions() {
+async function renderFoodSuggestions() {
   const q   = document.getElementById('mFoodSearch').value.toLowerCase();
-  const uid = Auth.currentUser().id;
-  const foods = DB.get('food_items').filter(f=>f.userId===uid);
-  const invs  = DB.get('inventory').filter(i=>i.userId===uid &&
+  const foods = await Store.list('food_items');
+  const invs  = (await Store.list('inventory')).filter(i=>
     (i.inventoryNumber===null || i.inventoryNumber==='' || Number(i.inventoryNumber)>0));
 
   const el = document.getElementById('mFoodSuggestions');
@@ -272,8 +274,7 @@ function selectRating(el) {
   el.classList.add('sel');
 }
 
-function saveMeal() {
-  const uid    = Auth.currentUser().id;
+async function saveMeal() {
   const dateT  = document.getElementById('mDate').value;
   const petId  = document.getElementById('mPet').value;
   const invId  = document.getElementById('mFoodInvId').value;
@@ -284,30 +285,25 @@ function saveMeal() {
   if (!dateT||!petId||!amount) { toast('Please fill required fields','danger'); return; }
   if (!_selectedInv) { toast('Please select a food item','danger'); return; }
 
-  const log = {
-    id: uuid(), userId: uid, dateTime: dateT, petId,
+  await Store.insert('meal_logs', {
+    dateTime: dateT, petId,
     inventoryTableId: invId||null,
     foodLabel: _selectedInv.label,
     size, amount: Number(amount), catRating: _mRating, note,
     createdDate: new Date().toISOString()
-  };
-  const logs = DB.get('meal_logs');
-  logs.push(log);
-  DB.set('meal_logs', logs);
+  });
 
   // deduct inventory if tracked
   if (invId) {
-    const invs = DB.get('inventory');
-    const inv  = invs.find(i=>i.id===invId);
+    const inv = (await Store.list('inventory')).find(i=>i.id===invId);
     if (inv && inv.inventoryNumber!==null && inv.inventoryNumber!=='') {
-      inv.inventoryNumber = Math.max(0, Number(inv.inventoryNumber) - Number(amount));
-      DB.set('inventory', invs);
+      await Store.update('inventory', invId, { inventoryNumber: Math.max(0, Number(inv.inventoryNumber) - Number(amount)) });
     }
   }
 
   closeModal('mealModal');
   toast('Meal logged! 🐾','success');
-  renderMeals();
+  await renderMeals();
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
@@ -315,8 +311,6 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-backdrop').forEach(m=>{
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
 });
-
-renderMeals();
 </script>
 </body>
 </html>

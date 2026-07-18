@@ -239,11 +239,16 @@
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 <script>
-if (!Auth.require()) throw '';
-renderUserChip();
-highlightNav('inventory');
+(async () => {
+  if (!(await Auth.require())) return;
+  renderUserChip();
+  highlightNav('inventory');
+  await renderInventory();
+})();
 
 const BRANDS = ['home-made','Weruva','Weruva BFF','Instinct','Tiki Cat','Wellness CORE',
   "Hill's",'Purina Pro Plan','Orijen','Acana','Merrick','Rawz','Ziwi Peak',
@@ -254,10 +259,9 @@ let typeFilter = '';
 let _addExpFoodId = null;
 
 // ── Render stats ──────────────────────────────────────────────
-function renderStats() {
-  const uid  = Auth.currentUser().id;
-  const invs = DB.get('inventory').filter(i => i.userId === uid);
-  const foods = DB.get('food_items').filter(f => f.userId === uid);
+async function renderStats() {
+  const invs = await Store.list('inventory');
+  const foods = await Store.list('food_items');
   const tracked = invs.filter(i => i.inventoryNumber !== null && i.inventoryNumber !== '');
   const total = tracked.reduce((s, i) => s + (Number(i.inventoryNumber)||0), 0);
   document.getElementById('statRow').innerHTML = `
@@ -267,15 +271,14 @@ function renderStats() {
 }
 
 // ── Render inventory list ─────────────────────────────────────
-function renderInventory() {
-  const uid   = Auth.currentUser().id;
+async function renderInventory() {
   const q     = (document.getElementById('searchInput').value || '').toLowerCase();
-  let foods   = DB.get('food_items').filter(f => f.userId === uid);
+  let foods   = await Store.list('food_items');
   if (typeFilter) foods = foods.filter(f => f.type === typeFilter);
   if (q) foods = foods.filter(f =>
     f.brand.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
 
-  const invAll = DB.get('inventory').filter(i => i.userId === uid);
+  const invAll = await Store.list('inventory');
   const el = document.getElementById('inventoryList');
 
   if (!foods.length) {
@@ -335,7 +338,7 @@ function renderInventory() {
     }).join('');
   }).join('');
 
-  renderStats();
+  await renderStats();
 }
 
 function typeIcon(t) {
@@ -368,11 +371,10 @@ function openAddFoodModal() {
   openModal('addFoodModal');
 }
 
-function onBrandChange() {
+async function onBrandChange() {
   const brand = document.getElementById('brandSelect').value;
   if (!brand) { document.getElementById('existingItems').innerHTML=''; document.getElementById('newItemBtn').style.display='none'; return; }
-  const uid  = Auth.currentUser().id;
-  const foods = DB.get('food_items').filter(f => f.userId === uid && f.brand === brand);
+  const foods = (await Store.list('food_items')).filter(f => f.brand === brand);
   const el = document.getElementById('existingItems');
   if (foods.length) {
     el.innerHTML = `<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">You already have these items. Select one to add more inventory:</p>` +
@@ -414,7 +416,7 @@ function parseMDY(str) {
   return `${yr}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
 }
 
-function saveFoodItem() {
+async function saveFoodItem() {
   const brand   = document.getElementById('fBrand').value;
   const name    = document.getElementById('fName').value.trim();
   const type    = document.getElementById('fType').value;
@@ -430,40 +432,32 @@ function saveFoodItem() {
     toast('Please fill all required fields','danger'); return;
   }
 
-  const uid = Auth.currentUser().id;
   const now = new Date().toISOString();
-  const foods = DB.get('food_items');
   let editId = document.getElementById('editFoodId').value;
   let food;
 
   if (editId) {
-    food = foods.find(f=>f.id===editId);
-    Object.assign(food,{brand,name,type,sizeNum,sizeUnit,proteins,color,purchased,lastModifiedDate:now});
-    DB.set('food_items',foods);
+    food = await Store.update('food_items', editId, {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,lastModifiedDate:now});
   } else {
-    food = {id:uuid(),userId:uid,brand,name,type,sizeNum,sizeUnit,proteins,color,purchased,createdDate:now,lastModifiedDate:now};
-    foods.push(food);
-    DB.set('food_items',foods);
+    food = await Store.insert('food_items', {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,createdDate:now,lastModifiedDate:now});
   }
 
   // create inventory entry if exp or qty provided
   const expISO = parseMDY(expRaw);
   if (expISO || qty) {
-    const invs = DB.get('inventory');
-    invs.push({id:uuid(),userId:uid,foodItemId:food.id,
+    await Store.insert('inventory', {foodItemId:food.id,
       expirationDate: expISO||null,
       inventoryNumber: qty!==''? Number(qty): null});
-    DB.set('inventory',invs);
   }
 
   closeModal('addFoodModal');
   toast(editId ? 'Food item updated!':'Food item added! 🎉','success');
-  renderInventory();
+  await renderInventory();
 }
 
 // ── Edit existing food ────────────────────────────────────────
-function editFood(foodId) {
-  const food = DB.get('food_items').find(f=>f.id===foodId);
+async function editFood(foodId) {
+  const food = (await Store.list('food_items')).find(f=>f.id===foodId);
   if (!food) return;
   document.getElementById('editFoodId').value = foodId;
   document.getElementById('addFoodTitle').textContent = 'Edit Food Item';
@@ -485,9 +479,9 @@ function editFood(foodId) {
 }
 
 // ── Adjust inline ─────────────────────────────────────────────
-function startAdjust(invId) {
+async function startAdjust(invId) {
   const row = document.getElementById('exprow-'+invId);
-  const inv = DB.get('inventory').find(i=>i.id===invId);
+  const inv = (await Store.list('inventory')).find(i=>i.id===invId);
   if (!inv) return;
   const cur = inv.inventoryNumber !== null ? inv.inventoryNumber : '';
   const existing = row.querySelector('.inline-adjust');
@@ -500,14 +494,11 @@ function startAdjust(invId) {
   row.appendChild(div);
 }
 
-function saveAdjust(invId) {
+async function saveAdjust(invId) {
   const val = document.getElementById('adj-'+invId).value;
-  const invs = DB.get('inventory');
-  const inv = invs.find(i=>i.id===invId);
-  inv.inventoryNumber = val===''? null : Number(val);
-  DB.set('inventory',invs);
+  await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
   toast('Inventory updated!','success');
-  renderInventory();
+  await renderInventory();
 }
 
 // ── Add new expiration date ───────────────────────────────────
@@ -522,18 +513,15 @@ function quickAddExp(foodId,foodName) {
   closeModal('addFoodModal');
   openAddExp(foodId,foodName);
 }
-function saveNewExp() {
+async function saveNewExp() {
   const expRaw = document.getElementById('newExpDate').value.trim();
   const qty    = document.getElementById('newExpQty').value;
-  const uid    = Auth.currentUser().id;
   const expISO = parseMDY(expRaw);
-  const invs   = DB.get('inventory');
-  invs.push({id:uuid(),userId:uid,foodItemId:_addExpFoodId,
+  await Store.insert('inventory', {foodItemId:_addExpFoodId,
     expirationDate:expISO||null, inventoryNumber:qty!==''?Number(qty):null});
-  DB.set('inventory',invs);
   closeModal('addExpModal');
   toast('Inventory entry added!','success');
-  renderInventory();
+  await renderInventory();
 }
 
 // ── Modal helpers ─────────────────────────────────────────────
@@ -542,8 +530,6 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-backdrop').forEach(m=>{
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
 });
-
-renderInventory();
 </script>
 </body>
 </html>

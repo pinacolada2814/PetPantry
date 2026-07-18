@@ -49,9 +49,14 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 <script>
-if (Auth.isLoggedIn()) window.location.href = 'inventory.html';
+(async () => {
+  await Auth.init();
+  if (Auth.isLoggedIn()) window.location.href = 'inventory.html';
+})();
 
 function toggleAuth() {
   const l = document.getElementById('loginForm');
@@ -60,29 +65,23 @@ function toggleAuth() {
   r.style.display = r.style.display === 'none' ? '' : 'none';
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   if (!email || !pass) { toast('Please fill all fields', 'danger'); return; }
-  const users = DB.get('users');
-  const u = users.find(u => u.email === email && u.password === pass);
-  if (!u) { toast('Invalid email or password', 'danger'); return; }
-  Auth.login(u);
+  const { error } = await Auth.login(email, pass);
+  if (error) { toast(error, 'danger'); return; }
   window.location.href = 'inventory.html';
 }
 
-function doRegister() {
+async function doRegister() {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const pass  = document.getElementById('regPass').value;
   if (!name || !email || !pass) { toast('Please fill all fields', 'danger'); return; }
-  const users = DB.get('users');
-  if (users.find(u => u.email === email)) { toast('Email already registered', 'danger'); return; }
-  const now = new Date().toISOString();
-  const u = { id: uuid(), name, email, password: pass, createdDate: now, lastModifiedDate: now };
-  users.push(u);
-  DB.set('users', users);
-  Auth.login(u);
+  const { error, needsConfirm } = await Auth.register(name, email, pass);
+  if (error) { toast(error, 'danger'); return; }
+  if (needsConfirm) { toast('Check your email to confirm your account, then sign in.', 'success'); toggleAuth(); return; }
   window.location.href = 'inventory.html';
 }
 </script>
