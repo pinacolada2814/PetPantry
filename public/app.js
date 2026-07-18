@@ -26,7 +26,7 @@ const Auth = {
 
   async require() {
     if (!this._user) await this.init();
-    if (!this._user) { window.location.href = 'index.html'; return false; }
+    if (!this._user) { window.location.href = 'app.html'; return false; }
     return true;
   },
 

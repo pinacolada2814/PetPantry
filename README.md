@@ -6,7 +6,8 @@
 
 | Page | What it does |
 |------|-------------|
-| **Sign In / Register** | User accounts via Supabase Auth |
+| **Landing** (`index.html`) | Marketing page introducing the app, with Fenty the cat as mascot |
+| **Sign In / Register** (`app.html`) | User accounts via Supabase Auth |
 | **Food Inventory** | Add food items, filter by type, expand cards to see expiration dates & quantities, inline adjust inventory |
 | **Meal Logs** | Log meals with pet, food (auto-deducts inventory), serving size, cat rating, and notes |
 | **My Pets** | Add/edit/delete pet profiles |
