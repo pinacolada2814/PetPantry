@@ -108,8 +108,7 @@
     <div class="form-group">
       <label>Serving Size</label>
       <select id="mSize" class="form-control">
-        <option value="">— Select —</option>
-        <option>2.8 oz</option><option>5 oz</option><option>1 bowl</option>
+        <option value="">— Select a food first —</option>
       </select>
     </div>
     <div class="form-group">
@@ -225,12 +224,14 @@ async function openMealModal() {
   document.getElementById('mFoodInvId').value='';
   document.getElementById('mFoodSelected').textContent='';
   document.getElementById('mAmount').value='1';
-  document.getElementById('mSize').value='';
+  document.getElementById('mSize').innerHTML = '<option value="">— Select a food first —</option>';
   document.getElementById('mNote').value='';
-  _mRating=null; _selectedInv=null;
+  _mRating=null; _selectedInv=null; _lastMatches=[];
   document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>c.classList.remove('sel'));
   openModal('mealModal');
 }
+
+let _lastMatches = [];
 
 async function renderFoodSuggestions() {
   const q   = document.getElementById('mFoodSearch').value.toLowerCase();
@@ -251,21 +252,34 @@ async function renderFoodSuggestions() {
     if (!foodInvs.length) matches.push({food,inv:null});
   });
 
+  _lastMatches = matches;
+
   if (!matches.length) { el.innerHTML='<p style="font-size:.8rem;color:var(--text-muted)">No matching food found.</p>'; return; }
-  el.innerHTML = matches.slice(0,8).map(m=>{
+  el.innerHTML = matches.slice(0,8).map((m,i)=>{
     const expStr = m.inv?.expirationDate ? ` · Exp ${fmtDate(m.inv.expirationDate)}` : '';
     const qtyStr = m.inv?.inventoryNumber!=null ? ` · ${m.inv.inventoryNumber} units` : '';
     return `<button class="btn btn-ghost btn-full" style="justify-content:flex-start;margin-bottom:.3rem;font-size:.82rem"
-      onclick="selectFood('${m.inv?.id||''}','${m.food.brand} ${m.food.name}','${m.food.id}')">${m.food.brand} – ${m.food.name}<span style="margin-left:auto;color:var(--text-muted)">${expStr}${qtyStr}</span></button>`;
+      onclick="selectFood(${i})">${m.food.brand} – ${m.food.name}<span style="margin-left:auto;color:var(--text-muted)">${expStr}${qtyStr}</span></button>`;
   }).join('');
 }
 
-function selectFood(invId,label,foodId) {
-  _selectedInv = {invId,label,foodId};
-  document.getElementById('mFoodInvId').value   = invId;
+function selectFood(matchIdx) {
+  const m = _lastMatches[matchIdx];
+  const label = `${m.food.brand} ${m.food.name}`;
+  _selectedInv = {invId: m.inv?.id||'', label, foodId: m.food.id};
+  document.getElementById('mFoodInvId').value   = _selectedInv.invId;
   document.getElementById('mFoodSelected').textContent = '✓ '+label;
   document.getElementById('mFoodSearch').value  = label;
   document.getElementById('mFoodSuggestions').innerHTML='';
+
+  const sizeSel = document.getElementById('mSize');
+  sizeSel.innerHTML = '';
+  if (m.food.sizeNum) {
+    const val = `${m.food.sizeNum} ${m.food.sizeUnit}`;
+    sizeSel.innerHTML = `<option value="${val}">${val}</option>`;
+  } else {
+    sizeSel.innerHTML = '<option value="">—</option>';
+  }
 }
 
 function selectRating(el) {
