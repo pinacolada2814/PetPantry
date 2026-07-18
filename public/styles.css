@@ -52,6 +52,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 
 /* ---------- Layout ---------- */
 .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.sidebar { display: none; }
 
 /* ---------- Top Nav ---------- */
 .topnav {
