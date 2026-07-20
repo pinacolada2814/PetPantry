@@ -319,6 +319,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .meal-card .mc-food { font-size: .95rem; font-weight: 700; }
 .meal-card .mc-meta { font-size: .78rem; color: var(--text-muted); }
 .meal-card .mc-date { font-size: .75rem; color: var(--text-muted); text-align: right; }
+.meal-card .mc-actions { margin-top: .35rem; display: flex; gap: .3rem; justify-content: flex-end; }
 .star-rating { color: var(--warning); font-size: .85rem; }
 
 /* ---------- Pet profile card ---------- */

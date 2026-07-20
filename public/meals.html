@@ -79,9 +79,10 @@
 <div class="modal-backdrop" id="mealModal">
 <div class="modal">
   <div class="modal-header">
-    <h2>🐱 Log a Meal</h2>
+    <h2 id="mealModalTitle">🐱 Log a Meal</h2>
     <button class="modal-close" onclick="closeModal('mealModal')">✕</button>
   </div>
+  <input type="hidden" id="editMealId"/>
 
   <div class="form-group">
     <label>Date &amp; Time <span class="req">*</span></label>
@@ -135,7 +136,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('mealModal')">Cancel</button>
-    <button class="btn btn-accent" onclick="saveMeal()">Log Meal 🐾</button>
+    <button class="btn btn-accent" id="mealSaveBtn" onclick="saveMeal()">Log Meal 🐾</button>
   </div>
 </div>
 </div>
@@ -198,7 +199,13 @@ async function renderMeals() {
         <div class="mc-meta">${sizeStr}${log.amount||''} serving${log.note?' · '+log.note:''}</div>
         ${stars?`<div class="star-rating">${stars}</div>`:''}
       </div>
-      <div class="mc-date">${fmtDateTime(log.dateTime)}</div>
+      <div>
+        <div class="mc-date">${fmtDateTime(log.dateTime)}</div>
+        <div class="mc-actions">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="editMeal('${log.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMeal('${log.id}')">🗑️</button>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -218,6 +225,9 @@ async function openMealModal() {
     if (pets.length===1) petSel.value=pets[0].id;
   }
 
+  document.getElementById('editMealId').value = '';
+  document.getElementById('mealModalTitle').textContent = '🐱 Log a Meal';
+  document.getElementById('mealSaveBtn').textContent = 'Log Meal 🐾';
   document.getElementById('mDate').value   = nowISO();
   document.getElementById('mFoodSearch').value = '';
   document.getElementById('mFoodSuggestions').innerHTML='';
@@ -229,6 +239,66 @@ async function openMealModal() {
   _mRating=null; _selectedInv=null; _lastMatches=[];
   document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>c.classList.remove('sel'));
   openModal('mealModal');
+}
+
+// ── Edit existing meal ──────────────────────────────────────────
+async function editMeal(id) {
+  const log = (await Store.list('meal_logs')).find(l=>l.id===id);
+  if (!log) return;
+
+  const pets = await Store.list('pets');
+  const petSel = document.getElementById('mPet');
+  petSel.innerHTML = '<option value="">— Select pet —</option>';
+  if (!pets.length) {
+    document.getElementById('mPetHint').innerHTML =
+      '<a href="pets.html">Please add your pet profile first →</a>';
+  } else {
+    document.getElementById('mPetHint').textContent='';
+    pets.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; petSel.appendChild(o); });
+  }
+  petSel.value = log.petId || '';
+
+  document.getElementById('editMealId').value = id;
+  document.getElementById('mealModalTitle').textContent = '✏️ Edit Meal';
+  document.getElementById('mealSaveBtn').textContent = 'Save Changes';
+
+  document.getElementById('mDate').value = log.dateTime ? log.dateTime.slice(0,16) : nowISO();
+  document.getElementById('mFoodSearch').value = log.foodLabel || '';
+  document.getElementById('mFoodSuggestions').innerHTML = '';
+  document.getElementById('mFoodInvId').value = log.inventoryTableId || '';
+  document.getElementById('mFoodSelected').textContent = log.foodLabel ? '✓ '+log.foodLabel : '';
+  document.getElementById('mAmount').value = log.amount ?? '1';
+  document.getElementById('mNote').value = log.note || '';
+
+  const sizeSel = document.getElementById('mSize');
+  sizeSel.innerHTML = log.size ? `<option value="${log.size}">${log.size}</option>` : '<option value="">—</option>';
+
+  _mRating = log.catRating || null;
+  document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{
+    c.classList.toggle('sel', c.dataset.val === String(log.catRating));
+  });
+  _lastMatches = [];
+  _selectedInv = { invId: log.inventoryTableId||'', label: log.foodLabel||'', foodId: null };
+
+  openModal('mealModal');
+}
+
+// ── Delete meal ──────────────────────────────────────────────────
+async function deleteMeal(id) {
+  if (!confirm('Delete this meal log?')) return;
+  const log = (await Store.list('meal_logs')).find(l=>l.id===id);
+
+  // give back any inventory that was deducted for this meal
+  if (log && log.inventoryTableId) {
+    const inv = (await Store.list('inventory')).find(i=>i.id===log.inventoryTableId);
+    if (inv && inv.inventoryNumber!==null && inv.inventoryNumber!=='') {
+      await Store.update('inventory', log.inventoryTableId, { inventoryNumber: Number(inv.inventoryNumber) + Number(log.amount||0) });
+    }
+  }
+
+  await Store.remove('meal_logs', id);
+  toast('Meal log removed','warning');
+  await renderMeals();
 }
 
 let _lastMatches = [];
@@ -295,17 +365,35 @@ async function saveMeal() {
   const amount = document.getElementById('mAmount').value;
   const size   = document.getElementById('mSize').value;
   const note   = document.getElementById('mNote').value.trim();
+  const editId = document.getElementById('editMealId').value;
 
   if (!dateT||!petId||!amount) { toast('Please fill required fields','danger'); return; }
   if (!_selectedInv) { toast('Please select a food item','danger'); return; }
 
-  await Store.insert('meal_logs', {
-    dateTime: dateT, petId,
-    inventoryTableId: invId||null,
-    foodLabel: _selectedInv.label,
-    size, amount: Number(amount), catRating: _mRating, note,
-    createdDate: new Date().toISOString()
-  });
+  if (editId) {
+    // reverse whatever this log previously deducted, before applying the new deduction below
+    const oldLog = (await Store.list('meal_logs')).find(l=>l.id===editId);
+    if (oldLog && oldLog.inventoryTableId) {
+      const oldInv = (await Store.list('inventory')).find(i=>i.id===oldLog.inventoryTableId);
+      if (oldInv && oldInv.inventoryNumber!==null && oldInv.inventoryNumber!=='') {
+        await Store.update('inventory', oldLog.inventoryTableId, { inventoryNumber: Number(oldInv.inventoryNumber) + Number(oldLog.amount||0) });
+      }
+    }
+    await Store.update('meal_logs', editId, {
+      dateTime: dateT, petId,
+      inventoryTableId: invId||null,
+      foodLabel: _selectedInv.label,
+      size, amount: Number(amount), catRating: _mRating, note
+    });
+  } else {
+    await Store.insert('meal_logs', {
+      dateTime: dateT, petId,
+      inventoryTableId: invId||null,
+      foodLabel: _selectedInv.label,
+      size, amount: Number(amount), catRating: _mRating, note,
+      createdDate: new Date().toISOString()
+    });
+  }
 
   // deduct inventory if tracked
   if (invId) {
@@ -316,7 +404,7 @@ async function saveMeal() {
   }
 
   closeModal('mealModal');
-  toast('Meal logged! 🐾','success');
+  toast(editId ? 'Meal updated!' : 'Meal logged! 🐾','success');
   await renderMeals();
 }
 
