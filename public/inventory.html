@@ -112,6 +112,7 @@
 
   <!-- Step 1: brand search -->
   <div id="step1">
+    <button class="btn btn-ghost btn-full" style="margin-bottom:1rem" onclick="openScanModal()">📷 Scan Barcode</button>
     <div class="form-group">
       <label>Brand <span class="req">*</span></label>
       <select id="brandSelect" class="form-control" onchange="onBrandChange()">
@@ -239,7 +240,23 @@
 </div>
 </div>
 
+<!-- ══ SCAN BARCODE MODAL ═══════════════════════════════════ -->
+<div class="modal-backdrop" id="scanModal">
+<div class="modal">
+  <div class="modal-header">
+    <h2>📷 Scan Barcode</h2>
+    <button class="modal-close" onclick="closeScanModal()">✕</button>
+  </div>
+  <div id="scanReader" style="width:100%"></div>
+  <p style="font-size:.82rem;color:var(--text-muted);margin-top:.75rem;text-align:center">Point your camera at the barcode on the product packaging.</p>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeScanModal()">Cancel</button>
+  </div>
+</div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script>
@@ -368,7 +385,96 @@ function openAddFoodModal() {
   document.getElementById('brandSelect').value = '';
   document.getElementById('existingItems').innerHTML = '';
   document.getElementById('newItemBtn').style.display = 'none';
+  document.getElementById('fBrand').setAttribute('readonly', 'readonly');
   openModal('addFoodModal');
+}
+
+// ── Barcode scan ──────────────────────────────────────────────
+let _html5Qrcode = null;
+
+async function openScanModal() {
+  openModal('scanModal');
+  _html5Qrcode = new Html5Qrcode('scanReader');
+  try {
+    await _html5Qrcode.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 260, height: 150 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+        ],
+      },
+      onBarcodeScanned,
+      () => {}
+    );
+  } catch (err) {
+    toast('Could not access camera: ' + err, 'danger');
+    closeScanModal();
+  }
+}
+
+async function closeScanModal() {
+  if (_html5Qrcode) {
+    try { await _html5Qrcode.stop(); _html5Qrcode.clear(); } catch (e) {}
+    _html5Qrcode = null;
+  }
+  closeModal('scanModal');
+}
+
+async function onBarcodeScanned(decodedText) {
+  await closeScanModal();
+  await lookupBarcode(decodedText);
+}
+
+async function lookupBarcode(barcode) {
+  toast('Looking up product…', '');
+  try {
+    let res = await fetch(`https://world.openpetfoodfacts.org/api/v2/product/${barcode}.json`);
+    let data = await res.json();
+    if (!data.product || data.status === 0) {
+      res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+      data = await res.json();
+    }
+    if (!data.product || data.status === 0) {
+      toast('Product not found — please enter details manually', 'warning');
+      openAddFoodModal();
+      return;
+    }
+    openScannedItemForm(data.product);
+  } catch (err) {
+    toast('Lookup failed: ' + err, 'danger');
+  }
+}
+
+function openScannedItemForm(p) {
+  document.getElementById('editFoodId').value = '';
+  document.getElementById('addFoodTitle').textContent = 'Add Food Item';
+
+  const brand = (p.brands || '').split(',')[0].trim();
+  document.getElementById('brandSelect').value = '';
+  document.getElementById('fBrand').removeAttribute('readonly');
+  document.getElementById('fBrand').value = brand;
+  document.getElementById('fName').value = p.product_name || '';
+
+  const qty = p.quantity || '';
+  const m = qty.match(/([\d.]+)\s*(oz|lb|kg|g|ml)\b/i);
+  document.getElementById('fSizeNum').value = m ? m[1] : '';
+  if (m) document.getElementById('fSizeUnit').value = m[2].toLowerCase();
+  document.getElementById('fType').value = '';
+  document.getElementById('fColor').value = '';
+  document.getElementById('fPurchased').value = '';
+  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => c.classList.remove('sel'));
+  document.getElementById('fExp').value = '';
+  document.getElementById('fQty').value = '';
+
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = '';
+  openModal('addFoodModal');
+  toast('Product found! Please review and complete the details.', 'success');
 }
 
 async function onBrandChange() {
@@ -529,6 +635,9 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(m=>{
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+document.getElementById('scanModal').addEventListener('click', e=>{
+  if (e.target.id === 'scanModal') closeScanModal();
 });
 </script>
 </body>
