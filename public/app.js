@@ -97,7 +97,14 @@ function fmtDateTime(isoStr) {
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 function today() { return new Date().toISOString().slice(0, 10); }
-function nowISO() { return new Date().toISOString().slice(0, 16); }
+
+// Formats a Date/ISO-string as "YYYY-MM-DDTHH:mm" in LOCAL time, for <input type="datetime-local">.
+function toLocalInputValue(d) {
+  d = d instanceof Date ? d : new Date(d);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function nowISO() { return toLocalInputValue(new Date()); }
 
 function expClass(dateStr) {
   if (!dateStr) return 'ok';

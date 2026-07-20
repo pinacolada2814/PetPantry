@@ -262,7 +262,7 @@ async function editMeal(id) {
   document.getElementById('mealModalTitle').textContent = '✏️ Edit Meal';
   document.getElementById('mealSaveBtn').textContent = 'Save Changes';
 
-  document.getElementById('mDate').value = log.dateTime ? log.dateTime.slice(0,16) : nowISO();
+  document.getElementById('mDate').value = log.dateTime ? toLocalInputValue(log.dateTime) : nowISO();
   document.getElementById('mFoodSearch').value = log.foodLabel || '';
   document.getElementById('mFoodSuggestions').innerHTML = '';
   document.getElementById('mFoodInvId').value = log.inventoryTableId || '';
@@ -359,7 +359,8 @@ function selectRating(el) {
 }
 
 async function saveMeal() {
-  const dateT  = document.getElementById('mDate').value;
+  const dateTLocal = document.getElementById('mDate').value;
+  const dateT  = dateTLocal ? new Date(dateTLocal).toISOString() : '';
   const petId  = document.getElementById('mPet').value;
   const invId  = document.getElementById('mFoodInvId').value;
   const amount = document.getElementById('mAmount').value;
