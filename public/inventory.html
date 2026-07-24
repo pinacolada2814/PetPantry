@@ -402,6 +402,16 @@ function openAddFoodModal() {
   document.getElementById('existingItems').innerHTML = '';
   document.getElementById('newItemBtn').style.display = 'none';
   document.getElementById('fBrand').setAttribute('readonly', 'readonly');
+  document.getElementById('fBrand').value = '';
+  document.getElementById('fName').value = '';
+  document.getElementById('fType').value = '';
+  document.getElementById('fColor').value = '';
+  document.getElementById('fSizeNum').value = '';
+  document.getElementById('fSizeUnit').value = 'oz';
+  document.getElementById('fPurchased').value = '';
+  document.getElementById('fExp').value = '';
+  document.getElementById('fQty').value = '';
+  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => c.classList.remove('sel'));
   resetPhotoPicker();
   openModal('addFoodModal');
 }
