@@ -24,6 +24,7 @@ create table public.food_items (
   proteins text[] default '{}',
   color text,
   purchased text,
+  photos text[] not null default '{}',
   "createdDate" timestamptz not null default now(),
   "lastModifiedDate" timestamptz not null default now()
 );

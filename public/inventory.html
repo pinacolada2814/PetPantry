@@ -190,6 +190,12 @@
       </div>
     </div>
     <div class="form-group">
+      <label>Photos <span style="font-weight:400;text-transform:none">(up to 5)</span></label>
+      <div class="photo-grid" id="photoGrid"></div>
+      <input type="file" id="fPhotoInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotoSelect(event)"/>
+      <button type="button" class="btn btn-ghost btn-sm" id="addPhotoBtn" onclick="document.getElementById('fPhotoInput').click()">+ Add Photo</button>
+    </div>
+    <div class="form-group">
       <label>Purchased From</label>
       <input id="fPurchased" class="form-control" placeholder="e.g. Chewy, PetSmart…"/>
     </div>
@@ -335,9 +341,18 @@ async function renderInventory() {
         </div>`;
       }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
 
+      const photos = food.photos || [];
+      const cardIcon = photos.length
+        ? `<img class="card-icon-photo" src="${photos[0]}"/>`
+        : typeIcon(food.type);
+      const photoStrip = photos.length
+        ? `<div class="card-photo-strip">${photos.map(url =>
+            `<a href="${url}" target="_blank" rel="noopener"><img src="${url}"/></a>`).join('')}</div>`
+        : '';
+
       return `<div class="card">
         <div class="card-header" onclick="toggleCard('cb-${food.id}')">
-          <div class="card-icon">${typeIcon(food.type)}</div>
+          <div class="card-icon">${cardIcon}</div>
           <div class="card-title">
             <h3>${food.brand} – ${food.name}${colorDot}</h3>
             <p>${food.type} · ${sizeStr}${proteins ? ' · ' + proteins : ''}</p>
@@ -345,6 +360,7 @@ async function renderInventory() {
           <svg class="card-chevron" id="chev-${food.id}" viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="card-body" id="cb-${food.id}">
+          ${photoStrip}
           ${expHTML}
           <div style="display:flex;gap:.5rem;margin-top:.75rem">
             <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${food.brand} ${food.name}')">+ Add Expiration Date</button>
@@ -386,7 +402,46 @@ function openAddFoodModal() {
   document.getElementById('existingItems').innerHTML = '';
   document.getElementById('newItemBtn').style.display = 'none';
   document.getElementById('fBrand').setAttribute('readonly', 'readonly');
+  resetPhotoPicker();
   openModal('addFoodModal');
+}
+
+// ── Photo picker ──────────────────────────────────────────────
+let _photoItems = [];       // {existing, url?, file?, previewUrl}
+let _originalPhotoUrls = []; // photos the item had when the form opened (for diffing on save)
+
+function resetPhotoPicker() {
+  _photoItems.forEach(p => { if (!p.existing) URL.revokeObjectURL(p.previewUrl); });
+  _photoItems = [];
+  _originalPhotoUrls = [];
+  renderPhotoGrid();
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = _photoItems.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.previewUrl}"/>
+      <button type="button" class="photo-remove" onclick="removePhotoItem(${i})">✕</button>
+    </div>`).join('');
+  document.getElementById('addPhotoBtn').style.display = _photoItems.length >= 5 ? 'none' : '';
+}
+
+function removePhotoItem(i) {
+  const p = _photoItems[i];
+  if (!p.existing) URL.revokeObjectURL(p.previewUrl);
+  _photoItems.splice(i, 1);
+  renderPhotoGrid();
+}
+
+function handlePhotoSelect(e) {
+  const files = [...e.target.files];
+  e.target.value = '';
+  for (const file of files) {
+    if (_photoItems.length >= 5) { toast('Maximum 5 photos per item', 'warning'); break; }
+    _photoItems.push({ existing: false, file, previewUrl: URL.createObjectURL(file) });
+  }
+  renderPhotoGrid();
 }
 
 // ── Barcode scan ──────────────────────────────────────────────
@@ -470,6 +525,7 @@ function openScannedItemForm(p) {
   document.querySelectorAll('#proteinChips .multi-chip').forEach(c => c.classList.remove('sel'));
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
+  resetPhotoPicker();
 
   document.getElementById('step1').style.display = 'none';
   document.getElementById('step2').style.display = '';
@@ -556,6 +612,17 @@ async function saveFoodItem() {
       inventoryNumber: qty!==''? Number(qty): null});
   }
 
+  // upload any new photos, drop any removed ones, save the final list
+  if (_photoItems.length || _originalPhotoUrls.length) {
+    const finalUrls = [];
+    for (const p of _photoItems) {
+      finalUrls.push(p.existing ? p.url : await uploadFoodPhoto(food.id, p.file));
+    }
+    const removedUrls = _originalPhotoUrls.filter(u => !finalUrls.includes(u));
+    for (const u of removedUrls) { await deleteFoodPhoto(u); }
+    await Store.update('food_items', food.id, { photos: finalUrls });
+  }
+
   closeModal('addFoodModal');
   toast(editId ? 'Food item updated!':'Food item added! 🎉','success');
   await renderInventory();
@@ -580,6 +647,9 @@ async function editFood(foodId) {
   });
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
+  _photoItems = (food.photos||[]).map(url => ({ existing: true, url, previewUrl: url }));
+  _originalPhotoUrls = food.photos||[];
+  renderPhotoGrid();
   showStep2();
   openModal('addFoodModal');
 }

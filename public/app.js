@@ -74,6 +74,50 @@ const Store = {
   }
 };
 
+// ── Photo storage (Supabase Storage) ────────────────────────
+const PHOTO_BUCKET = 'food-photos';
+
+function resizeImageFile(file, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not process image')), 'image/jpeg', quality);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadFoodPhoto(foodItemId, file) {
+  const uid = Auth.currentUser().id;
+  const blob = await resizeImageFile(file);
+  const path = `${uid}/${foodItemId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+  const { error } = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' });
+  if (error) { toast(error.message, 'danger'); throw error; }
+  const { data } = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function deleteFoodPhoto(url) {
+  const marker = `/object/public/${PHOTO_BUCKET}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return;
+  const path = url.slice(idx + marker.length);
+  await sb.storage.from(PHOTO_BUCKET).remove([path]);
+}
+
 // ── Toast ────────────────────────────────────────────────────
 function toast(msg, type = '') {
   let wrap = document.querySelector('.toast-wrap');
