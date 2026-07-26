@@ -337,6 +337,7 @@ async function renderInventory() {
           ${qtyDisplay}
           <div class="exp-actions">
             <button class="btn btn-ghost btn-sm" onclick="startAdjust('${inv.id}')">Adjust</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${inv.id}')">🗑️</button>
           </div>
         </div>`;
       }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
@@ -365,6 +366,7 @@ async function renderInventory() {
           <div style="display:flex;gap:.5rem;margin-top:.75rem">
             <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${food.brand} ${food.name}')">+ Add Expiration Date</button>
             <button class="btn btn-ghost btn-sm" onclick="editFood('${food.id}')">Edit Item</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${food.id}')">Delete Item</button>
           </div>
         </div>
       </div>`;
@@ -664,6 +666,16 @@ async function editFood(foodId) {
   openModal('addFoodModal');
 }
 
+async function deleteFoodItem(foodId) {
+  const food = (await Store.list('food_items')).find(f=>f.id===foodId);
+  if (!food) return;
+  if (!confirm(`Delete "${food.brand} ${food.name}"? This also removes all of its expiration/inventory entries.`)) return;
+  for (const url of (food.photos||[])) { await deleteFoodPhoto(url); }
+  await Store.remove('food_items', foodId);
+  toast('Food item deleted', 'warning');
+  await renderInventory();
+}
+
 // ── Adjust inline ─────────────────────────────────────────────
 async function startAdjust(invId) {
   const row = document.getElementById('exprow-'+invId);
@@ -684,6 +696,13 @@ async function saveAdjust(invId) {
   const val = document.getElementById('adj-'+invId).value;
   await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
   toast('Inventory updated!','success');
+  await renderInventory();
+}
+
+async function deleteInventoryEntry(invId) {
+  if (!confirm('Delete this expiration/inventory entry?')) return;
+  await Store.remove('inventory', invId);
+  toast('Entry removed', 'warning');
   await renderInventory();
 }
 
