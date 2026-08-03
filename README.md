@@ -1,6 +1,7 @@
 # 🐾 Pet Pantry
 
 > A modern, mobile-first cat food inventory & meal logging web app — built for GitHub Pages, backed by Supabase.
+https://pinacolada2814.github.io/PetPantry/
 
 ## Features
 
