@@ -9,20 +9,20 @@
 <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-<div class="auth-wrap">
+<main class="auth-wrap">
   <div class="auth-card">
-    <div class="auth-logo">🐾</div>
+    <div class="auth-logo" aria-hidden="true">🐾</div>
     <h1>Pet <span style="color:var(--accent)">Pantry</span></h1>
     <p class="auth-sub">Track your pet's food & meals — all in one place.</p>
 
     <!-- LOGIN FORM -->
     <div id="loginForm">
       <div class="form-group">
-        <label>Email <span class="req">*</span></label>
+        <label for="loginEmail">Email <span class="req">*</span></label>
         <input id="loginEmail" type="email" class="form-control" placeholder="you@email.com"/>
       </div>
       <div class="form-group">
-        <label>Password <span class="req">*</span></label>
+        <label for="loginPass">Password <span class="req">*</span></label>
         <input id="loginPass" type="password" class="form-control" placeholder="••••••••"/>
       </div>
       <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
@@ -32,22 +32,22 @@
     <!-- REGISTER FORM -->
     <div id="registerForm" style="display:none">
       <div class="form-group">
-        <label>Name <span class="req">*</span></label>
+        <label for="regName">Name <span class="req">*</span></label>
         <input id="regName" type="text" class="form-control" placeholder="Your name"/>
       </div>
       <div class="form-group">
-        <label>Email <span class="req">*</span></label>
+        <label for="regEmail">Email <span class="req">*</span></label>
         <input id="regEmail" type="email" class="form-control" placeholder="you@email.com"/>
       </div>
       <div class="form-group">
-        <label>Password <span class="req">*</span></label>
+        <label for="regPass">Password <span class="req">*</span></label>
         <input id="regPass" type="password" class="form-control" placeholder="Create a password"/>
       </div>
       <button class="btn btn-primary btn-full" onclick="doRegister()">Create Account</button>
       <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuth()">Sign In</a></p>
     </div>
   </div>
-</div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>

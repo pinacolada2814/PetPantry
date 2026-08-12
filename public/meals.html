@@ -16,7 +16,7 @@
   <div class="topnav-spacer"></div>
   <div class="nav-user">
     <strong class="nav-user-name"></strong>
-    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none" aria-label="My Profile"></a>
   </div>
 </nav>
 <aside class="sidebar">
@@ -35,22 +35,22 @@
 </aside>
 
 <div class="sidebar-main">
-<div class="page-content">
+<main class="page-content">
 
   <div class="page-header">
     <h1>🍽️ Meal Logs</h1>
-    <button class="btn btn-accent" onclick="openMealModal()">🐱 Meal Time!</button>
   </div>
 
   <!-- Filters -->
   <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;align-items:center">
     <div class="filter-chips" style="margin:0">
-      <button class="chip active" data-dr="week" onclick="setDateRange(this,'week')">This Week</button>
-      <button class="chip" data-dr="today" onclick="setDateRange(this,'today')">Today</button>
-      <button class="chip" data-dr="month" onclick="setDateRange(this,'month')">This Month</button>
-      <button class="chip" data-dr="year" onclick="setDateRange(this,'year')">This Year</button>
-      <button class="chip" data-dr="all" onclick="setDateRange(this,'all')">All</button>
+      <button class="chip active" data-dr="week" aria-pressed="true" onclick="setDateRange(this,'week')">This Week</button>
+      <button class="chip" data-dr="today" aria-pressed="false" onclick="setDateRange(this,'today')">Today</button>
+      <button class="chip" data-dr="month" aria-pressed="false" onclick="setDateRange(this,'month')">This Month</button>
+      <button class="chip" data-dr="year" aria-pressed="false" onclick="setDateRange(this,'year')">This Year</button>
+      <button class="chip" data-dr="all" aria-pressed="false" onclick="setDateRange(this,'all')">All</button>
     </div>
+    <label for="limitSel" class="sr-only">Number of meals to show</label>
     <select id="limitSel" class="form-control" style="width:auto;padding:.3rem .6rem;font-size:.82rem" onchange="renderMeals()">
       <option value="10">Show 10</option>
       <option value="25">Show 25</option>
@@ -59,9 +59,11 @@
   </div>
 
   <div id="mealList"></div>
+</main>
 </div>
 </div>
-</div>
+
+<button class="fab" onclick="openMealModal()" aria-label="Log a meal">🐱</button>
 
 <nav class="tab-bar">
   <a href="inventory.html" data-page="inventory">
@@ -77,20 +79,20 @@
 
 <!-- ══ LOG MEAL MODAL ══════════════════════════════════════ -->
 <div class="modal-backdrop" id="mealModal">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mealModalTitle">
   <div class="modal-header">
     <h2 id="mealModalTitle">🐱 Log a Meal</h2>
-    <button class="modal-close" onclick="closeModal('mealModal')">✕</button>
+    <button class="modal-close" onclick="closeModal('mealModal')" aria-label="Close">✕</button>
   </div>
   <input type="hidden" id="editMealId"/>
 
   <div class="form-group">
-    <label>Date &amp; Time <span class="req">*</span></label>
+    <label for="mDate">Date &amp; Time <span class="req">*</span></label>
     <input id="mDate" type="datetime-local" class="form-control"/>
   </div>
 
   <div class="form-group">
-    <label>Pet <span class="req">*</span></label>
+    <label for="mPet">Pet <span class="req">*</span></label>
     <select id="mPet" class="form-control">
       <option value="">— Select pet —</option>
     </select>
@@ -98,8 +100,8 @@
   </div>
 
   <div class="form-group">
-    <label>Food <span class="req">*</span></label>
-    <input id="mFoodSearch" class="form-control" placeholder="Type to search food…" oninput="renderFoodSuggestions()"/>
+    <label for="mFoodSearch">Food <span class="req">*</span></label>
+    <input id="mFoodSearch" class="form-control" placeholder="Type to search food…" oninput="renderFoodSuggestionsDebounced()"/>
     <div id="mFoodSuggestions" style="margin-top:.35rem"></div>
     <input type="hidden" id="mFoodInvId"/>
     <p class="form-hint" id="mFoodSelected" style="color:var(--primary);font-weight:700"></p>
@@ -107,30 +109,30 @@
 
   <div class="form-row">
     <div class="form-group">
-      <label>Serving Size</label>
+      <label for="mSize">Serving Size</label>
       <select id="mSize" class="form-control">
         <option value="">— Select a food first —</option>
       </select>
     </div>
     <div class="form-group">
-      <label>Amount <span class="req">*</span></label>
+      <label for="mAmount">Amount <span class="req">*</span></label>
       <input id="mAmount" type="number" min="0" step="any" class="form-control" placeholder="1"/>
     </div>
   </div>
 
-  <div class="form-group">
-    <label>Cat Rating</label>
+  <fieldset class="form-group">
+    <legend class="form-legend">Cat Rating</legend>
     <div class="multi-chip-wrap" id="ratingChips">
-      <span class="multi-chip" data-val="1" onclick="selectRating(this)">⭐ 1</span>
-      <span class="multi-chip" data-val="2" onclick="selectRating(this)">⭐ 2</span>
-      <span class="multi-chip" data-val="3" onclick="selectRating(this)">⭐ 3</span>
-      <span class="multi-chip" data-val="4" onclick="selectRating(this)">⭐ 4</span>
-      <span class="multi-chip" data-val="5" onclick="selectRating(this)">⭐ 5</span>
+      <button type="button" class="multi-chip" data-val="1" aria-pressed="false" onclick="selectRating(this)">⭐ 1</button>
+      <button type="button" class="multi-chip" data-val="2" aria-pressed="false" onclick="selectRating(this)">⭐ 2</button>
+      <button type="button" class="multi-chip" data-val="3" aria-pressed="false" onclick="selectRating(this)">⭐ 3</button>
+      <button type="button" class="multi-chip" data-val="4" aria-pressed="false" onclick="selectRating(this)">⭐ 4</button>
+      <button type="button" class="multi-chip" data-val="5" aria-pressed="false" onclick="selectRating(this)">⭐ 5</button>
     </div>
-  </div>
+  </fieldset>
 
   <div class="form-group">
-    <label>Notes</label>
+    <label for="mNote">Notes</label>
     <textarea id="mNote" class="form-control" rows="2" placeholder="Anything to note…"></textarea>
   </div>
 
@@ -155,21 +157,22 @@
 let dateRange = 'week';
 let _mRating  = null;
 let _selectedInv = null;
+const renderFoodSuggestionsDebounced = debounce(renderFoodSuggestions, 200);
 
 function setDateRange(btn, val) {
   dateRange = val;
-  document.querySelectorAll('[data-dr]').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('[data-dr]').forEach(c=>{ c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
   btn.classList.add('active');
+  btn.setAttribute('aria-pressed','true');
   renderMeals();
 }
 
 async function renderMeals() {
   const limit = Number(document.getElementById('limitSel').value);
-  const pets  = await Store.list('pets');
-  const foods = await Store.list('food_items');
-  const invs  = await Store.list('inventory');
-  let logs    = (await Store.list('meal_logs'))
-                  .sort((a,b)=> new Date(b.dateTime)-new Date(a.dateTime));
+  const [pets, foods, invs, allLogs] = await Promise.all([
+    Store.list('pets'), Store.list('food_items'), Store.list('inventory'), Store.list('meal_logs')
+  ]);
+  let logs = allLogs.sort((a,b)=> new Date(b.dateTime)-new Date(a.dateTime));
 
   // date filter
   const now = new Date(); const d = new Date();
@@ -202,8 +205,8 @@ async function renderMeals() {
       <div>
         <div class="mc-date">${fmtDateTime(log.dateTime)}</div>
         <div class="mc-actions">
-          <button class="btn btn-ghost btn-sm btn-icon" onclick="editMeal('${log.id}')">✏️</button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMeal('${log.id}')">🗑️</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="editMeal('${log.id}')" aria-label="Edit meal log">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMeal('${log.id}')" aria-label="Delete meal log">🗑️</button>
         </div>
       </div>
     </div>`;
@@ -237,7 +240,7 @@ async function openMealModal() {
   document.getElementById('mSize').innerHTML = '<option value="">— Select a food first —</option>';
   document.getElementById('mNote').value='';
   _mRating=null; _selectedInv=null; _lastMatches=[];
-  document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{ c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   openModal('mealModal');
 }
 
@@ -275,7 +278,9 @@ async function editMeal(id) {
 
   _mRating = log.catRating || null;
   document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{
-    c.classList.toggle('sel', c.dataset.val === String(log.catRating));
+    const sel = c.dataset.val === String(log.catRating);
+    c.classList.toggle('sel', sel);
+    c.setAttribute('aria-pressed', sel ? 'true' : 'false');
   });
   _lastMatches = [];
   _selectedInv = { invId: log.inventoryTableId||'', label: log.foodLabel||'', foodId: null };
@@ -285,7 +290,11 @@ async function editMeal(id) {
 
 // ── Delete meal ──────────────────────────────────────────────────
 async function deleteMeal(id) {
-  if (!confirm('Delete this meal log?')) return;
+  const ok = await confirmModal({
+    title: 'Delete meal log?',
+    message: 'Delete this meal log? Any inventory it deducted will be restored automatically.'
+  });
+  if (!ok) return;
   const log = (await Store.list('meal_logs')).find(l=>l.id===id);
 
   // give back any inventory that was deducted for this meal
@@ -304,9 +313,9 @@ async function deleteMeal(id) {
 let _lastMatches = [];
 
 async function renderFoodSuggestions() {
-  const q   = document.getElementById('mFoodSearch').value.toLowerCase();
-  const foods = await Store.list('food_items');
-  const invs  = (await Store.list('inventory')).filter(i=>
+  const q = document.getElementById('mFoodSearch').value.toLowerCase();
+  const [foods, allInvs] = await Promise.all([Store.list('food_items'), Store.list('inventory')]);
+  const invs = allInvs.filter(i=>
     (i.inventoryNumber===null || i.inventoryNumber==='' || Number(i.inventoryNumber)>0));
 
   const el = document.getElementById('mFoodSuggestions');
@@ -354,8 +363,9 @@ function selectFood(matchIdx) {
 
 function selectRating(el) {
   _mRating = el.dataset.val;
-  document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{ c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   el.classList.add('sel');
+  el.setAttribute('aria-pressed','true');
 }
 
 async function saveMeal() {
@@ -409,11 +419,7 @@ async function saveMeal() {
   await renderMeals();
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(m=>{
-  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
-});
+// openModal/closeModal (focus-managed, with backdrop-click-to-close) live in app.js.
 </script>
 </body>
 </html>

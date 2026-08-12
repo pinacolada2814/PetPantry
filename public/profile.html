@@ -16,7 +16,7 @@
   <div class="topnav-spacer"></div>
   <div class="nav-user">
     <strong class="nav-user-name"></strong>
-    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none" aria-label="My Profile"></a>
   </div>
 </nav>
 <aside class="sidebar">
@@ -35,7 +35,7 @@
 </aside>
 
 <div class="sidebar-main">
-<div class="page-content">
+<main class="page-content">
 
   <div class="page-header">
     <h1>👤 My Profile</h1>
@@ -45,7 +45,7 @@
   <div style="text-align:center;margin-bottom:1.5rem">
     <div style="width:80px;height:80px;border-radius:50%;background:var(--primary);
       color:#fff;display:flex;align-items:center;justify-content:center;
-      font-size:2rem;font-weight:900;margin:0 auto .75rem" id="bigAvatar"></div>
+      font-size:2rem;font-weight:900;margin:0 auto .75rem" id="bigAvatar" aria-hidden="true"></div>
     <div style="font-size:.75rem;color:var(--text-muted)">User ID: <code id="userId" style="font-size:.72rem"></code></div>
     <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Member since: <span id="memberSince"></span></div>
   </div>
@@ -53,15 +53,15 @@
   <!-- Edit form -->
   <div class="card" style="padding:1rem">
     <div class="form-group">
-      <label>Name <span class="req">*</span></label>
+      <label for="profName">Name <span class="req">*</span></label>
       <input id="profName" class="form-control"/>
     </div>
     <div class="form-group">
-      <label>Email <span class="req">*</span></label>
+      <label for="profEmail">Email <span class="req">*</span></label>
       <input id="profEmail" type="email" class="form-control"/>
     </div>
     <div class="form-group">
-      <label>New Password <span style="font-weight:400;text-transform:none">(leave blank to keep current)</span></label>
+      <label for="profPass">New Password <span style="font-weight:400;text-transform:none">(leave blank to keep current)</span></label>
       <input id="profPass" type="password" class="form-control" placeholder="••••••••"/>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -75,7 +75,7 @@
     <button class="btn btn-ghost btn-full" onclick="doLogout()">Sign Out</button>
   </div>
 
-</div>
+</main>
 </div>
 </div>
 
@@ -112,9 +112,10 @@ async function loadProfile() {
   document.getElementById('profPass').value  = '';
 
   // stats
-  const foods = (await Store.list('food_items')).length;
-  const meals = (await Store.list('meal_logs')).length;
-  const pets  = (await Store.list('pets')).length;
+  const [foodsList, mealsList, petsList] = await Promise.all([
+    Store.list('food_items'), Store.list('meal_logs'), Store.list('pets')
+  ]);
+  const foods = foodsList.length, meals = mealsList.length, pets = petsList.length;
   document.getElementById('profStats').innerHTML = `
     <div class="stat-chip"><div class="sc-val">${pets}</div><div class="sc-lbl">Pets</div></div>
     <div class="stat-chip"><div class="sc-val">${foods}</div><div class="sc-lbl">Foods</div></div>
