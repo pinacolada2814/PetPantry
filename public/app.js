@@ -165,6 +165,107 @@ function expLabel(dateStr) {
   return `${diff}d left`;
 }
 
+// ── Debounce ─────────────────────────────────────────────────
+function debounce(fn, wait = 250) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
+
+// ── Modal helpers (focus-managed) ───────────────────────────
+// Tracks open modals so Escape/Tab apply to the topmost one, and restores
+// focus to whatever triggered the modal when it closes.
+const _modalStack = [];
+const _modalTriggers = {};
+
+function _focusableEls(container) {
+  return [...container.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter(el => el.offsetParent !== null);
+}
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  _modalTriggers[id] = document.activeElement;
+  modal.classList.add('open');
+  _modalStack.push(id);
+  const focusables = _focusableEls(modal);
+  (focusables[0] || modal).focus({ preventScroll: true });
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('open');
+  const idx = _modalStack.indexOf(id);
+  if (idx !== -1) _modalStack.splice(idx, 1);
+  const trigger = _modalTriggers[id];
+  if (trigger && trigger.focus) trigger.focus({ preventScroll: true });
+  delete _modalTriggers[id];
+}
+
+document.addEventListener('keydown', e => {
+  if (!_modalStack.length) return;
+  const topId = _modalStack[_modalStack.length - 1];
+  const modal = document.getElementById(topId);
+  if (!modal) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeModal(topId); return; }
+  if (e.key === 'Tab') {
+    const focusables = _focusableEls(modal);
+    if (!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+// ── Confirm modal (replaces bare confirm()) ─────────────────
+// Returns a Promise<boolean>. Reuses one dialog, states real consequences
+// instead of a generic browser prompt, and is keyboard/focus-managed via
+// the same openModal/closeModal machinery as every other modal.
+function confirmModal({ title = 'Are you sure?', message = '', confirmLabel = 'Delete', danger = true } = {}) {
+  return new Promise(resolve => {
+    let wrap = document.getElementById('impConfirmModal');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'modal-backdrop';
+      wrap.id = 'impConfirmModal';
+      wrap.innerHTML = `
+        <div class="modal" style="max-width:400px" role="dialog" aria-modal="true" aria-labelledby="impConfirmTitle" aria-describedby="impConfirmMsg">
+          <div class="modal-header"><h2 id="impConfirmTitle"></h2></div>
+          <p id="impConfirmMsg" style="color:var(--text-muted);font-size:.9rem;line-height:1.5"></p>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" id="impConfirmCancel">Cancel</button>
+            <button type="button" class="btn" id="impConfirmOk"></button>
+          </div>
+        </div>`;
+      document.body.appendChild(wrap);
+    }
+    wrap.querySelector('#impConfirmTitle').textContent = title;
+    wrap.querySelector('#impConfirmMsg').textContent = message;
+    const okBtn = wrap.querySelector('#impConfirmOk');
+    okBtn.textContent = confirmLabel;
+    okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+    const cancelBtn = wrap.querySelector('#impConfirmCancel');
+
+    function cleanup(result) {
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      closeModal('impConfirmModal');
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    openModal('impConfirmModal');
+  });
+}
+
 // ── Nav highlight ─────────────────────────────────────────────
 function highlightNav(pageId) {
   document.querySelectorAll('[data-page]').forEach(el => {

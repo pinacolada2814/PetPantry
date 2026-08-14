@@ -15,7 +15,7 @@
 :root {
   --pink:       #f9a8d4;
   --pink-l:     #fce7f3;
-  --pink-d:     #ec4899;
+  --pink-d:     #c2255c;
   --purple:     #c084fc;
   --purple-l:   #f3e8ff;
   --purple-d:   #9333ea;
@@ -28,7 +28,7 @@
   --yellow:     #fef08a;
   --cream:      #fffbf7;
   --text:       #3b1f4a;
-  --text-muted: #9d7bb0;
+  --text-muted: #7a5d94;
   --white:      #ffffff;
   --radius:     20px;
   --radius-lg:  32px;
@@ -45,8 +45,15 @@ body {
   background: var(--cream);
   color: var(--text);
   overflow-x: hidden;
-  cursor: none; /* custom cursor */
 }
+/* Custom cursor only replaces the pointer once JS confirms a fine pointer
+   is present and motion isn't reduced — see the cursor script below. If JS
+   never runs, the native cursor stays visible instead of vanishing. */
+body.custom-cursor-active,
+body.custom-cursor-active .hamburger,
+body.custom-cursor-active .btn-primary-lg,
+body.custom-cursor-active .btn-ghost-lg,
+body.custom-cursor-active .btn-white { cursor: none; }
 
 /* ── Custom paw cursor ── */
 .cursor {
@@ -134,7 +141,7 @@ nav.scrolled { box-shadow: var(--shadow); }
 .nav-cta:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 24px rgba(200,100,200,.4) !important; }
 
 /* mobile nav */
-.hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: none; }
+.hamburger { display: none; background: none; border: none; font-size: 1.5rem; }
 @media (max-width: 600px) {
   .nav-links { display: none; flex-direction: column; position: absolute;
     top: 100%; left: 0; right: 0; background: var(--cream);
@@ -207,7 +214,6 @@ nav.scrolled { box-shadow: var(--shadow); }
   box-shadow: 0 6px 24px rgba(200,100,200,.35);
   text-decoration: none;
   transition: transform var(--transition), box-shadow var(--transition);
-  cursor: none;
 }
 .btn-primary-lg:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(200,100,200,.45); }
 
@@ -219,7 +225,6 @@ nav.scrolled { box-shadow: var(--shadow); }
   border: 2px solid var(--purple);
   text-decoration: none;
   transition: transform var(--transition), border-color var(--transition);
-  cursor: none;
 }
 .btn-ghost-lg:hover { transform: translateY(-3px); border-color: var(--purple-d); }
 
@@ -261,9 +266,9 @@ nav.scrolled { box-shadow: var(--shadow); }
   display: flex; align-items: center; gap: .4rem;
   animation: floatBadge 3s ease-in-out infinite alternate;
 }
-.hero-float.f1 { top: 8%; left: -10%; animation-delay: 0s; }
-.hero-float.f2 { bottom: 18%; right: -12%; animation-delay: .8s; }
-.hero-float.f3 { top: 55%; left: -14%; animation-delay: 1.4s; }
+.hero-float.f1 { top: 8%; left: -2%; animation-delay: 0s; }
+.hero-float.f2 { bottom: 18%; right: -2%; animation-delay: .8s; }
+.hero-float.f3 { top: 55%; left: -2%; animation-delay: 1.4s; }
 @keyframes floatBadge {
   from { transform: translateY(0); }
   to   { transform: translateY(-8px); }
@@ -416,7 +421,7 @@ nav.scrolled { box-shadow: var(--shadow); }
   transition: transform var(--transition);
 }
 .testi-card:hover { transform: translateY(-4px); }
-.testi-stars { font-size: 1rem; margin-bottom: .75rem; color: #f59e0b; }
+.testi-stars { font-size: 1rem; margin-bottom: .75rem; color: #b45309; }
 .testi-quote {
   font-size: .95rem; color: var(--text); line-height: 1.7;
   margin-bottom: 1.25rem; font-style: italic;
@@ -430,7 +435,7 @@ nav.scrolled { box-shadow: var(--shadow); }
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--pink);
 }
-.testi-author h4 { font-size: .9rem; font-weight: 800; }
+.testi-author h3 { font-size: .9rem; font-weight: 800; }
 .testi-author p  { font-size: .75rem; color: var(--text-muted); }
 
 /* ═══════════════════════════════════════
@@ -463,7 +468,6 @@ nav.scrolled { box-shadow: var(--shadow); }
   padding: .9rem 2.25rem; border-radius: 99px;
   text-decoration: none; box-shadow: 0 6px 24px rgba(0,0,0,.15);
   transition: transform var(--transition), box-shadow var(--transition);
-  cursor: none;
 }
 .btn-white:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,.2); }
 
@@ -492,6 +496,19 @@ footer .footer-logo {
   .testi-section { padding: 3.5rem 1.25rem; }
   .cta-section { padding: 3.5rem 1.25rem; }
 }
+
+/* ═══════════════════════════════════════
+   REDUCED MOTION
+═══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .cursor, .cursor-ring { display: none !important; }
+  .paw-bg { display: none !important; }
+  .hero-img-blob, .hero-img, .hero-float, .step, .feat-card, .testi-card,
+  .nav-cta, .btn-primary-lg, .btn-ghost-lg, .btn-white {
+    animation: none !important; transition: none !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
 </style>
 </head>
 <body>
@@ -506,7 +523,7 @@ footer .footer-logo {
 <!-- ══ NAV ══════════════════════════════════ -->
 <nav id="mainNav">
   <a class="nav-logo" href="#">🐾 Pet Pantry</a>
-  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">☰</button>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">☰</button>
   <div class="nav-links" id="navLinks">
     <a href="#features">Features</a>
     <a href="#how">How It Works</a>
@@ -514,6 +531,7 @@ footer .footer-logo {
 <a href="app.html" class="nav-cta">Get Started for Free 🐱</a>  </div>
 </nav>
 
+<main>
 <!-- ══ HERO ══════════════════════════════════ -->
 <section class="hero">
   <div class="hero-inner">
@@ -527,7 +545,7 @@ footer .footer-logo {
     </div>
     <div class="hero-img-wrap reveal">
       <div class="hero-img-blob"></div>
-      <img src="fenty.jpg" alt="Fenty the cat, Pet Pantry mascot" class="hero-img"/>
+      <img src="fenty.jpg" alt="Fenty the cat, Pet Pantry mascot" class="hero-img" width="675" height="900" loading="eager"/>
       <div class="hero-float f1">🥫 12 cans in stock</div>
       <div class="hero-float f2">⭐ Fenty gave it 5 stars</div>
       <div class="hero-float f3">📅 Exp: Jun 2027</div>
@@ -613,7 +631,7 @@ footer .footer-logo {
       <p class="testi-quote">"I used to buy 6 cans of the same flavor we already had. Now I actually check Pet Pantry before shopping. Life. Changed."</p>
       <div class="testi-author">
         <div class="testi-avatar">🐱</div>
-        <div><h4>Fenty's Mom</h4><p>American Curl cat parent 🐾</p></div>
+        <div><h3>Fenty's Mom</h3><p>American Curl cat parent 🐾</p></div>
       </div>
     </div>
     <div class="testi-card reveal">
@@ -621,7 +639,7 @@ footer .footer-logo {
       <p class="testi-quote">"Meow meow meow meow meow. Meow meow meow meow. Meow. (Translation: finally, a 5-star Weruva logging experience.)"</p>
       <div class="testi-author">
         <div class="testi-avatar">😸</div>
-        <div><h4>Fenty</h4><p>Chief Taste Tester & CEO</p></div>
+        <div><h3>Fenty</h3><p>Chief Taste Tester & CEO</p></div>
       </div>
     </div>
     <div class="testi-card reveal">
@@ -629,7 +647,7 @@ footer .footer-logo {
       <p class="testi-quote">"I used to forget which proteins my cat preferred. Now I have a full log with ratings. My cat is thriving. I am thriving. 10/10."</p>
       <div class="testi-author">
         <div class="testi-avatar">🐈</div>
-        <div><h4>A Very Organized Cat Parent</h4><p>Multi-cat household survivor</p></div>
+        <div><h3>A Very Organized Cat Parent</h3><p>Multi-cat household survivor</p></div>
       </div>
     </div>
   </div>
@@ -640,6 +658,7 @@ footer .footer-logo {
   <h2>Ready to organize your cat's pantry? 🐾</h2>
   <p>Free forever. No app store. No subscriptions. Just open your browser and go.</p>
 <a href="app.html" class="btn-white">Get Started for Free 🌸</a></section>
+</main>
 
 <!-- ══ FOOTER ═════════════════════════════ -->
 <footer>
@@ -649,29 +668,39 @@ footer .footer-logo {
 </footer>
 
 <script>
-// ── Custom cursor ──────────────────────────────────
-const cursor     = document.getElementById('cursor');
-const cursorRing = document.getElementById('cursorRing');
-document.addEventListener('mousemove', e => {
-  cursor.style.left     = e.clientX + 'px';
-  cursor.style.top      = e.clientY + 'px';
-  cursorRing.style.left = e.clientX + 'px';
-  cursorRing.style.top  = e.clientY + 'px';
-});
+// ── Custom cursor (skip on touch devices and for reduced-motion users;
+//    the native cursor stays visible unless this actually runs) ──
+if (window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.body.classList.add('custom-cursor-active');
+  const cursor     = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left     = e.clientX + 'px';
+    cursor.style.top      = e.clientY + 'px';
+    cursorRing.style.left = e.clientX + 'px';
+    cursorRing.style.top  = e.clientY + 'px';
+  });
+} else {
+  document.getElementById('cursor').style.display = 'none';
+  document.getElementById('cursorRing').style.display = 'none';
+}
 
-// ── Floating paws ──────────────────────────────────
-const pawBg = document.getElementById('pawBg');
-const paws  = ['🐾','🐾','🌸','✨','🐾','💜','🐾'];
-for (let i = 0; i < 18; i++) {
-  const s = document.createElement('span');
-  s.textContent = paws[i % paws.length];
-  s.style.cssText = `
-    left: ${Math.random()*100}%;
-    animation-duration: ${8 + Math.random()*12}s;
-    animation-delay: ${-Math.random()*15}s;
-    font-size: ${1 + Math.random()*1.5}rem;
-  `;
-  pawBg.appendChild(s);
+// ── Floating paws (skip for reduced-motion users) ───
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const pawBg = document.getElementById('pawBg');
+  const paws  = ['🐾','🐾','🌸','✨','🐾','💜','🐾'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('span');
+    s.textContent = paws[i % paws.length];
+    s.style.cssText = `
+      left: ${Math.random()*100}%;
+      animation-duration: ${8 + Math.random()*12}s;
+      animation-delay: ${-Math.random()*15}s;
+      font-size: ${1 + Math.random()*1.5}rem;
+    `;
+    pawBg.appendChild(s);
+  }
 }
 
 // ── Scroll reveal ──────────────────────────────────
@@ -679,6 +708,10 @@ const observer = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+// Fallback: never leave content stuck invisible if the observer doesn't fire.
+setTimeout(() => {
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+}, 3000);
 
 // ── Nav scroll shadow ──────────────────────────────
 window.addEventListener('scroll', () => {
@@ -687,7 +720,8 @@ window.addEventListener('scroll', () => {
 
 // ── Mobile menu ────────────────────────────────────
 function toggleMenu() {
-  document.getElementById('navLinks').classList.toggle('open');
+  const open = document.getElementById('navLinks').classList.toggle('open');
+  document.querySelector('.hamburger').setAttribute('aria-expanded', String(open));
 }
 </script>
 </body>

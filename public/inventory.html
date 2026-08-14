@@ -17,7 +17,7 @@
   <div class="topnav-spacer"></div>
   <div class="nav-user">
     <strong class="nav-user-name"></strong>
-    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none" aria-label="My Profile"></a>
   </div>
 </nav>
 
@@ -48,7 +48,7 @@
 </aside>
 
 <div class="sidebar-main">
-  <div class="page-content">
+  <main class="page-content">
 
     <!-- Header -->
     <div class="page-header">
@@ -62,23 +62,25 @@
     <!-- Search + Filter -->
     <div class="search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="Search brand or name…" oninput="renderInventory()"/>
+      <label for="searchInput" class="sr-only">Search brand or name</label>
+      <input type="text" id="searchInput" placeholder="Search brand or name…" oninput="renderInventoryDebounced()"/>
     </div>
     <div class="filter-chips" id="typeFilter">
-      <button class="chip active" data-type="" onclick="setTypeFilter(this,'')">All</button>
-      <button class="chip" data-type="dry" onclick="setTypeFilter(this,'dry')">Dry</button>
-      <button class="chip" data-type="wet" onclick="setTypeFilter(this,'wet')">Wet</button>
-      <button class="chip" data-type="raw" onclick="setTypeFilter(this,'raw')">Raw</button>
-      <button class="chip" data-type="freeze dried" onclick="setTypeFilter(this,'freeze dried')">Freeze Dried</button>
-      <button class="chip" data-type="all home-cooked" onclick="setTypeFilter(this,'all home-cooked')">Home-Cooked</button>
-      <button class="chip" data-type="other" onclick="setTypeFilter(this,'other')">Other</button>
+      <button class="chip active" data-type="" aria-pressed="true" onclick="setTypeFilter(this,'')">All</button>
+      <button class="chip" data-type="dry" aria-pressed="false" onclick="setTypeFilter(this,'dry')">Dry</button>
+      <button class="chip" data-type="wet" aria-pressed="false" onclick="setTypeFilter(this,'wet')">Wet</button>
+      <button class="chip" data-type="raw" aria-pressed="false" onclick="setTypeFilter(this,'raw')">Raw</button>
+      <button class="chip" data-type="freeze dried" aria-pressed="false" onclick="setTypeFilter(this,'freeze dried')">Freeze Dried</button>
+      <button class="chip" data-type="all home-cooked" aria-pressed="false" onclick="setTypeFilter(this,'all home-cooked')">Home-Cooked</button>
+      <button class="chip" data-type="other" aria-pressed="false" onclick="setTypeFilter(this,'other')">Other</button>
     </div>
 
     <!-- Inventory list -->
+    <h2 class="sr-only">Your food items</h2>
     <div id="inventoryList"></div>
 
   </div>
-</div>
+</main>
 </div>
 
 <!-- Mobile bottom tab bar -->
@@ -104,17 +106,17 @@
 
 <!-- ══ ADD FOOD MODAL ══════════════════════════════════════ -->
 <div class="modal-backdrop" id="addFoodModal">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="addFoodTitle">
   <div class="modal-header">
     <h2 id="addFoodTitle">Add Food Item</h2>
-    <button class="modal-close" onclick="closeModal('addFoodModal')">✕</button>
+    <button class="modal-close" onclick="closeModal('addFoodModal')" aria-label="Close">✕</button>
   </div>
 
   <!-- Step 1: brand search -->
   <div id="step1">
     <button class="btn btn-ghost btn-full" style="margin-bottom:1rem" onclick="openScanModal()">📷 Scan Barcode</button>
     <div class="form-group">
-      <label>Brand <span class="req">*</span></label>
+      <label for="brandSelect">Brand <span class="req">*</span></label>
       <select id="brandSelect" class="form-control" onchange="onBrandChange()">
         <option value="">— Select Brand —</option>
         <option>home-made</option><option>Weruva</option><option>Weruva BFF</option>
@@ -127,7 +129,7 @@
         <option>Nulo</option><option>Royal Canin</option><option>other</option>
       </select>
     </div>
-    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">
+    <p class="form-hint" style="margin-bottom:.75rem">
       Existing items for this brand will appear below. Pick one to add inventory, or add a new item.
     </p>
     <div id="existingItems"></div>
@@ -138,16 +140,17 @@
   <div id="step2" style="display:none">
     <input type="hidden" id="editFoodId"/>
     <div class="form-group">
-      <label>Brand</label>
+      <label for="fBrand">Brand <span class="req">*</span></label>
       <input id="fBrand" class="form-control" readonly/>
+      <p class="form-hint" id="fBrandHint" style="display:none">Type the real brand name.</p>
     </div>
     <div class="form-group">
-      <label>Name <span class="req">*</span></label>
+      <label for="fName">Name <span class="req">*</span></label>
       <input id="fName" class="form-control" placeholder="e.g. Paw Lickin' Chicken Pâté"/>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Type <span class="req">*</span></label>
+        <label for="fType">Type <span class="req">*</span></label>
         <select id="fType" class="form-control">
           <option value="">— Select —</option>
           <option>dry</option><option>wet</option><option>raw</option>
@@ -155,7 +158,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Can/Bag Color</label>
+        <label for="fColor">Can/Bag Color</label>
         <select id="fColor" class="form-control">
           <option value="">— None —</option>
           <option>red</option><option>yellow</option><option>green</option>
@@ -166,49 +169,49 @@
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1.5">
-        <label>Size <span class="req">*</span></label>
+        <label for="fSizeNum">Size <span class="req">*</span></label>
         <input id="fSizeNum" type="number" min="0" step="any" class="form-control" placeholder="5.5"/>
       </div>
       <div class="form-group">
-        <label>Unit <span class="req">*</span></label>
+        <label for="fSizeUnit">Unit <span class="req">*</span></label>
         <select id="fSizeUnit" class="form-control">
           <option>oz</option><option>g</option><option>kg</option><option>lb</option><option>ml</option>
         </select>
       </div>
     </div>
-    <div class="form-group">
-      <label>Protein Type <span class="req">*</span> <span style="font-weight:400;text-transform:none">(select all that apply)</span></label>
+    <fieldset class="form-group">
+      <legend class="form-legend">Protein Type <span class="req">*</span> <span style="font-weight:400;text-transform:none">(select all that apply)</span></legend>
       <div class="multi-chip-wrap" id="proteinChips">
-        <span class="multi-chip" data-val="chicken" onclick="toggleChip(this)">🐔 Chicken</span>
-        <span class="multi-chip" data-val="duck"    onclick="toggleChip(this)">🦆 Duck</span>
-        <span class="multi-chip" data-val="rabbit"  onclick="toggleChip(this)">🐇 Rabbit</span>
-        <span class="multi-chip" data-val="beef"    onclick="toggleChip(this)">🐄 Beef</span>
-        <span class="multi-chip" data-val="tuna"    onclick="toggleChip(this)">🐟 Tuna</span>
-        <span class="multi-chip" data-val="salmon"  onclick="toggleChip(this)">🐠 Salmon</span>
-        <span class="multi-chip" data-val="all other fish" onclick="toggleChip(this)">🐡 Other Fish</span>
-        <span class="multi-chip" data-val="shrimp"  onclick="toggleChip(this)">🦐 Shrimp</span>
+        <button type="button" class="multi-chip" data-val="chicken" aria-pressed="false" onclick="toggleChip(this)">🐔 Chicken</button>
+        <button type="button" class="multi-chip" data-val="duck"    aria-pressed="false" onclick="toggleChip(this)">🦆 Duck</button>
+        <button type="button" class="multi-chip" data-val="rabbit"  aria-pressed="false" onclick="toggleChip(this)">🐇 Rabbit</button>
+        <button type="button" class="multi-chip" data-val="beef"    aria-pressed="false" onclick="toggleChip(this)">🐄 Beef</button>
+        <button type="button" class="multi-chip" data-val="tuna"    aria-pressed="false" onclick="toggleChip(this)">🐟 Tuna</button>
+        <button type="button" class="multi-chip" data-val="salmon"  aria-pressed="false" onclick="toggleChip(this)">🐠 Salmon</button>
+        <button type="button" class="multi-chip" data-val="all other fish" aria-pressed="false" onclick="toggleChip(this)">🐡 Other Fish</button>
+        <button type="button" class="multi-chip" data-val="shrimp"  aria-pressed="false" onclick="toggleChip(this)">🦐 Shrimp</button>
       </div>
-    </div>
+    </fieldset>
     <div class="form-group">
-      <label>Photos <span style="font-weight:400;text-transform:none">(up to 5)</span></label>
+      <label id="photosLabel">Photos <span style="font-weight:400;text-transform:none">(up to 5)</span></label>
       <div class="photo-grid" id="photoGrid"></div>
-      <input type="file" id="fPhotoInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotoSelect(event)"/>
+      <input type="file" id="fPhotoInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotoSelect(event)" aria-labelledby="photosLabel"/>
       <button type="button" class="btn btn-ghost btn-sm" id="addPhotoBtn" onclick="document.getElementById('fPhotoInput').click()">+ Add Photo</button>
     </div>
     <div class="form-group">
-      <label>Purchased From</label>
+      <label for="fPurchased">Purchased From</label>
       <input id="fPurchased" class="form-control" placeholder="e.g. Chewy, PetSmart…"/>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Expiration Date</label>
+        <label for="fExp">Expiration Date</label>
         <input id="fExp" type="text" class="form-control" placeholder="MM/DD/YY"
           pattern="\d{1,2}/\d{1,2}/\d{2,4}"
           oninput="formatDateInput(this)"/>
         <p class="form-hint">Type directly: MM/DD/YY</p>
       </div>
       <div class="form-group">
-        <label>Inventory Qty</label>
+        <label for="fQty">Inventory Qty</label>
         <input id="fQty" type="number" min="0" class="form-control" placeholder="Optional"/>
         <p class="form-hint">Leave blank to skip tracking</p>
       </div>
@@ -224,19 +227,19 @@
 
 <!-- ══ ADD EXPIRATION DATE MODAL ══════════════════════════ -->
 <div class="modal-backdrop" id="addExpModal">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="addExpTitle">
   <div class="modal-header">
-    <h2>Add Expiration / Inventory</h2>
-    <button class="modal-close" onclick="closeModal('addExpModal')">✕</button>
+    <h2 id="addExpTitle">Add Expiration / Inventory</h2>
+    <button class="modal-close" onclick="closeModal('addExpModal')" aria-label="Close">✕</button>
   </div>
-  <p id="addExpFoodName" style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem"></p>
+  <p id="addExpFoodName" class="form-hint" style="margin-bottom:1rem;font-weight:700;color:var(--text)"></p>
   <div class="form-group">
-    <label>Expiration Date</label>
+    <label for="newExpDate">Expiration Date</label>
     <input id="newExpDate" type="text" class="form-control" placeholder="MM/DD/YY"
       oninput="formatDateInput(this)"/>
   </div>
   <div class="form-group">
-    <label>Inventory Qty</label>
+    <label for="newExpQty">Inventory Qty</label>
     <input id="newExpQty" type="number" min="0" class="form-control" placeholder="Optional — leave blank to skip"/>
   </div>
   <div class="modal-footer">
@@ -248,10 +251,10 @@
 
 <!-- ══ SCAN BARCODE MODAL ═══════════════════════════════════ -->
 <div class="modal-backdrop" id="scanModal">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="scanModalTitle">
   <div class="modal-header">
-    <h2>📷 Scan Barcode</h2>
-    <button class="modal-close" onclick="closeScanModal()">✕</button>
+    <h2 id="scanModalTitle">📷 Scan Barcode</h2>
+    <button class="modal-close" onclick="closeScanModal()" aria-label="Close">✕</button>
   </div>
   <div id="scanReader" style="width:100%"></div>
   <p style="font-size:.82rem;color:var(--text-muted);margin-top:.75rem;text-align:center">Point your camera at the barcode on the product packaging.</p>
@@ -280,11 +283,11 @@ const BRANDS = ['home-made','Weruva','Weruva BFF','Instinct','Tiki Cat','Wellnes
 
 let typeFilter = '';
 let _addExpFoodId = null;
+const renderInventoryDebounced = debounce(renderInventory, 250);
 
 // ── Render stats ──────────────────────────────────────────────
 async function renderStats() {
-  const invs = await Store.list('inventory');
-  const foods = await Store.list('food_items');
+  const [invs, foods] = await Promise.all([Store.list('inventory'), Store.list('food_items')]);
   const tracked = invs.filter(i => i.inventoryNumber !== null && i.inventoryNumber !== '');
   const total = tracked.reduce((s, i) => s + (Number(i.inventoryNumber)||0), 0);
   document.getElementById('statRow').innerHTML = `
@@ -295,13 +298,13 @@ async function renderStats() {
 
 // ── Render inventory list ─────────────────────────────────────
 async function renderInventory() {
-  const q     = (document.getElementById('searchInput').value || '').toLowerCase();
-  let foods   = await Store.list('food_items');
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const [allFoods, invAll] = await Promise.all([Store.list('food_items'), Store.list('inventory')]);
+  let foods = allFoods;
   if (typeFilter) foods = foods.filter(f => f.type === typeFilter);
   if (q) foods = foods.filter(f =>
     f.brand.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
 
-  const invAll = await Store.list('inventory');
   const el = document.getElementById('inventoryList');
 
   if (!foods.length) {
@@ -337,22 +340,23 @@ async function renderInventory() {
           ${qtyDisplay}
           <div class="exp-actions">
             <button class="btn btn-ghost btn-sm" onclick="startAdjust('${inv.id}')">Adjust</button>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${inv.id}')">🗑️</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${inv.id}')" aria-label="Delete expiration entry">🗑️</button>
           </div>
         </div>`;
       }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
 
       const photos = food.photos || [];
+      const foodLabel = `${food.brand} ${food.name}`;
       const cardIcon = photos.length
-        ? `<img class="card-icon-photo" src="${photos[0]}"/>`
+        ? `<img class="card-icon-photo" src="${photos[0]}" alt="${foodLabel}"/>`
         : typeIcon(food.type);
       const photoStrip = photos.length
-        ? `<div class="card-photo-strip">${photos.map(url =>
-            `<a href="${url}" target="_blank" rel="noopener"><img src="${url}"/></a>`).join('')}</div>`
+        ? `<div class="card-photo-strip">${photos.map((url,i) =>
+            `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${foodLabel} photo ${i+1}"/></a>`).join('')}</div>`
         : '';
 
       return `<div class="card">
-        <div class="card-header" onclick="toggleCard('cb-${food.id}')">
+        <div class="card-header" id="ch-${food.id}" role="button" tabindex="0" aria-expanded="false" aria-controls="cb-${food.id}" onclick="toggleCard('cb-${food.id}')" onkeydown="handleCardKeydown(event,'cb-${food.id}')">
           <div class="card-icon">${cardIcon}</div>
           <div class="card-title">
             <h3>${food.brand} – ${food.name}${colorDot}</h3>
@@ -364,7 +368,7 @@ async function renderInventory() {
           ${photoStrip}
           ${expHTML}
           <div style="display:flex;gap:.5rem;margin-top:.75rem">
-            <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${food.brand} ${food.name}')">+ Add Expiration Date</button>
+            <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${foodLabel}')">+ Add Expiration Date</button>
             <button class="btn btn-ghost btn-sm" onclick="editFood('${food.id}')">Edit Item</button>
             <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${food.id}')">Delete Item</button>
           </div>
@@ -383,15 +387,22 @@ function typeIcon(t) {
 function toggleCard(id) {
   const body = document.getElementById(id);
   const chev = document.getElementById(id.replace('cb-','chev-'));
-  body.classList.toggle('open');
-  if (chev) chev.classList.toggle('open');
+  const header = document.getElementById(id.replace('cb-','ch-'));
+  const nowOpen = !body.classList.contains('open');
+  body.classList.toggle('open', nowOpen);
+  if (chev) chev.classList.toggle('open', nowOpen);
+  if (header) header.setAttribute('aria-expanded', String(nowOpen));
+}
+function handleCardKeydown(e, id) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(id); }
 }
 
 // ── Type filter ───────────────────────────────────────────────
 function setTypeFilter(btn, val) {
   typeFilter = val;
-  document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-chips .chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
   btn.classList.add('active');
+  btn.setAttribute('aria-pressed','true');
   renderInventory();
 }
 
@@ -405,6 +416,7 @@ function openAddFoodModal() {
   document.getElementById('newItemBtn').style.display = 'none';
   document.getElementById('fBrand').setAttribute('readonly', 'readonly');
   document.getElementById('fBrand').value = '';
+  document.getElementById('fBrandHint').style.display = 'none';
   document.getElementById('fName').value = '';
   document.getElementById('fType').value = '';
   document.getElementById('fColor').value = '';
@@ -413,7 +425,7 @@ function openAddFoodModal() {
   document.getElementById('fPurchased').value = '';
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
-  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => { c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   resetPhotoPicker();
   openModal('addFoodModal');
 }
@@ -525,6 +537,7 @@ function openScannedItemForm(p) {
   document.getElementById('brandSelect').value = '';
   document.getElementById('fBrand').removeAttribute('readonly');
   document.getElementById('fBrand').value = brand;
+  document.getElementById('fBrandHint').style.display = '';
   document.getElementById('fName').value = p.product_name || '';
 
   const qty = p.quantity || '';
@@ -534,7 +547,7 @@ function openScannedItemForm(p) {
   document.getElementById('fType').value = '';
   document.getElementById('fColor').value = '';
   document.getElementById('fPurchased').value = '';
-  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('#proteinChips .multi-chip').forEach(c => { c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
   resetPhotoPicker();
@@ -566,12 +579,26 @@ function showStep1() {
 function showStep2() {
   const brand = document.getElementById('brandSelect').value;
   if (!brand) { toast('Please select a brand first','danger'); return; }
-  document.getElementById('fBrand').value = brand;
+  const fBrand = document.getElementById('fBrand');
+  const fBrandHint = document.getElementById('fBrandHint');
+  if (brand === 'other') {
+    fBrand.removeAttribute('readonly');
+    fBrand.value = '';
+    fBrand.placeholder = 'Enter brand name';
+    fBrandHint.style.display = '';
+  } else {
+    fBrand.setAttribute('readonly', 'readonly');
+    fBrand.value = brand;
+    fBrandHint.style.display = 'none';
+  }
   document.getElementById('step1').style.display = 'none';
   document.getElementById('step2').style.display = '';
 }
 
-function toggleChip(el) { el.classList.toggle('sel'); }
+function toggleChip(el) {
+  el.classList.toggle('sel');
+  el.setAttribute('aria-pressed', el.classList.contains('sel') ? 'true' : 'false');
+}
 
 function formatDateInput(inp) {
   // auto-insert slashes MM/DD/YY
@@ -646,8 +673,12 @@ async function editFood(foodId) {
   if (!food) return;
   document.getElementById('editFoodId').value = foodId;
   document.getElementById('addFoodTitle').textContent = 'Edit Food Item';
-  document.getElementById('brandSelect').value = food.brand;
-  document.getElementById('fBrand').value = food.brand;
+  const knownBrand = BRANDS.includes(food.brand);
+  document.getElementById('brandSelect').value = knownBrand ? food.brand : 'other';
+  const fBrand = document.getElementById('fBrand');
+  if (knownBrand) { fBrand.setAttribute('readonly','readonly'); document.getElementById('fBrandHint').style.display='none'; }
+  else { fBrand.removeAttribute('readonly'); document.getElementById('fBrandHint').style.display=''; }
+  fBrand.value = food.brand;
   document.getElementById('fName').value  = food.name;
   document.getElementById('fType').value  = food.type;
   document.getElementById('fColor').value = food.color||'';
@@ -655,7 +686,9 @@ async function editFood(foodId) {
   document.getElementById('fSizeUnit').value = food.sizeUnit;
   document.getElementById('fPurchased').value= food.purchased||'';
   document.querySelectorAll('#proteinChips .multi-chip').forEach(c=>{
-    c.classList.toggle('sel',(food.proteins||[]).includes(c.dataset.val));
+    const sel = (food.proteins||[]).includes(c.dataset.val);
+    c.classList.toggle('sel', sel);
+    c.setAttribute('aria-pressed', sel ? 'true' : 'false');
   });
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
@@ -669,7 +702,11 @@ async function editFood(foodId) {
 async function deleteFoodItem(foodId) {
   const food = (await Store.list('food_items')).find(f=>f.id===foodId);
   if (!food) return;
-  if (!confirm(`Delete "${food.brand} ${food.name}"? This also removes all of its expiration/inventory entries.`)) return;
+  const ok = await confirmModal({
+    title: 'Delete food item?',
+    message: `Delete "${food.brand} ${food.name}"? This also removes all of its expiration/inventory entries. Past meal logs for this food keep their saved label, but you won't be able to log new meals against it.`
+  });
+  if (!ok) return;
   for (const url of (food.photos||[])) { await deleteFoodPhoto(url); }
   await Store.remove('food_items', foodId);
   toast('Food item deleted', 'warning');
@@ -694,13 +731,30 @@ async function startAdjust(invId) {
 
 async function saveAdjust(invId) {
   const val = document.getElementById('adj-'+invId).value;
-  await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
+  const updated = await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
+  const row = document.getElementById('exprow-'+invId);
+  if (row) {
+    const cls = expClass(updated.expirationDate);
+    const lbl = expLabel(updated.expirationDate);
+    const qtyDisplay = updated.inventoryNumber !== null && updated.inventoryNumber !== ''
+      ? `<span class="exp-qty">${updated.inventoryNumber} units</span>`
+      : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
+    row.innerHTML = `
+      <span class="exp-badge ${cls}">${lbl}</span>
+      <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(updated.expirationDate)}</span>
+      ${qtyDisplay}
+      <div class="exp-actions">
+        <button class="btn btn-ghost btn-sm" onclick="startAdjust('${updated.id}')">Adjust</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${updated.id}')" aria-label="Delete expiration entry">🗑️</button>
+      </div>`;
+  }
+  await renderStats();
   toast('Inventory updated!','success');
-  await renderInventory();
 }
 
 async function deleteInventoryEntry(invId) {
-  if (!confirm('Delete this expiration/inventory entry?')) return;
+  const ok = await confirmModal({ title: 'Delete entry?', message: 'Delete this expiration/inventory entry? This cannot be undone.' });
+  if (!ok) return;
   await Store.remove('inventory', invId);
   toast('Entry removed', 'warning');
   await renderInventory();
@@ -729,12 +783,8 @@ async function saveNewExp() {
   await renderInventory();
 }
 
-// ── Modal helpers ─────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(m=>{
-  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
-});
+// openModal/closeModal (focus-managed) live in app.js and apply globally.
+// scanModal needs its own backdrop-click handler since closing it must also stop the camera.
 document.getElementById('scanModal').addEventListener('click', e=>{
   if (e.target.id === 'scanModal') closeScanModal();
 });

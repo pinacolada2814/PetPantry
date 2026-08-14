@@ -16,7 +16,7 @@
   <div class="topnav-spacer"></div>
   <div class="nav-user">
     <strong class="nav-user-name"></strong>
-    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none"></a>
+    <a href="profile.html" class="avatar-chip nav-user-avatar" style="text-decoration:none" aria-label="My Profile"></a>
   </div>
 </nav>
 <aside class="sidebar">
@@ -35,15 +35,16 @@
 </aside>
 
 <div class="sidebar-main">
-<div class="page-content">
+<main class="page-content">
 
   <div class="page-header">
     <h1>🐱 My Pets</h1>
     <button class="btn btn-primary btn-sm" onclick="openPetModal()">+ Add Pet</button>
   </div>
+  <h2 class="sr-only">Your pets</h2>
   <div id="petList"></div>
 
-</div>
+</main>
 </div>
 </div>
 
@@ -61,19 +62,19 @@
 
 <!-- ══ PET MODAL ══════════════════════════════════════════ -->
 <div class="modal-backdrop" id="petModal">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="petModalTitle">
   <div class="modal-header">
     <h2 id="petModalTitle">Add Pet</h2>
-    <button class="modal-close" onclick="closeModal('petModal')">✕</button>
+    <button class="modal-close" onclick="closeModal('petModal')" aria-label="Close">✕</button>
   </div>
   <input type="hidden" id="editPetId"/>
   <div class="form-group">
-    <label>Name <span class="req">*</span></label>
+    <label for="pName">Name <span class="req">*</span></label>
     <input id="pName" class="form-control" placeholder="e.g. Fenty"/>
   </div>
   <div class="form-row">
     <div class="form-group">
-      <label>Gender</label>
+      <label for="pGender">Gender</label>
       <select id="pGender" class="form-control">
         <option value="">— —</option>
         <option value="F">Female</option>
@@ -81,12 +82,12 @@
       </select>
     </div>
     <div class="form-group">
-      <label>Age</label>
+      <label for="pAge">Age</label>
       <input id="pAge" class="form-control" placeholder="e.g. 3 years"/>
     </div>
   </div>
   <div class="form-group">
-    <label>Breed</label>
+    <label for="pBreed">Breed</label>
     <input id="pBreed" class="form-control" placeholder="e.g. American Curl"/>
   </div>
   <div class="modal-footer">
@@ -127,8 +128,8 @@ async function renderPets() {
         <p>${meta||'No details added'}</p>
       </div>
       <div class="pet-actions">
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="editPet('${p.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePet('${p.id}')">🗑️</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="editPet('${p.id}')" aria-label="Edit ${p.name}">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePet('${p.id}','${p.name}')" aria-label="Delete ${p.name}">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -176,18 +177,18 @@ async function savePet() {
   await renderPets();
 }
 
-async function deletePet(id) {
-  if (!confirm('Delete this pet?')) return;
+async function deletePet(id, name) {
+  const ok = await confirmModal({
+    title: 'Delete pet?',
+    message: `Delete ${name || 'this pet'}? Meal logs already recorded for them will show as "Unknown pet" and can't be reassigned to another pet.`
+  });
+  if (!ok) return;
   await Store.remove('pets', id);
   toast('Pet removed','warning');
   await renderPets();
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(m=>{
-  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
-});
+// openModal/closeModal (focus-managed, with backdrop-click-to-close) live in app.js.
 </script>
 </body>
 </html>
