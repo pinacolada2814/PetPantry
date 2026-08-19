@@ -25,7 +25,7 @@
         <label for="loginPass">Password <span class="req">*</span></label>
         <input id="loginPass" type="password" class="form-control" placeholder="••••••••"/>
       </div>
-      <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
+      <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()">Sign In</button>
       <p class="auth-toggle">New here? <a href="#" onclick="toggleAuth()">Create an account</a></p>
     </div>
 
@@ -69,8 +69,16 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   if (!email || !pass) { toast('Please fill all fields', 'danger'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
   const { error } = await Auth.login(email, pass);
-  if (error) { toast(error, 'danger'); return; }
+  if (error) {
+    toast(error, 'danger');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    return;
+  }
   window.location.href = 'inventory.html';
 }
 
