@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pet Pantry – Demo</title>
+</head>
+<body>
+<script>
+// Single canonical demo entry point, so /demo is a link worth sharing on
+// its own. Sets the same flag app.js checks everywhere else, then hands
+// off to the real app — no separate demo build to keep in sync.
+localStorage.setItem('pp_demo_mode', '1');
+window.location.replace('../inventory.html');
+</script>
+</body>
+</html>

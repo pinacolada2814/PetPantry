@@ -30,7 +30,7 @@
   <div class="s-divider"></div>
   <a class="s-link" href="profile.html" data-page="profile">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
-  <a class="s-link" href="app.html" onclick="Auth.logout()">
+  <a class="s-link" href="app.html" onclick="signOut(event)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out</a>
 </aside>
 
@@ -72,7 +72,7 @@
 
   <!-- Sign out -->
   <div style="margin-top:1rem">
-    <button class="btn btn-ghost btn-full" onclick="doLogout()">Sign Out</button>
+    <button class="btn btn-ghost btn-full" onclick="signOut()">Sign Out</button>
   </div>
 
 </main>
@@ -128,21 +128,11 @@ async function saveProfile() {
   const pass  = document.getElementById('profPass').value;
   if (!name||!email) { toast('Name and email required','danger'); return; }
 
-  const patch = { data: { name } };
-  if (email !== Auth.currentUser().email) patch.email = email;
-  if (pass) patch.password = pass;
-
-  const { data, error } = await sb.auth.updateUser(patch);
-  if (error) { toast(error.message,'danger'); return; }
-  Auth._user = mapUser(data.user);
+  const { error } = await Auth.updateProfile({ name, email, password: pass });
+  if (error) { toast(error,'danger'); return; }
   toast('Profile saved!','success');
   await loadProfile();
   renderUserChip();
-}
-
-async function doLogout() {
-  await Auth.logout();
-  window.location.href='app.html';
 }
 </script>
 </body>

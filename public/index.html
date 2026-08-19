@@ -528,6 +528,7 @@ footer .footer-logo {
     <a href="#features">Features</a>
     <a href="#how">How It Works</a>
     <a href="#testimonials">Reviews</a>
+    <a href="demo/" id="navDemoLink">Try Demo</a>
 <a href="app.html" class="nav-cta">Get Started for Free 🐱</a>  </div>
 </nav>
 
@@ -540,7 +541,7 @@ footer .footer-logo {
       <h1>Your cat's pantry,<br/><span class="highlight">finally organized.</span></h1>
       <p>Never scramble during a sale again. Pet Pantry helps you track your cat's food inventory, log every meal, and always know exactly what's in stock — all in one adorable app.</p>
       <div class="hero-btns">
-<a href="app.html" class="btn-primary-lg">Start for Free 🐾</a>        <a href="#features" class="btn-ghost-lg">See Features ✨</a>
+<a href="app.html" class="btn-primary-lg">Start for Free 🐾</a>        <a href="demo/" class="btn-ghost-lg" id="heroDemoLink">Try the Demo 👀</a>
       </div>
     </div>
     <div class="hero-img-wrap reveal">
@@ -657,7 +658,9 @@ footer .footer-logo {
 <section class="cta-section reveal">
   <h2>Ready to organize your cat's pantry? 🐾</h2>
   <p>Free forever. No app store. No subscriptions. Just open your browser and go.</p>
-<a href="app.html" class="btn-white">Get Started for Free 🌸</a></section>
+<a href="app.html" class="btn-white">Get Started for Free 🌸</a>
+  <p style="margin-top:1rem"><a href="demo/" style="color:rgba(255,255,255,.85);font-weight:700;text-decoration:underline">or try the demo first, no signup needed →</a></p>
+</section>
 </main>
 
 <!-- ══ FOOTER ═════════════════════════════ -->
@@ -722,6 +725,13 @@ window.addEventListener('scroll', () => {
 function toggleMenu() {
   const open = document.getElementById('navLinks').classList.toggle('open');
   document.querySelector('.hamburger').setAttribute('aria-expanded', String(open));
+}
+
+// ── Demo mode ────────────────────────────────────
+// Entering demo happens at /demo (public/demo/index.html), which sets
+// this same key app.js checks everywhere. Just reflect the state here.
+if (localStorage.getItem('pp_demo_mode') === '1') {
+  document.querySelectorAll('#navDemoLink, #heroDemoLink').forEach(el => { el.textContent = 'Continue Demo →'; });
 }
 </script>
 </body>
