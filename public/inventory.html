@@ -265,7 +265,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script>
@@ -469,10 +468,33 @@ function handlePhotoSelect(e) {
 }
 
 // ── Barcode scan ──────────────────────────────────────────────
+// Loaded on demand (not at page load) since it's a large library only
+// needed if the user opens the scan modal.
 let _html5Qrcode = null;
+let _html5QrcodeLoad = null;
+function loadHtml5Qrcode() {
+  if (window.Html5Qrcode) return Promise.resolve();
+  if (!_html5QrcodeLoad) {
+    _html5QrcodeLoad = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  return _html5QrcodeLoad;
+}
 
 async function openScanModal() {
   openModal('scanModal');
+  try {
+    await loadHtml5Qrcode();
+  } catch (err) {
+    toast('Could not load barcode scanner', 'danger');
+    closeModal('scanModal');
+    return;
+  }
   _html5Qrcode = new Html5Qrcode('scanReader');
   try {
     await _html5Qrcode.start(
