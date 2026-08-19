@@ -14,6 +14,7 @@
     <div class="auth-logo" aria-hidden="true">🐾</div>
     <h1>Pet <span style="color:var(--accent)">Pantry</span></h1>
     <p class="auth-sub">Track your pet's food & meals — all in one place.</p>
+    <p style="margin:-.5rem 0 1rem"><a href="index.html" style="font-size:.82rem;color:var(--text-muted)">← Back to home</a></p>
 
     <!-- LOGIN FORM -->
     <div id="loginForm">
@@ -54,6 +55,9 @@
 <script src="app.js"></script>
 <script>
 (async () => {
+  // Demo sessions exit via signOut() in app.js before ever reaching this
+  // page; this is just a safety net for stray navigation (back/forward).
+  if (isDemoMode()) exitDemoMode();
   await Auth.init();
   if (Auth.isLoggedIn()) window.location.href = 'inventory.html';
 })();

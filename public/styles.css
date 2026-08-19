@@ -66,6 +66,26 @@ textarea:focus-visible, [tabindex]:focus-visible {
 .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
 .sidebar { display: none; }
 
+/* ---------- Demo mode banner ---------- */
+.demo-banner {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  font-weight: 800;
+  font-size: .82rem;
+  text-align: center;
+  padding: .6rem 1rem;
+  display: flex; align-items: center; justify-content: center;
+  gap: .6rem; flex-wrap: wrap;
+  position: relative; z-index: 300;
+}
+.demo-banner .db-btn {
+  background: #fff; color: var(--primary-d);
+  border: none; border-radius: 99px;
+  padding: .3rem .8rem; font-weight: 800; font-size: .76rem;
+  cursor: pointer; text-decoration: none; display: inline-block;
+}
+.demo-banner .db-btn:hover { opacity: .88; }
+
 /* ---------- Top Nav ---------- */
 .topnav {
   background: var(--surface);
