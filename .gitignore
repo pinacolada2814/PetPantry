@@ -1,0 +1,3 @@
+# Cached Supabase session for scripts/pm.py — personal credentials, never commit.
+.pm-token.json
+.DS_Store
