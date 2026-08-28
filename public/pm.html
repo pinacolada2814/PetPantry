@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Pet Pantry – PM Tracker</title>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#F8F7FC;
+  --surface:#FFFFFF;
+  --ink:#1E1433;
+  --ink-soft:#7B6A8D;
+  --primary:#7C3AED;
+  --primary-dark:#6D28D9;
+  --accent:#EC4899;
+  --accent-soft:#F3E8FF;
+  --rust:#DC2626;
+  --warning:#D97706;
+  --success:#16A34A;
+  --border:#E8E0F0;
+  --shelf:#F3E8FF;
+  font-family:'Inter',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+.app{max-width:1100px;margin:0 auto;padding:28px 20px 60px;}
+
+/* header */
+.hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{width:44px;height:44px;border-radius:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mark svg{width:26px;height:26px;}
+.brand h1{font-family:'Inter',sans-serif;font-weight:800;font-size:26px;margin:0;color:var(--primary-dark);letter-spacing:-0.01em;}
+.brand p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.save-indicator{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
+.save-dot{width:6px;height:6px;border-radius:50%;background:var(--success);transition:opacity .3s;}
+.reset-btn{font-family:'JetBrains Mono',monospace;font-size:11px;background:none;border:1px solid var(--border);color:var(--ink-soft);padding:6px 10px;border-radius:6px;cursor:pointer;}
+.reset-btn:hover{border-color:var(--rust);color:var(--rust);}
+
+/* nav - shelf tags */
+.nav{display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap;}
+.tab{
+  font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:700;
+  background:var(--accent-soft);color:var(--ink-soft);
+  border:none;padding:9px 18px;cursor:pointer;
+  border-radius:20px;
+  transition:background .15s, color .15s;
+}
+.tab:hover{color:var(--ink);background:#EADCFB;}
+.tab.active{background:var(--primary);color:#fff;}
+
+.panel{display:none;animation:fade .2s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* shared card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 12px rgba(90,60,140,.10);}
+.card h3{font-family:'Inter',sans-serif;font-size:16px;font-weight:800;margin:0 0 4px;color:var(--primary-dark);}
+.card .hint{font-size:12px;color:var(--ink-soft);margin:0 0 12px;}
+textarea, input[type=text], input[type=date], select{
+  width:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+  background:#FBFAF5;border:1px solid var(--border);border-radius:6px;padding:9px 11px;
+  resize:vertical;line-height:1.5;
+}
+textarea:focus, input:focus, select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+label.field{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.03em;}
+label.field:first-child{margin-top:0;}
+
+/* overview grid */
+.ov-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+@media(max-width:720px){.ov-grid{grid-template-columns:1fr;}}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.pill.green{background:#E1EEE4;color:var(--success);}
+.pill.yellow{background:#FEF3E2;color:var(--warning);}
+.pill.red{background:#F5DEDA;color:var(--rust);}
+.health-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.health-row button{border:1px solid var(--border);background:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;color:var(--ink-soft);}
+.health-row button.sel-green{background:var(--success);color:#fff;border-color:var(--success);}
+.health-row button.sel-yellow{background:var(--warning);color:#fff;border-color:var(--warning);}
+.health-row button.sel-red{background:var(--rust);color:#fff;border-color:var(--rust);}
+.link-row a{color:var(--primary);font-size:13px;text-decoration:none;border-bottom:1px solid var(--accent-soft);}
+.link-row a:hover{border-color:var(--accent);}
+
+/* buttons */
+.btn{font-family:"Inter",sans-serif;font-weight:700;font-size:13px;background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .15s;}
+.btn:hover{background:var(--primary-dark);}
+.btn.ghost{background:none;color:var(--primary);border:1px solid var(--primary);}
+.btn.ghost:hover{background:var(--primary);color:#fff;}
+.btn.small{padding:5px 10px;font-size:12px;}
+.btn.danger{background:none;color:var(--rust);border:1px solid var(--rust);}
+.btn.danger:hover{background:var(--rust);color:#fff;}
+
+/* kanban */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media(max-width:860px){.board{grid-template-columns:1fr 1fr;}}
+@media(max-width:520px){.board{grid-template-columns:1fr;}}
+.shelf-col{background:var(--shelf);border-radius:10px;padding:12px;background-image:repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0px, rgba(0,0,0,0.025) 1px, transparent 1px, transparent 34px);}
+.shelf-col h4{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;}
+.shelf-col h4 span.count{background:var(--surface);padding:1px 7px;border-radius:10px;font-weight:600;}
+.jar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 12px rgba(90,60,140,.08);position:relative;transition:box-shadow .15s;}
+.jar:hover{border-color:var(--accent);}
+.jar-title{font-size:13.5px;font-weight:600;margin:0 0 4px;color:var(--ink);}
+.jar-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;}
+.tag.prio-high{background:#F5DEDA;color:var(--rust);}
+.tag.prio-med{background:#FEF3E2;color:var(--warning);}
+.tag.prio-low{background:#E1EEE4;color:var(--success);}
+.tag.pts{background:var(--accent-soft);color:var(--primary-dark);}
+.add-jar-btn{width:100%;background:none;border:1px dashed var(--border);color:var(--ink-soft);border-radius:6px;padding:8px;font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.add-jar-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* timeline */
+.tl-item{display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--border);}
+.tl-item:last-child{border-bottom:none;}
+.tl-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);padding-top:2px;}
+.tl-title{font-weight:600;font-size:14px;margin:0 0 4px;}
+.tl-desc{font-size:13px;color:var(--ink-soft);margin:0;}
+.tl-status{font-size:10px;}
+
+/* notes/meeting log */
+.note-entry{border-bottom:1px solid var(--border);padding:14px 0;}
+.note-entry:last-child{border-bottom:none;}
+.note-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;}
+.note-title{font-weight:600;font-size:14px;}
+.note-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);}
+.note-body{font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.5;}
+
+.empty{text-align:center;padding:32px 10px;color:var(--ink-soft);font-size:13px;}
+.empty strong{display:block;color:var(--ink);font-family:'Inter',sans-serif;font-weight:800;font-size:16px;margin-bottom:4px;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(35,45,36,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal{background:var(--surface);border-radius:14px;padding:22px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 4px 24px rgba(90,60,140,.16);}
+.modal h3{margin-top:0;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.two-col{grid-template-columns:1fr;}}
+
+/* password gate */
+#app{display:none;}
+.pm-gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+.pm-gate-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 26px;max-width:340px;width:100%;box-shadow:0 4px 24px rgba(90,60,140,.16);text-align:center;}
+.pm-gate-card .brand-mark{width:44px;height:44px;border-radius:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.pm-gate-card .brand-mark svg{width:26px;height:26px;}
+.pm-gate-card h2{font-family:'Inter',sans-serif;font-weight:800;font-size:19px;margin:0 0 4px;color:var(--primary-dark);}
+.pm-gate-card p{font-size:13px;color:var(--ink-soft);margin:0 0 16px;}
+.pm-gate-card input{margin-bottom:12px;}
+.pm-gate-error{color:var(--rust);font-size:12.5px;margin:10px 0 0;display:none;}
+.pm-gate-error.show{display:block;}
+</style>
+
+<div class="pm-gate" id="pmGate">
+  <div class="pm-gate-card">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9Z" stroke="#FFFFFF" stroke-width="1.6"/><path d="M4 10 6 4h12l2 6" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14v3M12 14v3M15 14v3" stroke="#EC4899" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
+    <h2>PetPantry PM</h2>
+    <p>Internal tracker &mdash; sign in with your Pet Pantry account.</p>
+    <label for="pmGateEmail" class="sr-only" style="position:absolute;left:-9999px;">Email</label>
+    <input type="email" id="pmGateEmail" placeholder="Email" autocomplete="username"/>
+    <label for="pmGatePass" class="sr-only" style="position:absolute;left:-9999px;">Password</label>
+    <input type="password" id="pmGatePass" placeholder="Password" autocomplete="current-password"/>
+    <button class="btn" id="pmGateSubmit" style="width:100%;">Sign in</button>
+    <p class="pm-gate-error" id="pmGateError" role="alert" aria-live="assertive">Incorrect email or password.</p>
+  </div>
+</div>
+
+<div class="app" id="app">
+
+  <div class="hdr">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9Z" stroke="#FFFFFF" stroke-width="1.6"/><path d="M4 10 6 4h12l2 6" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14v3M12 14v3M15 14v3" stroke="#EC4899" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <h1>PetPantry PM</h1>
+        <p>Product tracker &mdash; PRD, backlog, roadmap &amp; notes</p>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="save-indicator"><span class="save-dot" id="saveDot"></span><span id="saveText">Loading&hellip;</span></div>
+      <button class="reset-btn" id="resetBtn">Reset data</button>
+    </div>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="prd">PRD</button>
+    <button class="tab" data-tab="backlog">Backlog</button>
+    <button class="tab" data-tab="roadmap">Roadmap</button>
+    <button class="tab" data-tab="notes">Notes &amp; Enhancements</button>
+    <button class="tab" data-tab="scratch">Scratchpad</button>
+  </div>
+
+  <div id="panels"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // The tracker row is keyed by the signed-in user's id; RLS scopes it to them.
+  let USER_ID = null;
+  let state = null;
+  let saveTimer = null;
+
+  function defaultState(){
+    return {
+      overview:{
+        name:'Pet Pantry',
+        tagline:'A mobile-first cat food inventory & meal logging web app — static HTML/CSS/JS on GitHub Pages, backed by Supabase (Postgres + Auth).',
+        health:'green',
+        siteUrl:'https://pinacolada2814.github.io/PetPantry/',
+        repoUrl:'https://github.com/pinacolada2814/PetPantry',
+        deployUrl:'https://github.com/pinacolada2814/PetPantry/deployments'
+      },
+      prd:{
+        problem:'Cat owners who buy food in bulk or shop sales frequently: buy duplicate food they already have, don\'t know what\'s in stock before a sale, let food expire before it\'s used, have no record of what their cat has eaten or liked, and have no easy way to track inventory across multiple food types/sizes/brands. Most existing pet apps are either full health platforms (too complex) or basic notes (too simple) — there\'s no lightweight, cat-food-focused inventory + meal logging tool that\'s free, install-free, and mobile-first.',
+        goals:'- Track cat food inventory by brand, type, size, and expiration date\n- Allow meal logging with optional inventory deduction\n- Support meal-logging-only users (no inventory tracking required)\n- Be fully functional on mobile without a native app install\n- Deployable as a free static site with zero backend cost\n\nTarget users (from PRD persona table):\n- The Bulk Buyer — 20+ cans on hand, wants to know stock before shopping\n- The Multi-Cat Parent — 2+ cats, needs meals tracked per cat\n- The Expiry Tracker — wants expiration dates at a glance\n- The Casual Logger — wants a meal record with zero inventory setup\n- The Cat Food Connoisseur — wants to rate meals and track preferences',
+        nonGoals:'Out of Scope for V1 (per original PRD, April 23 2026):\n- Cloud database / cross-device sync (V1 was localStorage-only)\n- Push notifications for expiring food or low stock\n- Shopping list generation\n- Photo uploads for food items\n- Social features (sharing profiles or meal logs)\n- Barcode scanning for food item entry — NOTE: shipped July 20, ahead of its original V1.3 "nice to have" target, so this should now move to "in scope / done"\n- Nutritional tracking or calorie logging\n- Vet appointment or health record tracking\n- Multiple user households (shared pantry)\n- Export to CSV or PDF\n- Dark mode\n- PWA / installable app (service worker)',
+        metrics:'Original success metrics (all marked Done as of the PRD):\n- App deployed & publicly accessible — Live URL\n- Mobile-first responsive design — works on iOS/Android browser\n- User can register & log in — full auth flow\n- Food item can be added in < 3 taps\n- Meal can be logged in < 3 taps\n- Inventory auto-deducts on meal log (when tracked)\n- Landing page live with Fenty featured',
+        requirements:'Functional (by page), per PRD sections 5.1–5.6:\n- Auth: name/email/password registration, email+password login, UUID user id, session in localStorage originally (superseded — see note below)\n- Food Inventory: brand (20 presets + other), name, type, size+unit, protein type (multi-select), purchased-from, expiration date, inventory qty (nullable = log-only), can/bag color; 2-step add flow with duplicate prevention; expandable cards grouped by brand, sorted by expiration; color-coded expiry (OK/Soon/Expired); inline quantity adjust; filter by type; search; stats strip\n- Meal Logs: date/time (auto-populated, editable), pet, food (only items with inventory null or >0), serving size, amount, cat rating (1–5), notes; auto-deduction; log-only mode when inventory is null; date range + record-limit filters; "Meal Time!" button; food search autocomplete\n- Pet Profiles: name, gender, age, breed; full CRUD; emoji avatars auto-assigned\n- User Profile: name, email, password; stats (pets, food items, meals logged)\n- Landing Page: sticky frosted-glass nav, animated hero with Fenty, floating stat badges, feature cards, "How It Works" 3-step flow, testimonials, CTA section, paw cursor, scroll-reveal animations\n\n⚠ Architecture note: the original PRD specifies localStorage as the data layer (namespaced pp_ keys, no backend). The deployment log shows "Connect Pet Pantry to Supabase for real database storage" shipped July 17 — this superseded the localStorage design in favor of Supabase Postgres + Auth with row-level security. Worth a doc update to reflect the real current architecture.\n\n⚠ Accessibility note (Aug 13, 2026): a technical audit found the accessibility NFR was largely unmet in practice — zero label/for associations, near-zero aria-labels, no keyboard-operable custom controls, no modal focus management. Fixed in PR #1 (merged to main same day); see the Aug 13 entry in Notes for the full list.',
+        targetUsers:'Persona → Primary need:\n- The Bulk Buyer → know what\'s in stock before shopping\n- The Multi-Cat Parent → track meals per cat individually\n- The Expiry Tracker → see expiration dates at a glance\n- The Casual Logger → log meals without inventory setup\n- The Cat Food Connoisseur → rate meals and track preferences',
+        fullDoc:'PET PANTRY — PRD & DESIGN DOC (v1.0, April 23 2026, Adrianna Zhang)\nStatus: Live — Deployed on GitHub Pages\nLive URL: https://pinacolada2814.github.io/PetPantry/\nRepo: https://github.com/pinacolada2814/PetPantry\nChief Taste Tester: Fenty (American Curl)\n\n— EXECUTIVE SUMMARY —\nMobile-first, browser-based web app for cat food inventory + meal logging. Originally built as a static HTML/CSS/JS site with localStorage as the data layer (no backend). Conceived, designed, built, and deployed in a single AI-assisted ("vibe coding") session. [Superseded: now running on Supabase, see Requirements tab note.]\n\n— PROBLEM —\nSee Problem Statement field.\n\n— TARGET USERS —\nSee Target Users field.\n\n— DATA MODEL (as originally specified) —\nlocalStorage keys: pp_users, pp_current_user, pp_pets, pp_food_items, pp_inventory, pp_meal_logs\nUser: id, name, email, password, createdDate, lastModifiedDate\nPet: id, userId, name, gender, age, breed, createdDate, lastModifiedDate\nFoodItem: id, userId, brand, name, type, sizeNum, sizeUnit, proteins[], color, purchased, createdDate, lastModifiedDate\nInventory: id, userId, foodItemId, expirationDate, inventoryNumber (null = no tracking)\nMealLog: id, userId, dateTime, petId, inventoryTableId, foodLabel, size, amount, catRating, note, createdDate\n[Note: this table-per-key model maps directly onto the Supabase tables now in use — pets, food_items, inventory, meal_logs — just Postgres-backed with RLS instead of localStorage.]\n\n— DESIGN SYSTEM —\nPrinciples: mobile-first (375px baseline), soft & cute pastel palette, rounded corners, playful emoji accents, progressive disclosure (e.g. 2-step food add), inventory always optional, instant feedback via toasts, zero-friction modals.\nColor tokens: --primary #7C3AED · --primary-d #6D28D9 · --primary-l #F3E8FF · --accent #EC4899 · --success #16A34A · --warning #D97706 · --danger #DC2626 · --bg #F8F7FC · --surface #FFFFFF · --text #1E1433 · --text-muted #7B6A8D · --border #E8E0F0 · Landing pink #F9A8D4 · Landing purple #C084FC · Landing peach #FED7AA\nTypography: App body/headings — Inter (400/600/700/800/900). Landing headings — Playfair Display (700/900). Landing body — Nunito. Labels/chips — Inter 700, 0.78–0.82rem. Code/IDs — system monospace.\nSpacing/layout: --radius 14px (cards/modals/inputs) · --radius-sm 8px (buttons/badges) · --shadow 0 2px 12px rgba(90,60,140,.10) · --shadow-md 0 4px 24px rgba(90,60,140,.16) · mobile max-width 680px · desktop max-width 820px · sidebar 220px\nComponents: expandable Card, Modal/Bottom Sheet, Toast (3.2s auto-dismiss), Filter Chips, Multi-Select Chips, Inline Adjust, FAB (56px), mobile Tab Bar (Pantry/Meals/Pets/Profile), desktop Sidebar, Stat Chips, Expiry Badge (green/yellow/red), Avatar Chip.\n\n— TECH ARCHITECTURE (as originally specified) —\nFrontend: vanilla HTML5/CSS3/JS (ES6+), no build step. Data layer: localStorage [superseded by Supabase, July 17]. Fonts: Google Fonts (Inter, Playfair Display, Nunito). Hosting: GitHub Pages. CI/CD: GitHub Pages auto-deploy from gh-pages / GitHub Actions.\nFile structure: index.html (landing), app.html (auth), inventory.html, meals.html, pets.html, profile.html, app.js, styles.css, fenty.jpg, README.md.\nAuth flow: register/login → session stored → Auth.require() gates protected pages → logout clears session.\nMeal logging + auto-deduction flow: select food (only items with inventoryNumber null or >0) → capture inventoryTableId → log meal → decrement inventory by amount (floored at 0) → toast → re-render.\n\n— PAGE MAP —\nLanding (index.html, public) · Login/Register (app.html, public) · Food Inventory (inventory.html, auth) · Meal Logs (meals.html, auth) · My Pets (pets.html, auth) · My Profile (profile.html, auth). Mobile: bottom tab bar (4 tabs) + sticky top nav. Desktop: 220px left sidebar, no top nav.\n\n— NON-FUNCTIONAL REQUIREMENTS —\nPage load < 2s on 4G · responsive 375px–1440px · semantic HTML + aria-labels + contrast [audited Aug 13, 2026 — was largely unmet (labels/aria-labels/contrast all had real gaps), fixed in the PR #1 audit pass, see Aug 13 note in Notes tab] · Chrome/Safari/Firefox/Edge latest 2 versions · works offline after first load (as localStorage app — revisit now that Supabase requires connectivity) · storage ~5MB/origin (as localStorage app) · V1 passwords were plaintext in localStorage, Firebase auth recommended for V2 [superseded — Supabase Auth now handles this] · all data stayed on-device in V1 [superseded — now server-side via Supabase, RLS-scoped] · no build tools required · zero-config GitHub Pages deploy.\n\n— OUT OF SCOPE (V1) — see Non-Goals field.\n\n— FUTURE ROADMAP (as originally specified) —\nV1.1: Firebase integration (Firestore+Auth) [superseded — Supabase chosen instead, already shipped] · PWA support (installable, service worker) — High, not yet done\nV1.2: Low stock alerts — Medium, tracked in Backlog · Expiry alerts — Medium, tracked in Backlog · Shopping list generation — Medium, not yet done\nV1.3: Food stats & charts (favorite proteins, meal frequency) — Nice to have, overlaps with "Ratings dashboard" in Backlog · Dark mode — Nice to have, not yet done · Barcode scanner — Nice to have, shipped July 20 ahead of schedule\nV2.0: Multi-household/sharing — Future · Vet & health records — Future, likely out of current scope'
+      },
+      stories:[
+        {id:uid(), title:'User can register and sign in', desc:'Supabase Auth-backed accounts on app.html.', acceptance:'- Can register with email/password\n- Can sign in and stay signed in\n- Row-level security scopes all data to the signed-in user', priority:'high', points:'', status:'done'},
+        {id:uid(), title:'User can add/edit/delete a pet profile', desc:'My Pets page.', acceptance:'- Add pet with name, gender, age, breed\n- Edit and delete existing pets', priority:'high', points:'', status:'done'},
+        {id:uid(), title:'User can add a food item to inventory', desc:'Food Inventory page — brand, name, type, size, expiration date.', acceptance:'- New food item appears as a card\n- Card can be expanded to see expiration date and quantity\n- Cards can be filtered by food type', priority:'high', points:'', status:'done'},
+        {id:uid(), title:'User can adjust inventory quantity inline', desc:'Inline edit on the food inventory card.', acceptance:'- Quantity can be increased/decreased without opening a separate form', priority:'med', points:'', status:'done'},
+        {id:uid(), title:'User can log a meal', desc:'Meal Logs page — pet, food, serving size, rating, notes.', acceptance:'- Logging a meal auto-deducts the chosen inventory record\n- Cat rating and notes are optional but saved when present\n- "Log-only" mode works when inventoryNumber is null', priority:'high', points:'', status:'done'},
+        {id:uid(), title:'User can edit profile info', desc:'My Profile page.', acceptance:'- Can update name, email, password\n- Can view basic usage stats', priority:'med', points:'', status:'done'},
+        {id:uid(), title:'Barcode scanner auto-fills food items', desc:'Scan a barcode when adding a food item so its details populate automatically instead of typing them in.', acceptance:'- Camera-based scan available from the Add Food Item flow\n- Successful scan auto-fills fields where data is available (brand/name/type)\n- Manual entry remains available as a fallback when scan fails or product isn\'t found', priority:'high', points:'', status:'done'},
+        {id:uid(), title:'User can edit and delete meal log entries', desc:'Correct or remove a previously logged meal.', acceptance:'- Existing meal log entries can be edited (pet, food, serving size, rating, notes)\n- Existing meal log entries can be deleted\n- Editing/deleting a log properly adjusts any auto-deducted inventory rather than double-counting', priority:'med', points:'', status:'done'},
+        {id:uid(), title:'Fix: "other" brand permanently locked in Add Food', desc:'P0 bug found in the Aug 13 design audit. Selecting "other" as a brand and continuing to the full item form left the Brand field readonly with the literal text "other" — no way to type a real brand name, so any food outside the ~20 hardcoded brands could never be added.', acceptance:'- Brand field unlocks for typing when "other" is selected\n- Editing an existing item with a non-hardcoded brand also keeps the field editable', priority:'high', points:'1', status:'done'},
+        {id:uid(), title:'Accessibility remediation pass', desc:'Full a11y pass from the Aug 13 technical audit (score was 1/4 on Accessibility). Covered: label/for associations on every form field, aria-labels on all icon-only buttons, keyboard-operable protein/rating chips and card expand toggle, focus-managed modals (focus trap, Escape-to-close, focus restored to trigger), visible focus rings, alt text on food photos, fixed heading hierarchy (h1→h3 skips), and <main>/landmark structure on all six pages.', acceptance:'- Every form label is programmatically associated with its input\n- Every icon-only button has an accessible name\n- Custom chip/toggle controls are keyboard-operable\n- Modals trap focus, close on Escape, and restore focus on close', priority:'high', points:'8', status:'done'},
+        {id:uid(), title:'Fix systemic low-contrast text', desc:'Top priority from the Aug 13 design critique — 50+ contrast findings clustered around the muted purple/pink text tokens, both in the app shell and the marketing page\'s separate token system, plus the star-rating color. Fixed by darkening --text-muted and --pink-d in both token systems to clear WCAG AA 4.5:1.', acceptance:'- Muted body text meets 4.5:1 against its background in both the app and the landing page\n- Star ratings and CTA button text meet 4.5:1', priority:'high', points:'3', status:'done'},
+        {id:uid(), title:'Performance pass: parallel fetches, debounce, image size', desc:'From the Aug 13 technical audit. Parallelized sequential Store.list() fetches on every page, debounced the two live-filter search inputs, replaced a full inventory-list rebuild with an in-place row patch on quantity adjustments, and compressed the oversized hero photo (837KB → 158KB).', acceptance:'- Page-load data fetches run concurrently instead of in series\n- Search inputs no longer refetch on every keystroke\n- Adjusting one inventory row doesn\'t collapse expanded cards elsewhere in the list', priority:'med', points:'3', status:'done'},
+        {id:uid(), title:'Replace bare confirm() with in-app confirmation modal', desc:'Destructive actions (delete pet/food item/meal log/inventory entry) used the native browser confirm() dialog with no context. Replaced with a styled in-app modal that states real consequences — e.g. deleting a pet now explains that its meal logs will show "Unknown pet".', acceptance:'- All deletes route through the new confirmModal() helper\n- Pet deletion explicitly warns about orphaned meal log references', priority:'med', points:'2', status:'done'},
+        {id:uid(), title:'Move "Log a meal" to a thumb-zone FAB', desc:'Flagged in both the critique and the audit — the highest-frequency action in the product (per the PRD\'s "at the kitchen counter, one-handed" persona) lived at the top of the page, and a fully-styled but unused .fab CSS class sat dead in the stylesheet. Wired the FAB to the meal-logging action, replacing the header button.', acceptance:'- A persistent floating action button opens the Log Meal modal\n- Positioned in the thumb-reachable zone on mobile', priority:'med', points:'2', status:'done'},
+        {id:uid(), title:'Low-stock indicator on inventory cards', desc:'Surface when a food item\'s remaining quantity drops below a threshold, so the user knows to reorder before running out. Applies to the Food Inventory page and its cards.', acceptance:'- Each food item has a configurable low-stock threshold (a number or % of size); default to a sensible value (e.g. 20% of size) if the user leaves it blank\n- Threshold is editable inline wherever quantity is edited\n- Inventory card shows a "Low stock" badge/tag when quantity <= threshold\n- Card shows an "Out of stock" badge instead when quantity reaches 0\n- Low-stock/out-of-stock items are visually grouped or sorted to the top of the inventory list so they are easy to spot\n- Badge updates immediately (no reload) when quantity changes via inline adjustment or via meal logging auto-deduction\n- Non-goal for this story: no push/email notifications — visual badge only', priority:'med', points:'3', status:'backlog'},
+        {id:uid(), title:'Expiration warnings on inventory cards', desc:'Highlight food nearing or past its expiration date so it gets used before it\'s wasted. Uses the existing expirationDate field on inventory records — no new field needed.', acceptance:'- Cards within a configurable window of expirationDate (default 7 days) show an "Expiring soon" badge\n- Cards past expirationDate show an "Expired" badge, styled distinctly (e.g. red) from "Expiring soon" (e.g. yellow)\n- Expired items stay visible in the list (not auto-removed) so the user can still log or discard them\n- User can filter the Food Inventory list by "Expiring soon" or "Expired"\n- Optional stretch: a small summary banner at the top of Food Inventory listing all items expiring within the window\n- Non-goal for this story: no push/email notifications — in-app badge and filter only', priority:'med', points:'3', status:'backlog'},
+        {id:uid(), title:'Log a meal without pantry/inventory tracking', desc:'Let users log a meal that isn\'t tied to any inventory record — feeding away from home, a sample/vet-prescribed food not yet in inventory, or a household that just wants a feeding diary without managing stock. Data model already supports this via a null inventoryNumber; this is primarily a UI/UX story.', acceptance:'- Meal log form has a "not tracking in pantry" option that skips inventory selection\n- Food can be entered as free text or picked from food_items without requiring an inventory record\n- Pet, rating, and notes still work the same regardless of mode\n- No inventory deduction happens for log-only entries', priority:'high', points:'3', status:'backlog'},
+        {id:uid(), title:'Scoop-based serving option for dry food', desc:'Dry food is measured by scoop in practice, not precise weight. Add a non-exact serving unit so logging matches how people actually feed.', acceptance:'- "Scoop(s)" (or a generic custom unit) available as a serving size option alongside numeric weight\n- Optional "est. weight per scoop" settable once per food item, used for inventory deduction if present\n- If no estimate is set, scoop-based logs simply don\'t deduct inventory (log-only for that entry)\n- Cat rating/notes work the same regardless of serving unit', priority:'med', points:'3', status:'backlog'},
+        {id:uid(), title:'Ratings dashboard', desc:'A simple dashboard surfacing cat rating data that\'s already being captured on each meal log.', acceptance:'- Shows average rating per food item\n- Shows a "top rated foods" list (e.g. top 5)\n- Optional: rating trend over time, filterable per pet\n- No schema change needed — derived entirely from existing meal_logs.catRating', priority:'med', points:'5', status:'backlog'},
+        {id:uid(), title:'Activity history (pantry & meal), on My Profile', desc:'A chronological, type-tagged history of pantry and meal actions so users can see what was added/changed and when.', acceptance:'- Every pantry (food/inventory) add or update is recorded with type "pantry" and a timestamp\n- Every meal log add or update is recorded with type "meal" and a timestamp\n- History list lives on the My Profile page\n- Sortable by most recent; filterable by type (pantry/meal)', priority:'med', points:'5', status:'backlog'},
+        {id:uid(), title:'Improve barcode scanner with a real product database', desc:'The scanner works mechanically but has no reliable product database behind it, so many scans return nothing useful.', acceptance:'- Fall back to an external product database (e.g. Open Food Facts or a UPC lookup API) when the primary source has no match\n- Cache successful lookups locally so repeat scans of the same product don\'t re-query externally\n- If nothing resolves, prompt the user to fill in details once and save them against that barcode for next time (per-user "learned" barcode)\n- Manual entry remains the fallback at every step', priority:'med', points:'5', status:'backlog'},
+        {id:uid(), title:'PWA support (installable on phone)', desc:'From original roadmap V1.1, High priority. Add a service worker + manifest.json so the app can be installed to a home screen without an app store.', acceptance:'- manifest.json defines app name, icons, theme color\n- Service worker enables install prompt on supported browsers\n- App continues to work when reopened from the home-screen icon', priority:'high', points:'5', status:'backlog'},
+        {id:uid(), title:'Shopping list generation', desc:'From original roadmap V1.2, Medium priority. Auto-generate a shopping list based on low/zero-stock inventory items.', acceptance:'- List auto-populates from items at or below their low-stock threshold\n- User can check off items as purchased\n- Checking off an item can optionally prompt adding it back to inventory', priority:'med', points:'5', status:'backlog'},
+        {id:uid(), title:'Dark mode', desc:'From original roadmap V1.3, Nice to have. Design system already uses CSS variables for theming, so this is mostly a token-swap exercise. Re-flagged by the Aug 13 technical audit as a real gap (no prefers-color-scheme or [data-theme] support anywhere) — explicitly deferred out of that pass since it\'s a net-new feature, not a fix.', acceptance:'- All existing color tokens have a dark-mode equivalent\n- User can toggle theme, preference persists\n- Contrast remains accessible in both themes', priority:'low', points:'3', status:'backlog'},
+        {id:uid(), title:'Rework the small-text type scale', desc:'The Aug 13 audit\'s detector kept flagging "flat type hierarchy" on inventory.html — not a single bad line, but a systemic pattern: the app leans on many close-but-different small sizes (.7rem/.75rem/.78rem/.8rem/.82rem/.88rem/.9rem) instead of a small number of deliberate steps. Fixing the one flagged instance just made the detector point at the next-closest cluster. Needs a dedicated pass across styles.css and inline styles, not a spot fix.', acceptance:'- Small/hint/label text consolidates to a handful of deliberate steps with ≥1.25 ratio between them\n- Applied consistently across styles.css and all inline font-size overrides', priority:'low', points:'3', status:'backlog'},
+        {id:uid(), title:'Multi-household / shared pantry (V2)', desc:'From original roadmap V2.0, Future. Let more than one account share visibility into the same pets/inventory — explicitly out of scope for now, logged so it isn\'t forgotten.', acceptance:'- Not yet scoped in detail — needs its own design pass on permissions and data sharing before estimating', priority:'low', points:'', status:'backlog'},
+        {id:uid(), title:'Vet & health records (V2)', desc:'From original roadmap V2.0, Future. Expands the product beyond food tracking into full pet health — a bigger product decision, not a small feature.', acceptance:'- Not yet scoped — flag for a separate PRD if pursued, since it changes the product\'s core focus', priority:'low', points:'', status:'backlog'},
+        {id:uid(), title:'Meal history / trends view', desc:'A simple view of feeding history per pet over time.', acceptance:'- Can see recent meals per pet\n- Can filter by date range', priority:'low', points:'5', status:'backlog'},
+        {id:uid(), title:'Fix: significant lag after clicking Sign In', desc:'User-reported perceived freeze after clicking Sign In. Root cause: inventory.html — the page every user lands on immediately after signing in — unconditionally loaded the html5-qrcode barcode-scanner library in a render-blocking <script> tag on every visit, even though that library is only needed if the user opens the barcode-scan modal. It was the only page among the five app pages pulling in that extra library. Also, the Sign In button gave no feedback while the Supabase auth request was in flight, so the wait read as a hang and invited repeat clicks.', acceptance:'- html5-qrcode is loaded on demand inside openScanModal(), not on page load\n- Sign In button disables and shows a loading state for the duration of the login request, re-enabling on error\n- Verified locally against real Supabase (success path button reset, and an invalid-credentials error path)', priority:'high', points:'2', status:'done'}
+      ],
+      timeline:[
+        {id:uid(), date:'2026-04-23', title:'Initial GitHub Pages setup & landing page', desc:'Initial commit, files moved to repo root for Pages, landing page with Fenty the mascot added and wired to the app.', status:'shipped'},
+        {id:uid(), date:'2026-07-17', title:'Connected to Supabase for real database storage', desc:'Replaced placeholder storage with live Supabase Postgres + Auth — the real backing store for pets, food_items, inventory, and meal_logs.', status:'shipped'},
+        {id:uid(), date:'2026-07-17', title:'Landing page restored, auth split into app.html', desc:'Marketing landing page separated from the sign-in flow, which now lives at app.html.', status:'shipped'},
+        {id:uid(), date:'2026-07-17', title:'Meal log serving size auto-derived from food', desc:'Serving size now defaults from the selected food item instead of manual entry.', status:'shipped'},
+        {id:uid(), date:'2026-07-17', title:'Mobile layout fix: sidebar hidden on mobile', desc:'Desktop sidebar no longer shows on mobile viewports — bottom tab bar takes over as intended.', status:'shipped'},
+        {id:uid(), date:'2026-07-20', title:'Edit & delete meal log entries', desc:'Users can correct or remove previously logged meals.', status:'shipped'},
+        {id:uid(), date:'2026-07-20', title:'Meal log date/time uses local time consistently', desc:'Bugfix — timestamps recorded/displayed in local time instead of drifting to UTC.', status:'shipped'},
+        {id:uid(), date:'2026-07-20', title:'Barcode scanner auto-fills food items', desc:'Scan a barcode to auto-populate food item fields when adding to inventory. Currently the live deployment.', status:'shipped'},
+        {id:uid(), date:'2026-08-13', title:'Design critique + technical audit, full fix pass merged', desc:'Ran a dual-agent design critique (health score 19/40) and a 5-dimension technical audit (health score 8/20), then shipped the full fix list: the "other"-brand P0 bug, an accessibility remediation pass, systemic contrast fixes, a performance pass, an in-app confirm modal, and the thumb-zone FAB for logging meals. Branch audit-fixes, PR #1, merged to main.', status:'shipped'},
+        {id:uid(), date:'', title:'Low-stock & expiration alerts', desc:'Surface low inventory and near-expiry food to the user.', status:'planned'},
+        {id:uid(), date:'', title:'Meal history / trends view', desc:'Lightweight feeding history and trends per pet.', status:'planned'},
+        {id:uid(), date:'2026-08-19', title:'Fix sign-in lag: lazy-load barcode scanner, add login feedback', desc:'Diagnosed a user-reported freeze after clicking Sign In to inventory.html eagerly loading the html5-qrcode library on every visit; made it load on demand instead, and gave the Sign In button a loading state. Branch fix-signin-lag pushed to origin; PR not auto-opened (gh CLI unavailable in this environment) — manual PR link given to the user.', status:'shipped'}
+      ],
+      notes:[
+        {id:uid(), date:'2026-08-13', type:'meeting', title:'Design critique + technical audit + full fix pass (Aug 13, 2026)', body:'Ran /impeccable critique across the whole app (landing + inventory + meals + pets + profile): dual-agent design review plus detector/browser evidence. Health score 19/40 (Poor). Top findings: the "other" brand option in Add Food was a dead end (P0 — permanently readonly, blocking the most fundamental action in the app for any non-hardcoded brand); the highest-frequency action ("log a meal") sat outside the one-handed thumb zone while a fully-styled but unused .fab sat dead in the stylesheet; 50+ contrast findings clustered around the muted-text and pink-accent tokens; validation/errors were structurally disconnected from the action (top-of-screen toast, bottom-sheet forms); the app shell carries none of the landing page\'s visual personality.\n\nFollowed with /impeccable audit (5-dimension technical pass): health score 8/20 (Poor). Zero label/for associations on any of 33 form labels, only 1 aria-label in the whole app, zero keyboard-operable custom controls (chips, card toggle), no modal focus management, sequential (non-parallel) data fetches on every page, an 837KB hero image rendered at ~400px, and touch targets under the 44px guideline.\n\nDecision: fix everything found, prioritizing contrast/accessibility first per your call. Dark mode was explicitly scoped out as a net-new feature, not a fix (now tracked as its own backlog item). The marketing-page/app-shell visual split was a deliberate keep, not deferred — "leave it split, marketing and app can look different."\n\nShipped on branch audit-fixes: P0 brand fix, full accessibility remediation (labels, aria-labels, keyboard-operable chips, focus-managed modals with Escape/focus-restore, visible focus rings, alt text, heading hierarchy, landmarks), contrast fixes to both token systems, a performance pass (parallel fetches, debounce, in-place row patch, image compression), an in-app confirmation modal replacing bare confirm() (including an explicit warning that deleting a pet orphans its meal-log references), and the FAB now used for meal logging. Verified via detector re-run, desktop + mobile visual pass, and functional checks (label association, focus ring). PR #1 opened and merged to main.\n\nOne open item: the detector\'s "flat type hierarchy" finding on inventory.html turned out to be whack-a-mole — fixing one flagged line just surfaced the next-closest cluster of small-text sizes. It\'s a systemic characteristic of the app\'s small-print scale, not a one-line fix — logged as its own backlog item for a dedicated typography pass rather than chased further in this round.'},
+        {id:uid(), date:new Date().toISOString().slice(0,10), type:'meeting', title:'Imported original PRD & Design Doc (Apr 23, 2026)', body:'Parsed the real PRD/Design Doc authored by Adrianna Zhang and stored it here:\n\n- PRD tab now carries the authoritative problem statement, goals, target-user personas, out-of-scope list, success metrics, and requirements — replacing earlier drafted assumptions\n- Added a full reference copy of the source doc in a new "Original PRD & Design Doc" field so nothing gets lost\n- Restyled this whole tracker to match the real design system: colors (#7C3AED primary, #EC4899 accent, #F8F7FC bg, etc.), 14px/8px radii, and Inter typography, pulled straight from PRD section 7.2–7.3\n\nDiscrepancy flagged: the original PRD specifies localStorage as the data layer, but the deployment log shows Supabase was connected July 17 — the doc is out of date on architecture. Noted inline in Requirements rather than silently overwritten.\n\nReconciled the original Future Roadmap (section 12) against the current backlog: added PWA support, shopping list generation, dark mode, multi-household sharing, and vet/health records as backlog items that weren\'t tracked yet. Firebase integration (V1.1) is superseded by the Supabase choice, so it wasn\'t re-added as a separate item.'},
+        {id:uid(), date:new Date().toISOString().slice(0,10), type:'enhancement', title:'Enhancement brainstorm: log-only mode, scoops, dashboard, history, better barcode DB', body:'Five ideas discussed, use cases worked through, added to Backlog:\n\n1. Log a meal without pantry/inventory tracking — schema already supports null inventoryNumber, this is a UI gap. Covers: feeding away from home, sample/vet foods not yet in inventory, shared/untracked supply, or users who never want to manage stock.\n\n2. Scoop-based serving for dry food — dry food is scooped, not weighed, in practice. Add "scoop(s)" as a serving unit; optional est. weight/scoop for inventory deduction, otherwise log-only.\n\n3. Ratings dashboard — average rating per food, top-rated list, optional trend over time. No schema change, derived from existing catRating data.\n\n4. Activity history (pantry/meal, timestamped) — chronological, type-tagged log of adds/updates, surfaced on My Profile for now.\n\n5. Improve barcode scanner — current scanner works mechanically but lacks a real product database behind it. Plan: fall back to an external DB (e.g. Open Food Facts / UPC lookup) on miss, cache hits locally, and let users teach the system a barcode once when nothing resolves.'},
+        {id:uid(), date:new Date().toISOString().slice(0,10), type:'meeting', title:'Imported deployment history', body:'Pulled in the real GitHub Pages deployment log to rebuild the roadmap with actual dates (Apr 23 initial setup, Jul 17 Supabase connection + mobile fixes, Jul 20 meal log edit/delete + barcode scanner).\n\nCorrection: the PRD previously listed "no barcode scanning" as a non-goal — removed, since barcode scanning to auto-fill food items is now shipped and is the current live deployment.\n\nAdded two corresponding "done" backlog stories: barcode scanner auto-fill, and meal log edit/delete.'},
+        {id:uid(), date:new Date().toISOString().slice(0,10), type:'meeting', title:'Imported project README', body:'Pulled in the real README to seed PRD, backlog, and roadmap:\n- Confirmed stack: static HTML/CSS/JS + Supabase (Postgres + Auth), deployed via GitHub Actions to GitHub Pages\n- Confirmed data model: pets, food_items, inventory, meal_logs — all RLS-scoped per user\n- Marked core features (auth, pets, inventory, meal logging, profile) as done based on README description\n- Added a few forward-looking backlog items (low-stock flag, expiration warnings, history view) as starting suggestions — reprioritize as needed\n- Non-goals and success metrics are drafted assumptions — worth a quick pass to confirm or adjust'},
+        {id:uid(), date:'2026-08-19', type:'meeting', title:'Fixed: significant lag after clicking Sign In', body:'User reported a significant lag after clicking Sign In. Traced it to inventory.html — the page every user lands on immediately after a successful login — which was the only one of the five app pages to also load the html5-qrcode barcode-scanner library, and did so in a plain render-blocking <script> tag on every single page load, even though that library is only touched if the user opens the barcode-scan modal (a secondary feature reached from deep inside the Add Food flow). So the full post-login page load was paying for a large, mostly-unused library before it could even run its auth check or render the inventory list.\n\nSecondary contributor: the Sign In button gave zero feedback while awaiting the Supabase signInWithPassword() network round-trip, so the wait read as a frozen UI and invited repeat clicks (which would have stacked duplicate login requests).\n\nFix shipped:\n1. html5-qrcode is now injected and loaded lazily inside openScanModal(), only when the user actually opens the scanner, instead of on every inventory.html load.\n2. The Sign In button now disables itself and shows a loading state for the duration of the login request, resetting on error.\n\nVerified locally via the static preview server against the real Supabase project (including exercising the invalid-credentials error path to confirm the button correctly re-enables). Committed to a new branch, fix-signin-lag, and pushed to origin. Could not auto-open the PR — gh CLI is not installed on this machine and brew install gh failed (broken Homebrew/openssl@1.1 formula, unrelated to this app) — so the user was handed the manual "open a PR" link GitHub returns on push instead.'}
+      ],
+      scratch:''
+    };
+  }
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+  async function loadState(){
+    try{
+      const { data, error } = await sb.from('pm_tracker').select('state').eq('userId', USER_ID).maybeSingle();
+      if(error || !data) return null;
+      return data.state;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function scheduleSave(){
+    const dot = document.getElementById('saveDot');
+    const txt = document.getElementById('saveText');
+    if(dot) dot.style.background = 'var(--accent)';
+    if(txt) txt.textContent = 'Saving…';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      try{
+        const { error } = await sb.from('pm_tracker').upsert({ userId: USER_ID, state, updatedAt: new Date().toISOString() });
+        if(error) throw error;
+        if(dot) dot.style.background = 'var(--success)';
+        if(txt) txt.textContent = 'Saved';
+      }catch(e){
+        if(dot) dot.style.background = 'var(--rust)';
+        if(txt) txt.textContent = 'Save failed';
+      }
+    }, 450);
+  }
+
+  function esc(str){
+    return (str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- RENDER: OVERVIEW ----------
+  function renderOverview(){
+    const o = state.overview;
+    const healthLabel = {green:'On track', yellow:'At risk', red:'Blocked'}[o.health];
+    return `
+    <div class="ov-grid">
+      <div class="card">
+        <h3>Project</h3>
+        <p class="hint">Basic identity &amp; links, editable any time.</p>
+        <label class="field">Name</label>
+        <input type="text" data-bind="overview.name" value="${esc(o.name)}"/>
+        <label class="field">One-line description</label>
+        <textarea data-bind="overview.tagline" rows="2">${esc(o.tagline)}</textarea>
+        <label class="field">Live site</label>
+        <input type="text" data-bind="overview.siteUrl" value="${esc(o.siteUrl||'')}"/>
+        <label class="field">Repo</label>
+        <input type="text" data-bind="overview.repoUrl" value="${esc(o.repoUrl)}"/>
+        <label class="field">Deployments</label>
+        <input type="text" data-bind="overview.deployUrl" value="${esc(o.deployUrl)}"/>
+        <div class="link-row" style="margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;">
+          ${o.siteUrl ? `<a href="${esc(o.siteUrl)}" target="_blank" rel="noopener">Open live site &#8599;</a>`:''}
+          ${o.repoUrl ? `<a href="${esc(o.repoUrl)}" target="_blank" rel="noopener">Open repo &#8599;</a>`:''}
+          ${o.deployUrl ? `<a href="${esc(o.deployUrl)}" target="_blank" rel="noopener">Open deployments &#8599;</a>`:''}
+        </div>
+      </div>
+      <div class="card">
+        <h3>Status</h3>
+        <p class="hint">Set overall project health for this week.</p>
+        <span class="pill ${o.health}">${healthLabel}</span>
+        <div class="health-row">
+          <button data-health="green" class="${o.health==='green'?'sel-green':''}">On track</button>
+          <button data-health="yellow" class="${o.health==='yellow'?'sel-yellow':''}">At risk</button>
+          <button data-health="red" class="${o.health==='red'?'sel-red':''}">Blocked</button>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+          <h3 style="margin-bottom:8px;">Snapshot</h3>
+          <p class="hint" style="margin:0 0 4px;">Backlog: <strong style="color:var(--ink);">${state.stories.length}</strong> stories &middot; ${state.stories.filter(s=>s.status==='done').length} done</p>
+          <p class="hint" style="margin:0;">Roadmap: <strong style="color:var(--ink);">${state.timeline.length}</strong> milestones</p>
+          <p class="hint" style="margin:4px 0 0;">Log: <strong style="color:var(--ink);">${state.notes.length}</strong> entries</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ---------- RENDER: PRD ----------
+  function prdField(key,label,hint,rows){
+    return `
+      <div class="card">
+        <h3>${label}</h3>
+        <p class="hint">${hint}</p>
+        <textarea data-bind="prd.${key}" rows="${rows}" placeholder="Write here…">${esc(state.prd[key])}</textarea>
+      </div>`;
+  }
+  function renderPRD(){
+    return `
+      ${prdField('problem','Problem statement','What user or business problem is this solving? Why now?',4)}
+      ${prdField('goals','Goals','What does success look like for this initiative?',6)}
+      ${prdField('targetUsers','Target users','Personas and their primary need.',4)}
+      ${prdField('nonGoals','Non-goals / Out of scope','What is explicitly out of scope?',6)}
+      ${prdField('metrics','Success metrics','How will you know it worked? Specific numbers where possible.',4)}
+      ${prdField('requirements','Requirements','Functional &amp; non-functional requirements, constraints, edge cases.',10)}
+      <div class="card">
+        <h3>Original PRD &amp; Design Doc (reference)</h3>
+        <p class="hint">Full text of the source document — architecture, data model, design system, roadmap. Kept in one place so the summary fields above always trace back to something concrete. Editable if you want to append updates.</p>
+        <textarea data-bind="prd.fullDoc" rows="16" style="font-family:'JetBrains Mono',monospace;font-size:12px;">${esc(state.prd.fullDoc)}</textarea>
+      </div>
+    `;
+  }
+
+  // ---------- RENDER: BACKLOG ----------
+  const COLUMNS = [
+    {key:'backlog',label:'Backlog'},
+    {key:'inprogress',label:'In progress'},
+    {key:'review',label:'Review'},
+    {key:'done',label:'Done'}
+  ];
+  function prioTag(p){
+    const map = {high:'prio-high',med:'prio-med',low:'prio-low'};
+    return `<span class="tag ${map[p]||'prio-low'}">${p}</span>`;
+  }
+  function renderBacklog(){
+    const cols = COLUMNS.map(col=>{
+      const items = state.stories.filter(s=>s.status===col.key);
+      const jars = items.map(s=>`
+        <div class="jar" data-story="${s.id}">
+          <p class="jar-title">${esc(s.title)}</p>
+          <div class="jar-meta">${prioTag(s.priority)}${s.points?`<span class="tag pts">${esc(s.points)} pt</span>`:''}</div>
+        </div>`).join('');
+      return `
+        <div class="shelf-col">
+          <h4>${col.label} <span class="count">${items.length}</span></h4>
+          ${jars}
+          <button class="add-jar-btn" data-add-status="${col.key}">+ Add story</button>
+        </div>`;
+    }).join('');
+    return `<div class="board">${cols}</div>`;
+  }
+
+  function storyModalHTML(story){
+    const isNew = !story;
+    const s = story || {id:uid(), title:'', desc:'', acceptance:'', priority:'med', points:'', status:'backlog'};
+    return `
+    <div class="modal-overlay" id="storyModalOverlay">
+      <div class="modal">
+        <h3 style="font-family:'Inter',sans-serif;font-weight:800;">${isNew?'New user story':'Edit story'}</h3>
+        <label class="field">Title</label>
+        <input type="text" id="m-title" value="${esc(s.title)}" placeholder="As a pet owner, I want to…"/>
+        <label class="field">Description</label>
+        <textarea id="m-desc" rows="3" placeholder="Context and detail">${esc(s.desc)}</textarea>
+        <label class="field">Acceptance criteria</label>
+        <textarea id="m-acc" rows="3" placeholder="- Given… when… then…">${esc(s.acceptance)}</textarea>
+        <div class="two-col">
+          <div>
+            <label class="field">Priority</label>
+            <select id="m-prio">
+              <option value="high" ${s.priority==='high'?'selected':''}>High</option>
+              <option value="med" ${s.priority==='med'?'selected':''}>Medium</option>
+              <option value="low" ${s.priority==='low'?'selected':''}>Low</option>
+            </select>
+          </div>
+          <div>
+            <label class="field">Story points</label>
+            <input type="text" id="m-points" value="${esc(s.points)}" placeholder="1, 2, 3, 5…"/>
+          </div>
+        </div>
+        <label class="field">Status</label>
+        <select id="m-status">
+          ${COLUMNS.map(c=>`<option value="${c.key}" ${s.status===c.key?'selected':''}>${c.label}</option>`).join('')}
+        </select>
+        <div class="modal-actions">
+          ${!isNew?`<button class="btn danger" id="m-delete">Delete</button>`:''}
+          <button class="btn ghost" id="m-cancel">Cancel</button>
+          <button class="btn" id="m-save">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function openStoryModal(storyId){
+    const story = storyId ? state.stories.find(s=>s.id===storyId) : null;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = storyModalHTML(story);
+    document.body.appendChild(wrap.firstElementChild);
+    const overlay = document.getElementById('storyModalOverlay');
+    overlay.addEventListener('click',(e)=>{ if(e.target===overlay) overlay.remove(); });
+    document.getElementById('m-cancel').onclick = ()=>overlay.remove();
+    if(document.getElementById('m-delete')){
+      document.getElementById('m-delete').onclick = ()=>{
+        state.stories = state.stories.filter(s=>s.id!==story.id);
+        overlay.remove(); scheduleSave(); render();
+      };
+    }
+    document.getElementById('m-save').onclick = ()=>{
+      const data = {
+        title: document.getElementById('m-title').value.trim(),
+        desc: document.getElementById('m-desc').value,
+        acceptance: document.getElementById('m-acc').value,
+        priority: document.getElementById('m-prio').value,
+        points: document.getElementById('m-points').value.trim(),
+        status: document.getElementById('m-status').value
+      };
+      if(!data.title){ document.getElementById('m-title').focus(); return; }
+      if(story){
+        Object.assign(story, data);
+      } else {
+        state.stories.push({id: uid(), ...data});
+      }
+      overlay.remove(); scheduleSave(); render();
+    };
+  }
+
+  function openStoryModalWithStatus(status){
+    openStoryModal(null);
+    document.getElementById('m-status').value = status;
+  }
+
+  // ---------- RENDER: ROADMAP ----------
+  function statusPill(status){
+    const map = {planned:'yellow', active:'green', shipped:'green', slipped:'red'};
+    const labels = {planned:'Planned', active:'In progress', shipped:'Shipped', slipped:'Slipped'};
+    return `<span class="pill ${map[status]||'yellow'}">${labels[status]||status}</span>`;
+  }
+  let roadmapSortOrder = 'asc'; // 'asc' = oldest first, 'desc' = newest first
+
+  function renderRoadmap(){
+    const dated = state.timeline.filter(m=>m.date);
+    const undated = state.timeline.filter(m=>!m.date);
+    dated.sort((a,b)=> roadmapSortOrder==='asc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
+    const sorted = [...dated, ...undated];
+    const items = sorted.map(m=>`
+      <div class="tl-item" data-milestone="${m.id}">
+        <div class="tl-date">${m.date?esc(m.date):'—'}</div>
+        <div>
+          <p class="tl-title">${esc(m.title)}</p>
+          <p class="tl-desc">${esc(m.desc)}</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          ${statusPill(m.status)}
+          <button class="btn ghost small" data-edit-milestone="${m.id}">Edit</button>
+        </div>
+      </div>`).join('');
+    return `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div>
+            <h3>Roadmap</h3>
+            <p class="hint">Milestones, releases, and enhancement targets over time.</p>
+          </div>
+          <button class="btn ghost small" id="toggleSortBtn">${roadmapSortOrder==='asc' ? 'Newest first' : 'Oldest first'}</button>
+        </div>
+        ${items || `<div class="empty"><strong>No milestones yet</strong>Add your first roadmap item to start tracking dates.</div>`}
+        <button class="btn" id="addMilestoneBtn" style="margin-top:14px;">+ Add milestone</button>
+      </div>`;
+  }
+
+  function milestoneModalHTML(m){
+    const isNew = !m;
+    const item = m || {id:uid(), date:'', title:'', desc:'', status:'planned'};
+    return `
+    <div class="modal-overlay" id="msModalOverlay">
+      <div class="modal">
+        <h3 style="font-family:'Inter',sans-serif;font-weight:800;">${isNew?'New milestone':'Edit milestone'}</h3>
+        <label class="field">Date</label>
+        <input type="date" id="ms-date" value="${esc(item.date)}"/>
+        <label class="field">Title</label>
+        <input type="text" id="ms-title" value="${esc(item.title)}" placeholder="e.g. Order tracking v1"/>
+        <label class="field">Description</label>
+        <textarea id="ms-desc" rows="3">${esc(item.desc)}</textarea>
+        <label class="field">Status</label>
+        <select id="ms-status">
+          <option value="planned" ${item.status==='planned'?'selected':''}>Planned</option>
+          <option value="active" ${item.status==='active'?'selected':''}>In progress</option>
+          <option value="shipped" ${item.status==='shipped'?'selected':''}>Shipped</option>
+          <option value="slipped" ${item.status==='slipped'?'selected':''}>Slipped</option>
+        </select>
+        <div class="modal-actions">
+          ${!isNew?`<button class="btn danger" id="ms-delete">Delete</button>`:''}
+          <button class="btn ghost" id="ms-cancel">Cancel</button>
+          <button class="btn" id="ms-save">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function openMilestoneModal(id){
+    const item = id ? state.timeline.find(m=>m.id===id) : null;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = milestoneModalHTML(item);
+    document.body.appendChild(wrap.firstElementChild);
+    const overlay = document.getElementById('msModalOverlay');
+    overlay.addEventListener('click',(e)=>{ if(e.target===overlay) overlay.remove(); });
+    document.getElementById('ms-cancel').onclick = ()=>overlay.remove();
+    if(document.getElementById('ms-delete')){
+      document.getElementById('ms-delete').onclick = ()=>{
+        state.timeline = state.timeline.filter(m=>m.id!==item.id);
+        overlay.remove(); scheduleSave(); render();
+      };
+    }
+    document.getElementById('ms-save').onclick = ()=>{
+      const data = {
+        date: document.getElementById('ms-date').value,
+        title: document.getElementById('ms-title').value.trim(),
+        desc: document.getElementById('ms-desc').value,
+        status: document.getElementById('ms-status').value
+      };
+      if(!data.title){ document.getElementById('ms-title').focus(); return; }
+      if(item){ Object.assign(item, data); }
+      else { state.timeline.push({id: uid(), ...data}); }
+      overlay.remove(); scheduleSave(); render();
+    };
+  }
+
+  // ---------- RENDER: NOTES ----------
+  function renderNotes(){
+    const sorted = [...state.notes].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    const entries = sorted.map(n=>`
+      <div class="note-entry" data-note="${n.id}">
+        <div class="note-head">
+          <div>
+            <span class="tag ${n.type==='meeting'?'prio-med':'prio-low'}">${n.type==='meeting'?'Meeting':'Enhancement'}</span>
+            <span class="note-title" style="margin-left:8px;">${esc(n.title)}</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="note-date">${n.date?esc(n.date):''}</span>
+            <button class="btn ghost small" data-edit-note="${n.id}">Edit</button>
+          </div>
+        </div>
+        <p class="note-body">${esc(n.body)}</p>
+      </div>`).join('');
+    return `
+      <div class="card">
+        <h3>Meeting notes &amp; enhancement ideas</h3>
+        <p class="hint">A running log — capture decisions, discussion points, and future enhancement ideas as they come up.</p>
+        ${entries || `<div class="empty"><strong>Log is empty</strong>Add your first note or enhancement idea.</div>`}
+        <button class="btn" id="addNoteBtn" style="margin-top:14px;">+ Add entry</button>
+      </div>`;
+  }
+  function noteModalHTML(n){
+    const isNew = !n;
+    const item = n || {id:uid(), date:new Date().toISOString().slice(0,10), type:'meeting', title:'', body:''};
+    return `
+    <div class="modal-overlay" id="noteModalOverlay">
+      <div class="modal">
+        <h3 style="font-family:'Inter',sans-serif;font-weight:800;">${isNew?'New entry':'Edit entry'}</h3>
+        <div class="two-col">
+          <div>
+            <label class="field">Date</label>
+            <input type="date" id="n-date" value="${esc(item.date)}"/>
+          </div>
+          <div>
+            <label class="field">Type</label>
+            <select id="n-type">
+              <option value="meeting" ${item.type==='meeting'?'selected':''}>Meeting note</option>
+              <option value="enhancement" ${item.type==='enhancement'?'selected':''}>Enhancement idea</option>
+            </select>
+          </div>
+        </div>
+        <label class="field">Title</label>
+        <input type="text" id="n-title" value="${esc(item.title)}" placeholder="e.g. Weekly sync — checkout flow"/>
+        <label class="field">Details</label>
+        <textarea id="n-body" rows="6" placeholder="Decisions, discussion, next steps…">${esc(item.body)}</textarea>
+        <div class="modal-actions">
+          ${!isNew?`<button class="btn danger" id="n-delete">Delete</button>`:''}
+          <button class="btn ghost" id="n-cancel">Cancel</button>
+          <button class="btn" id="n-save">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function openNoteModal(id){
+    const item = id ? state.notes.find(n=>n.id===id) : null;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = noteModalHTML(item);
+    document.body.appendChild(wrap.firstElementChild);
+    const overlay = document.getElementById('noteModalOverlay');
+    overlay.addEventListener('click',(e)=>{ if(e.target===overlay) overlay.remove(); });
+    document.getElementById('n-cancel').onclick = ()=>overlay.remove();
+    if(document.getElementById('n-delete')){
+      document.getElementById('n-delete').onclick = ()=>{
+        state.notes = state.notes.filter(n=>n.id!==item.id);
+        overlay.remove(); scheduleSave(); render();
+      };
+    }
+    document.getElementById('n-save').onclick = ()=>{
+      const data = {
+        date: document.getElementById('n-date').value,
+        type: document.getElementById('n-type').value,
+        title: document.getElementById('n-title').value.trim(),
+        body: document.getElementById('n-body').value
+      };
+      if(!data.title){ document.getElementById('n-title').focus(); return; }
+      if(item){ Object.assign(item, data); }
+      else { state.notes.push({id: uid(), ...data}); }
+      overlay.remove(); scheduleSave(); render();
+    };
+  }
+
+  // ---------- RENDER: SCRATCH ----------
+  function renderScratch(){
+    return `
+      <div class="card">
+        <h3>Scratchpad</h3>
+        <p class="hint">Open space for anything else — questions for later, links, half-formed ideas.</p>
+        <textarea data-bind="scratch" rows="16" placeholder="Jot anything here…">${esc(state.scratch)}</textarea>
+      </div>`;
+  }
+
+  const RENDERERS = {
+    overview: renderOverview,
+    prd: renderPRD,
+    backlog: renderBacklog,
+    roadmap: renderRoadmap,
+    notes: renderNotes,
+    scratch: renderScratch
+  };
+
+  let activeTab = 'overview';
+
+  function render(){
+    const panels = document.getElementById('panels');
+    panels.innerHTML = `<div class="panel active">${RENDERERS[activeTab]()}</div>`;
+    attachHandlers();
+  }
+
+  function setByPath(obj, path, value){
+    const parts = path.split('.');
+    let cur = obj;
+    for(let i=0;i<parts.length-1;i++) cur = cur[parts[i]];
+    cur[parts[parts.length-1]] = value;
+  }
+
+  function attachHandlers(){
+    // bound inputs
+    document.querySelectorAll('[data-bind]').forEach(el=>{
+      const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(evt, ()=>{
+        setByPath(state, el.getAttribute('data-bind'), el.value);
+        scheduleSave();
+      });
+    });
+    // health buttons
+    document.querySelectorAll('[data-health]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.overview.health = btn.getAttribute('data-health');
+        scheduleSave(); render();
+      });
+    });
+    // backlog: open existing
+    document.querySelectorAll('[data-story]').forEach(el=>{
+      el.addEventListener('click', ()=> openStoryModal(el.getAttribute('data-story')));
+    });
+    document.querySelectorAll('[data-add-status]').forEach(el=>{
+      el.addEventListener('click', ()=> openStoryModalWithStatus(el.getAttribute('data-add-status')));
+    });
+    // roadmap
+    const addMs = document.getElementById('addMilestoneBtn');
+    if(addMs) addMs.addEventListener('click', ()=> openMilestoneModal(null));
+    const sortBtn = document.getElementById('toggleSortBtn');
+    if(sortBtn) sortBtn.addEventListener('click', ()=>{
+      roadmapSortOrder = roadmapSortOrder === 'asc' ? 'desc' : 'asc';
+      render();
+    });
+    document.querySelectorAll('[data-edit-milestone]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); openMilestoneModal(el.getAttribute('data-edit-milestone')); });
+    });
+    // notes
+    const addNote = document.getElementById('addNoteBtn');
+    if(addNote) addNote.addEventListener('click', ()=> openNoteModal(null));
+    document.querySelectorAll('[data-edit-note]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); openNoteModal(el.getAttribute('data-edit-note')); });
+    });
+  }
+
+  function attachNav(){
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        activeTab = tab.getAttribute('data-tab');
+        render();
+      });
+    });
+    document.getElementById('resetBtn').addEventListener('click', async ()=>{
+      if(!confirm('This clears all PetPantry PM data stored in Supabase. Continue?')) return;
+      state = defaultState();
+      try{ await sb.from('pm_tracker').upsert({ userId: USER_ID, state, updatedAt: new Date().toISOString() }); }catch(e){}
+      render();
+    });
+  }
+
+  async function init(){
+    attachNav();
+    const loaded = await loadState();
+    state = loaded || defaultState();
+    const txt = document.getElementById('saveText');
+    if(txt) txt.textContent = loaded ? 'Loaded' : 'Ready';
+    render();
+    if(!loaded) scheduleSave();
+  }
+
+  // ── Auth gate ──────────────────────────────────────────────
+  // Real access control, not decoration: the pm_tracker row is RLS-scoped to
+  // auth.uid(), so without a valid session Supabase returns nothing no matter
+  // what this page does. Uses the same accounts as the rest of the app.
+  function unlockGate(){
+    document.getElementById('pmGate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  }
+
+  async function initGate(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session?.user){ USER_ID = session.user.id; unlockGate(); return; }
+
+    const mail = document.getElementById('pmGateEmail');
+    const pass = document.getElementById('pmGatePass');
+    const btn  = document.getElementById('pmGateSubmit');
+    const err  = document.getElementById('pmGateError');
+
+    async function tryUnlock(){
+      btn.disabled = true;
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: mail.value.trim(), password: pass.value
+      });
+      btn.disabled = false;
+      if(error || !data?.user){
+        err.textContent = error?.message || 'Incorrect email or password.';
+        err.classList.add('show');
+        pass.value = ''; pass.focus();
+        return;
+      }
+      USER_ID = data.user.id;
+      err.classList.remove('show');
+      unlockGate();
+    }
+
+    btn.addEventListener('click', tryUnlock);
+    [mail, pass].forEach(el => el.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); }));
+    mail.focus();
+  }
+
+  initGate();
+})();
+</script>
+</body>
+</html>
