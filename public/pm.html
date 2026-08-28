@@ -40,8 +40,6 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
 .hdr-right{display:flex;align-items:center;gap:10px;}
 .save-indicator{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
 .save-dot{width:6px;height:6px;border-radius:50%;background:var(--success);transition:opacity .3s;}
-.reset-btn{font-family:'JetBrains Mono',monospace;font-size:11px;background:none;border:1px solid var(--border);color:var(--ink-soft);padding:6px 10px;border-radius:6px;cursor:pointer;}
-.reset-btn:hover{border-color:var(--rust);color:var(--rust);}
 
 /* nav - shelf tags */
 .nav{display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap;}
@@ -186,7 +184,6 @@ label.field:first-child{margin-top:0;}
     </div>
     <div class="hdr-right">
       <div class="save-indicator"><span class="save-dot" id="saveDot"></span><span id="saveText">Loading&hellip;</span></div>
-      <button class="reset-btn" id="resetBtn">Reset data</button>
     </div>
   </div>
 
@@ -763,12 +760,6 @@ label.field:first-child{margin-top:0;}
         activeTab = tab.getAttribute('data-tab');
         render();
       });
-    });
-    document.getElementById('resetBtn').addEventListener('click', async ()=>{
-      if(!confirm('This clears all PetPantry PM data stored in Supabase. Continue?')) return;
-      state = defaultState();
-      try{ await sb.from('pm_tracker').upsert({ userId: USER_ID, state, updatedAt: new Date().toISOString() }); }catch(e){}
-      render();
     });
   }
 
