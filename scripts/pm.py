@@ -14,6 +14,9 @@ command line as well as in the browser.
   ./scripts/pm.py patch < patch.json    deep-merge a JSON object into state
   ./scripts/pm.py story <id|#n> k=v...  edit one story's fields
   ./scripts/pm.py add-story t=... ...   append a new story
+  ./scripts/pm.py history               list recent snapshots (newest first)
+  ./scripts/pm.py history <n>           show what changed in snapshot n
+  ./scripts/pm.py restore <n>           roll the board back to snapshot n
 
 Auth: the tracker row is RLS-scoped to your Supabase account, so every command
 needs a session. `login` prompts for your password in your own terminal, stores
@@ -29,6 +32,7 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TABLE = "pm_tracker"
+HIST = "pm_tracker_history"
 
 
 def creds():
@@ -101,7 +105,7 @@ def head():
             "Content-Type": "application/json"}
 
 
-def req(method, path, body=None, extra=None):
+def req(method, path, body=None, extra=None, soft404=False):
     h = head()
     if extra:
         h.update(extra)
@@ -112,6 +116,8 @@ def req(method, path, body=None, extra=None):
             raw = resp.read().decode()
             return json.loads(raw) if raw.strip() else None
     except urllib.error.HTTPError as e:
+        if soft404 and e.code == 404:
+            return None
         sys.exit(f"{method} {path} -> HTTP {e.code}: {e.read().decode()[:400]}")
 
 
@@ -187,6 +193,23 @@ def kvs(args):
     return out
 
 
+def shape(st):
+    """One-line fingerprint of a board state, for diffing snapshots by eye."""
+    stories = st.get("stories", [])
+    by = {}
+    for x in stories:
+        by[x.get("status", "?")] = by.get(x.get("status", "?"), 0) + 1
+    return (f"{len(stories)} stories (" + ", ".join(f"{k} {v}" for k, v in sorted(by.items())) + ")"
+            f"  {len(st.get('timeline', []))} milestones  {len(st.get('notes', []))} notes")
+
+
+def snapshots():
+    rows = req("GET", f"{HIST}?select=id,savedAt,state&order=savedAt.desc&limit=50", soft404=True)
+    if rows is None:
+        sys.exit("history table missing — run supabase/pm_tracker_history_migration.sql")
+    return rows
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -194,6 +217,42 @@ def main():
 
     if cmd == "login":
         do_login()
+        return
+
+    if cmd == "history":
+        rows = snapshots()
+        if not rows:
+            print("No snapshots yet. One is written each time the board changes.")
+            return
+        if args:
+            n = int(args[0])
+            snap = rows[n - 1]
+            cur, _ = fetch()
+            print(f"snapshot {n}  saved {snap['savedAt']}")
+            print(f"  then: {shape(snap['state'])}")
+            print(f"  now:  {shape(cur)}")
+            return
+        cur, _ = fetch()
+        print(f"  current            {shape(cur)}")
+        for i, r in enumerate(rows, 1):
+            print(f"{i:3}. {r['savedAt'][:19]}  {shape(r['state'])}")
+        return
+
+    if cmd == "restore":
+        if not args:
+            sys.exit("which snapshot? see: ./scripts/pm.py history")
+        rows = snapshots()
+        n = int(args[0])
+        if not 1 <= n <= len(rows):
+            sys.exit(f"snapshot {n} out of range (1-{len(rows)})")
+        snap = rows[n - 1]
+        cur, at = fetch()
+        print(f"restoring snapshot {n} from {snap['savedAt']}")
+        print(f"  from: {shape(cur)}")
+        print(f"  to:   {shape(snap['state'])}")
+        # The restore is itself an update, so the trigger snapshots the state
+        # being replaced — this is undoable in turn.
+        push(snap["state"], at)
         return
 
     if cmd == "show":
