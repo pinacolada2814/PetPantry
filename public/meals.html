@@ -105,14 +105,21 @@
     <div id="mFoodSuggestions" style="margin-top:.35rem"></div>
     <input type="hidden" id="mFoodInvId"/>
     <p class="form-hint" id="mFoodSelected" style="color:var(--primary);font-weight:700"></p>
+    <label class="checkbox-row" for="mLogOnly">
+      <input type="checkbox" id="mLogOnly" onchange="setLogOnly(this.checked)"/>
+      <span>Not tracking this in my pantry</span>
+    </label>
+    <p class="form-hint" id="mLogOnlyHint" style="display:none">Type anything you fed — a vet sample, food at a friend's house, a bag you don't count. Nothing is deducted from your inventory.</p>
   </div>
 
   <div class="form-row">
     <div class="form-group">
-      <label for="mSize">Serving Size</label>
+      <label for="mSize" id="mSizeLabel">Serving Size</label>
       <select id="mSize" class="form-control">
         <option value="">— Select a food first —</option>
       </select>
+      <label for="mSizeText" id="mSizeTextLabel" style="display:none">Serving Size</label>
+      <input id="mSizeText" class="form-control" style="display:none" placeholder="e.g. 3 oz"/>
     </div>
     <div class="form-group">
       <label for="mAmount">Amount <span class="req">*</span></label>
@@ -157,6 +164,7 @@
 let dateRange = 'week';
 let _mRating  = null;
 let _selectedInv = null;
+let _logOnly  = false;
 const renderFoodSuggestionsDebounced = debounce(renderFoodSuggestions, 200);
 
 function setDateRange(btn, val) {
@@ -195,11 +203,14 @@ async function renderMeals() {
     const food  = inv ? foods.find(f=>f.id===inv.foodItemId) : null;
     const stars = log.catRating ? '⭐'.repeat(Number(log.catRating)) : '';
     const sizeStr = log.size ? log.size+' × ' : '';
+    // Makes it visible in the history which meals never touched inventory,
+    // so an unchanged stock count after a feeding isn't read as a bug.
+    const logOnlyTag = log.inventoryTableId ? '' : ' · not from pantry';
     return `<div class="meal-card">
       <div>
         <div class="mc-pet">${pet?pet.name:'Unknown pet'}</div>
         <div class="mc-food">${food? food.brand+' '+food.name : log.foodLabel||'—'}</div>
-        <div class="mc-meta">${sizeStr}${log.amount||''} serving${log.note?' · '+log.note:''}</div>
+        <div class="mc-meta">${sizeStr}${log.amount||''} serving${logOnlyTag}${log.note?' · '+log.note:''}</div>
         ${stars?`<div class="star-rating">${stars}</div>`:''}
       </div>
       <div>
@@ -211,6 +222,39 @@ async function renderMeals() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Log-only mode ─────────────────────────────────────────────
+// Feeding away from home, a vet sample, a bag the household doesn't count:
+// the meal still belongs in the diary, but there is no inventory row to
+// deduct from. The schema has always allowed a null inventoryTableId — this
+// is the UI for it, and the Food field becomes plain text.
+function setLogOnly(on) {
+  _logOnly = on;
+  const search   = document.getElementById('mFoodSearch');
+  const sizeSel  = document.getElementById('mSize');
+  const sizeText = document.getElementById('mSizeText');
+
+  document.getElementById('mFoodSuggestions').innerHTML = '';
+  document.getElementById('mLogOnlyHint').style.display = on ? '' : 'none';
+
+  if (on) {
+    // Drop any pantry selection so nothing is deducted for this entry.
+    document.getElementById('mFoodInvId').value = '';
+    document.getElementById('mFoodSelected').textContent = '';
+    _selectedInv = null;
+    search.placeholder = "e.g. Vet sample, food at a friend's";
+    sizeText.value = sizeSel.value || '';
+  } else {
+    search.placeholder = 'Type to search food…';
+  }
+
+  // Serving size can't be derived from a food that isn't in the pantry, so
+  // the picker swaps for a free-text field (each with its own label).
+  sizeSel.style.display  = on ? 'none' : '';
+  sizeText.style.display = on ? '' : 'none';
+  document.getElementById('mSizeLabel').style.display     = on ? 'none' : '';
+  document.getElementById('mSizeTextLabel').style.display = on ? '' : 'none';
 }
 
 // ── Open meal modal ───────────────────────────────────────────
@@ -239,6 +283,9 @@ async function openMealModal() {
   document.getElementById('mAmount').value='1';
   document.getElementById('mSize').innerHTML = '<option value="">— Select a food first —</option>';
   document.getElementById('mNote').value='';
+  document.getElementById('mSizeText').value='';
+  document.getElementById('mLogOnly').checked = false;
+  setLogOnly(false);
   _mRating=null; _selectedInv=null; _lastMatches=[];
   document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{ c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   openModal('mealModal');
@@ -283,7 +330,19 @@ async function editMeal(id) {
     c.setAttribute('aria-pressed', sel ? 'true' : 'false');
   });
   _lastMatches = [];
-  _selectedInv = { invId: log.inventoryTableId||'', label: log.foodLabel||'', foodId: null };
+
+  // No inventory row behind the log means it was logged without pantry
+  // tracking — reopen it that way so saving doesn't silently change its mode.
+  // The saved foodLabel carries over either way, so nothing is lost.
+  const logOnly = !log.inventoryTableId;
+  document.getElementById('mLogOnly').checked = logOnly;
+  setLogOnly(logOnly);
+  if (logOnly) {
+    document.getElementById('mSizeText').value = log.size || '';
+    _selectedInv = null;
+  } else {
+    _selectedInv = { invId: log.inventoryTableId, label: log.foodLabel||'', foodId: null };
+  }
 
   openModal('mealModal');
 }
@@ -313,6 +372,7 @@ async function deleteMeal(id) {
 let _lastMatches = [];
 
 async function renderFoodSuggestions() {
+  if (_logOnly) { document.getElementById('mFoodSuggestions').innerHTML = ''; return; }
   const q = document.getElementById('mFoodSearch').value.toLowerCase();
   const [foods, allInvs] = await Promise.all([Store.list('food_items'), Store.list('inventory')]);
   const invs = allInvs.filter(i=>
@@ -372,14 +432,27 @@ async function saveMeal() {
   const dateTLocal = document.getElementById('mDate').value;
   const dateT  = dateTLocal ? new Date(dateTLocal).toISOString() : '';
   const petId  = document.getElementById('mPet').value;
-  const invId  = document.getElementById('mFoodInvId').value;
   const amount = document.getElementById('mAmount').value;
-  const size   = document.getElementById('mSize').value;
   const note   = document.getElementById('mNote').value.trim();
   const editId = document.getElementById('editMealId').value;
 
+  // In log-only mode the food is whatever the user typed and there is no
+  // inventory row, so nothing downstream deducts.
+  const invId = _logOnly ? '' : document.getElementById('mFoodInvId').value;
+  const size  = _logOnly
+    ? document.getElementById('mSizeText').value.trim()
+    : document.getElementById('mSize').value;
+
   if (!dateT||!petId||!amount) { toast('Please fill required fields','danger'); return; }
-  if (!_selectedInv) { toast('Please select a food item','danger'); return; }
+
+  let foodLabel;
+  if (_logOnly) {
+    foodLabel = document.getElementById('mFoodSearch').value.trim();
+    if (!foodLabel) { toast('Please enter what you fed','danger'); return; }
+  } else {
+    if (!_selectedInv) { toast('Please select a food item','danger'); return; }
+    foodLabel = _selectedInv.label;
+  }
 
   if (editId) {
     // reverse whatever this log previously deducted, before applying the new deduction below
@@ -393,14 +466,14 @@ async function saveMeal() {
     await Store.update('meal_logs', editId, {
       dateTime: dateT, petId,
       inventoryTableId: invId||null,
-      foodLabel: _selectedInv.label,
+      foodLabel,
       size, amount: Number(amount), catRating: _mRating, note
     });
   } else {
     await Store.insert('meal_logs', {
       dateTime: dateT, petId,
       inventoryTableId: invId||null,
-      foodLabel: _selectedInv.label,
+      foodLabel,
       size, amount: Number(amount), catRating: _mRating, note,
       createdDate: new Date().toISOString()
     });

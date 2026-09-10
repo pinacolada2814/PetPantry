@@ -13,7 +13,19 @@ function mapUser(u) {
 // ── Demo mode (no account — sample data lives in localStorage only) ─
 const DEMO_MODE_KEY = 'pp_demo_mode';
 const DEMO_DATA_KEY = 'pp_demo_data';
+const DEMO_SEED_KEY = 'pp_demo_seed_version';
 const DEMO_USER = { id: 'demo-user', name: 'Demo Cat Parent', email: 'demo@petpantry.app', createdDate: '2026-01-01T00:00:00.000Z' };
+
+// Bump whenever seedDemoData() changes in a way returning visitors should see.
+// Demo data is cached in localStorage and would otherwise be kept forever, so
+// a visitor who tried the demo once would keep an old fixture that no longer
+// shows what the app does — exactly the drift the demo is supposed to avoid.
+// Bumping discards their local demo changes, which the demo banner already
+// tells them are throwaway.
+//   1 — original seed
+//   2 — 2026-09-10: lowercase food types (the type filter and typeIcon key off
+//       them), lowStockThreshold, and one food per pantry status
+const DEMO_SEED_VERSION = 2;
 
 function isDemoMode() { return localStorage.getItem(DEMO_MODE_KEY) === '1'; }
 
@@ -26,37 +38,47 @@ function seedDemoData() {
   const petFenty   = { id: crypto.randomUUID(), userId: uid, name: 'Fenty', gender: 'F', age: '4 years', breed: 'American Curl', createdDate: now, lastModifiedDate: now };
   const petBiscuit = { id: crypto.randomUUID(), userId: uid, name: 'Biscuit', gender: 'M', age: '2 years', breed: 'Domestic Shorthair', createdDate: now, lastModifiedDate: now };
 
-  const foodWeruva   = { id: crypto.randomUUID(), userId: uid, brand: 'Weruva', name: 'Cats in the Kitchen Grain-Free Pate', type: 'Wet', sizeNum: 3, sizeUnit: 'oz', proteins: ['Chicken'], color: '#f9a8d4', purchased: 'Chewy', photos: [], createdDate: now, lastModifiedDate: now };
-  const foodTiki     = { id: crypto.randomUUID(), userId: uid, brand: 'Tiki Cat', name: 'Luau Original', type: 'Wet', sizeNum: 2.8, sizeUnit: 'oz', proteins: ['Tuna', 'Chicken'], color: '#bae6fd', purchased: 'Petco', photos: [], createdDate: now, lastModifiedDate: now };
-  const foodOrijen   = { id: crypto.randomUUID(), userId: uid, brand: 'Orijen', name: 'Six Fish', type: 'Dry', sizeNum: 4, sizeUnit: 'lb', proteins: ['Fish'], color: '#bbf7d0', purchased: 'Amazon', photos: [], createdDate: now, lastModifiedDate: now };
-  const foodHomemade = { id: crypto.randomUUID(), userId: uid, brand: 'home-made', name: 'Chicken & Rice Mix', type: 'Wet', sizeNum: null, sizeUnit: null, proteins: ['Chicken'], color: '', purchased: '', photos: [], createdDate: now, lastModifiedDate: now };
+  // Seeded to put one food in each pantry state a card can show — expiring
+  // soon, expired, low stock, out of stock, and log-only — so the demo
+  // exercises the badges rather than showing five healthy cards.
+  const foodWeruva   = { id: crypto.randomUUID(), userId: uid, brand: 'Weruva', name: 'Cats in the Kitchen Grain-Free Pate', type: 'wet', sizeNum: 3, sizeUnit: 'oz', proteins: ['Chicken'], color: '#f9a8d4', purchased: 'Chewy', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
+  const foodTiki     = { id: crypto.randomUUID(), userId: uid, brand: 'Tiki Cat', name: 'Luau Original', type: 'wet', sizeNum: 2.8, sizeUnit: 'oz', proteins: ['Tuna', 'Chicken'], color: '#bae6fd', purchased: 'Petco', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
+  const foodOrijen   = { id: crypto.randomUUID(), userId: uid, brand: 'Orijen', name: 'Six Fish', type: 'dry', sizeNum: 4, sizeUnit: 'lb', proteins: ['Fish'], color: '#bbf7d0', purchased: 'Amazon', photos: [], lowStockThreshold: 5, createdDate: now, lastModifiedDate: now };
+  const foodWellness = { id: crypto.randomUUID(), userId: uid, brand: 'Wellness CORE', name: 'Turkey & Chicken Pate', type: 'wet', sizeNum: 5.5, sizeUnit: 'oz', proteins: ['Chicken'], color: '#fed7aa', purchased: 'Chewy', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
+  const foodHomemade = { id: crypto.randomUUID(), userId: uid, brand: 'home-made', name: 'Chicken & Rice Mix', type: 'all home-cooked', sizeNum: null, sizeUnit: null, proteins: ['Chicken'], color: '', purchased: '', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
 
-  const invWeruvaExpiring = { id: crypto.randomUUID(), userId: uid, foodItemId: foodWeruva.id, expirationDate: isoDate(12), inventoryNumber: 4 };
+  const invWeruvaExpiring = { id: crypto.randomUUID(), userId: uid, foodItemId: foodWeruva.id, expirationDate: isoDate(3), inventoryNumber: 4 };
   const invWeruvaFresh    = { id: crypto.randomUUID(), userId: uid, foodItemId: foodWeruva.id, expirationDate: isoDate(90), inventoryNumber: 10 };
-  const invTiki           = { id: crypto.randomUUID(), userId: uid, foodItemId: foodTiki.id, expirationDate: isoDate(45), inventoryNumber: 6 };
+  const invTiki           = { id: crypto.randomUUID(), userId: uid, foodItemId: foodTiki.id, expirationDate: isoDate(-5), inventoryNumber: 6 };
   const invOrijen         = { id: crypto.randomUUID(), userId: uid, foodItemId: foodOrijen.id, expirationDate: isoDate(200), inventoryNumber: 2 };
+  const invWellness       = { id: crypto.randomUUID(), userId: uid, foodItemId: foodWellness.id, expirationDate: isoDate(120), inventoryNumber: 0 };
   const invHomemade       = { id: crypto.randomUUID(), userId: uid, foodItemId: foodHomemade.id, expirationDate: null, inventoryNumber: null };
 
   const mealLogs = [
     { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 1 * dayMs).toISOString(), petId: petFenty.id, inventoryTableId: invWeruvaFresh.id, foodLabel: 'Weruva Cats in the Kitchen Grain-Free Pate', size: '3 oz', amount: 1, catRating: 5, note: 'Devoured it', createdDate: now },
     { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 1 * dayMs - 8 * 3600000).toISOString(), petId: petBiscuit.id, inventoryTableId: invTiki.id, foodLabel: 'Tiki Cat Luau Original', size: '2.8 oz', amount: 1, catRating: 4, note: '', createdDate: now },
-    { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 2 * dayMs).toISOString(), petId: petFenty.id, inventoryTableId: invHomemade.id, foodLabel: 'home-made Chicken & Rice Mix', size: '', amount: 1, catRating: 5, note: 'Log-only, no inventory tracked', createdDate: now }
+    { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 2 * dayMs).toISOString(), petId: petFenty.id, inventoryTableId: invHomemade.id, foodLabel: 'home-made Chicken & Rice Mix', size: '', amount: 1, catRating: 5, note: 'Log-only, no inventory tracked', createdDate: now },
+    { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 3 * dayMs).toISOString(), petId: petBiscuit.id, inventoryTableId: null, foodLabel: 'Vet sample — hydrolysed protein', size: '2 oz', amount: 1, catRating: 2, note: 'Not in the pantry, logged for the record', createdDate: now }
   ];
 
   return {
     pets: [petFenty, petBiscuit],
-    food_items: [foodWeruva, foodTiki, foodOrijen, foodHomemade],
-    inventory: [invWeruvaExpiring, invWeruvaFresh, invTiki, invOrijen, invHomemade],
+    food_items: [foodWeruva, foodTiki, foodOrijen, foodWellness, foodHomemade],
+    inventory: [invWeruvaExpiring, invWeruvaFresh, invTiki, invOrijen, invWellness, invHomemade],
     meal_logs: mealLogs
   };
 }
 
-function saveDemoData(data) { localStorage.setItem(DEMO_DATA_KEY, JSON.stringify(data)); }
+function saveDemoData(data) {
+  localStorage.setItem(DEMO_DATA_KEY, JSON.stringify(data));
+  localStorage.setItem(DEMO_SEED_KEY, String(DEMO_SEED_VERSION));
+}
 
 function loadDemoData() {
   try {
     const raw = localStorage.getItem(DEMO_DATA_KEY);
-    if (raw) return JSON.parse(raw);
+    const cachedVersion = Number(localStorage.getItem(DEMO_SEED_KEY));
+    if (raw && cachedVersion === DEMO_SEED_VERSION) return JSON.parse(raw);
   } catch (e) { /* fall through and reseed on corrupt data */ }
   const seeded = seedDemoData();
   saveDemoData(seeded);
@@ -68,6 +90,7 @@ function resetDemoData() { saveDemoData(seedDemoData()); }
 function exitDemoMode() {
   localStorage.removeItem(DEMO_MODE_KEY);
   localStorage.removeItem(DEMO_DATA_KEY);
+  localStorage.removeItem(DEMO_SEED_KEY);
 }
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -257,19 +280,88 @@ function toLocalInputValue(d) {
 }
 function nowISO() { return toLocalInputValue(new Date()); }
 
-function expClass(dateStr) {
-  if (!dateStr) return 'ok';
-  const diff = (new Date(dateStr) - new Date()) / 86400000;
-  if (diff < 0)  return 'past';
-  if (diff < 30) return 'soon';
+// ── Pantry status: expiry window + stock levels ──────────────
+// The two "is this pantry OK?" questions the app answers at a glance:
+// is anything about to expire, and is anything about to run out.
+
+// How far ahead counts as "expiring soon". A per-device preference rather
+// than a synced one: there is no user-settings table, and standing up a
+// table (plus RLS, plus a migration) for a single integer costs more than
+// the setting is worth. The trade-off is that a user who sets 14 days on
+// their phone still sees 7 on their laptop.
+const EXPIRY_WINDOW_KEY = 'pp_expiry_window_days';
+const EXPIRY_WINDOW_CHOICES = [3, 7, 14, 30];
+const DEFAULT_EXPIRY_WINDOW = 7;
+
+// Units on hand at or below this count as "low" when a food has no
+// threshold of its own. Cat food is bought in small multiples, so three is
+// about the point where "pick some up" becomes worth surfacing.
+const DEFAULT_LOW_STOCK = 3;
+
+function expiryWindowDays() {
+  const raw = Number(localStorage.getItem(EXPIRY_WINDOW_KEY));
+  return EXPIRY_WINDOW_CHOICES.includes(raw) ? raw : DEFAULT_EXPIRY_WINDOW;
+}
+function setExpiryWindowDays(days) {
+  localStorage.setItem(EXPIRY_WINDOW_KEY, String(Number(days)));
+}
+
+// Whole days from now until dateStr — negative once the date has passed.
+// Both sides are floored to local midnight so "expires today" reads as 0
+// rather than as a fraction of a day that rounds either way.
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const then = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((then - now) / 86400000);
+}
+
+function expClass(dateStr, windowDays = expiryWindowDays()) {
+  const d = daysUntil(dateStr);
+  if (d === null) return 'ok';
+  if (d < 0) return 'past';
+  if (d <= windowDays) return 'soon';
   return 'ok';
 }
 function expLabel(dateStr) {
-  if (!dateStr) return 'No Exp';
-  const diff = Math.round((new Date(dateStr) - new Date()) / 86400000);
-  if (diff < 0)  return 'Expired';
-  if (diff === 0) return 'Today';
-  return `${diff}d left`;
+  const d = daysUntil(dateStr);
+  if (d === null) return 'No Exp';
+  if (d < 0)  return 'Expired';
+  if (d === 0) return 'Today';
+  return `${d}d left`;
+}
+
+// Rolls a food item's inventory rows up into the one status the card shows.
+// `tracked` is false when the food is in log-only mode (every row has a null
+// quantity) — those foods get no stock badge at all, since "0 units" would
+// be a lie about a food the user deliberately chose not to count.
+function foodStock(food, invRows) {
+  const rows = invRows.filter(i => i.foodItemId === food.id);
+  const counted = rows.filter(i => i.inventoryNumber !== null && i.inventoryNumber !== '');
+  const threshold = food.lowStockThreshold !== null && food.lowStockThreshold !== undefined && food.lowStockThreshold !== ''
+    ? Number(food.lowStockThreshold)
+    : DEFAULT_LOW_STOCK;
+
+  if (!counted.length) return { tracked: false, total: 0, threshold, level: 'untracked' };
+
+  const total = counted.reduce((sum, i) => sum + (Number(i.inventoryNumber) || 0), 0);
+  const level = total <= 0 ? 'out' : (total <= threshold ? 'low' : 'ok');
+  return { tracked: true, total, threshold, level };
+}
+
+// The soonest-expiring state across a food's inventory rows: 'past' beats
+// 'soon' beats 'ok', so a card with one expired can reads as expired even if
+// the rest of the stack is fine.
+function foodExpiry(food, invRows, windowDays = expiryWindowDays()) {
+  const rows = invRows.filter(i => i.foodItemId === food.id && i.expirationDate);
+  let level = 'ok';
+  for (const inv of rows) {
+    const cls = expClass(inv.expirationDate, windowDays);
+    if (cls === 'past') return 'past';
+    if (cls === 'soon') level = 'soon';
+  }
+  return level;
 }
 
 // ── Debounce ─────────────────────────────────────────────────
