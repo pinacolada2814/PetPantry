@@ -211,9 +211,11 @@ textarea:focus-visible, [tabindex]:focus-visible {
 
 /* Expiration row inside expanded card */
 .exp-row {
-  display: flex; align-items: center; gap: .5rem;
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
   padding: .5rem 0; border-top: 1px solid var(--border);
 }
+/* the adjust widget always drops to its own line under the row it edits */
+.exp-row .inline-adjust { flex-basis: 100%; }
 .exp-row:first-child { border-top: none; }
 .exp-badge {
   padding: .2rem .6rem; border-radius: 99px; font-size: .72rem; font-weight: 700;
@@ -225,9 +227,64 @@ textarea:focus-visible, [tabindex]:focus-visible {
 .exp-qty { margin-left: auto; font-weight: 700; font-size: .9rem; }
 .exp-actions { display: flex; gap: .35rem; }
 
+/* ---------- Pantry status pills ---------- */
+/* Same colour pairs as the expiry badges above, which the Aug 2026 audit
+   verified at 4.5:1 — reused rather than re-picked so the two systems can't
+   drift apart. */
+.card-status {
+  display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .35rem;
+}
+.status-pill {
+  padding: .2rem .55rem; border-radius: 99px;
+  font-size: .72rem; font-weight: 700; white-space: nowrap;
+}
+.status-pill.danger { background: hsl(0 70% 92%);  color: hsl(0 70% 36%); }
+.status-pill.warn   { background: hsl(38 90% 90%); color: hsl(38 90% 32%); }
+
+/* ---------- Pantry attention banner ---------- */
+.pantry-alert {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius); padding: .75rem .9rem; margin-bottom: .85rem;
+  box-shadow: var(--shadow);
+}
+.pantry-alert h2 {
+  font-size: .85rem; font-weight: 800; margin-bottom: .4rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.pantry-alert ul { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
+.pantry-alert li {
+  font-size: .82rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: .45rem; flex-wrap: wrap;
+}
+.pantry-alert li strong { color: var(--text); font-weight: 700; }
+
+/* ---------- Inline checkbox row ---------- */
+.checkbox-row {
+  display: flex; align-items: center; gap: .55rem;
+  margin-top: .6rem; min-height: 44px;   /* full-width tap target */
+  font-size: .85rem; font-weight: 600; color: var(--text);
+  cursor: pointer;
+}
+.checkbox-row input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0;
+  accent-color: var(--primary); cursor: pointer;
+}
+
+/* ---------- Expiry window picker ---------- */
+.window-picker {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .8rem; color: var(--text-muted); font-weight: 600;
+}
+.window-picker select {
+  width: auto; padding: .3rem .5rem; font-size: .8rem;
+}
+
 /* inline adjust */
 .inline-adjust {
   display: flex; align-items: center; gap: .35rem;
+  flex-wrap: wrap;              /* quantity + threshold + 2 buttons overflow 375px */
+  margin-top: .4rem;
   animation: fadeIn .15s ease;
 }
 .inline-adjust input {

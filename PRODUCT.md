@@ -49,7 +49,7 @@ Explicit non-goals, carried forward from the PRD's V1 scope boundary:
 - No nutritional or calorie tracking; no vet appointments or health records. Either would change the product's core focus and needs its own PRD rather than being added as a feature.
 - No social features — no sharing of profiles or meal logs.
 - No multi-household or shared pantry across logins.
-- No push notifications or reminders for expiring food or low stock.
+- No push notifications or reminders for expiring food or low stock. (In-app low-stock and expiry badges shipped 2026-09-10; the non-goal is the notification channel, not the surfacing.)
 - No shopping list generation, CSV/PDF export, dark mode, or PWA/installable app. These sit in the backlog as wanted-but-unbuilt, not as rejected.
 
 Three original non-goals have since shipped and are no longer out of scope:
@@ -71,11 +71,12 @@ A demo mode (shipped 2026-08-19) lets a visitor use a fully working copy of the 
 - Pure HTML/CSS/JS, no build step or framework; deployed to GitHub Pages via GitHub Actions on push to `main`.
 - Supabase (Postgres + Auth) is the only backend — called directly from the browser, secured by row-level security rather than a server-side API layer. No traditional backend server exists in this stack.
 - Email/password auth via Supabase Auth. Email confirmation is currently disabled for frictionless testing; the PRD flags this as something to reconsider before wider/public use.
-- Inventory tracking is optional per food item ("food logging only" mode — an inventory row can have a null quantity, meaning meals are logged without stock being tracked).
+- Inventory tracking is optional at two levels: a food item's inventory row can carry a null quantity ("food logging only" mode), and a meal can be logged with no inventory row behind it at all — free text, for a vet sample or a feeding away from home. Neither deducts stock.
 - Barcode scanning uses the free, client-side `html5-qrcode` library (camera via `getUserMedia`) against the free Open Food Facts / Open Pet Food Facts public API — no API key, CORS-open. Coverage depends on that crowdsourced database; niche or newer products may not be found and fall back to manual entry. The scanner bundle is lazy-loaded so it stays off the sign-in path.
 - Food items support up to 5 photos each, stored via the `photos` array column on `food_items`.
 - Single-user-per-account model — no household/family sharing of one pet's data across multiple logins.
-- No push notifications or reminders; inventory/expiration status is only visible when the user opens the app.
+- No push notifications or reminders; inventory/expiration status is only visible when the user opens the app, as badges on the Food Inventory cards plus a needs-attention summary at the top of that page.
+- Low-stock thresholds are per food item and compare against the sum of quantity across all of that food's inventory rows; a blank threshold falls back to an app-wide default. The "expiring soon" window is a per-device preference (localStorage), not synced across devices — there is no user-settings table.
 - No offline support — requires an internet connection to load and use.
 - Must run mobile-first with a working desktop layout (bottom tab bar on mobile, sidebar on desktop, ≥768px breakpoint per the existing implementation).
 - Cost constraint: must stay $0 to run at current scale — no paid infrastructure for a single-household-scale user base drives technology choices (GitHub Pages, Supabase free tier, free public APIs).

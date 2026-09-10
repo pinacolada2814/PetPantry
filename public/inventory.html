@@ -59,12 +59,17 @@
     <!-- Stats -->
     <div class="stat-row" id="statRow"></div>
 
+    <!-- Needs-attention summary, rendered only when something needs attention.
+         Sits above the filters so it is visible on a phone without scrolling. -->
+    <div id="pantryAlert"></div>
+
     <!-- Search + Filter -->
     <div class="search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <label for="searchInput" class="sr-only">Search brand or name</label>
       <input type="text" id="searchInput" placeholder="Search brand or name…" oninput="renderInventoryDebounced()"/>
     </div>
+    <h2 class="sr-only">Filter by food type</h2>
     <div class="filter-chips" id="typeFilter">
       <button class="chip active" data-type="" aria-pressed="true" onclick="setTypeFilter(this,'')">All</button>
       <button class="chip" data-type="dry" aria-pressed="false" onclick="setTypeFilter(this,'dry')">Dry</button>
@@ -74,6 +79,22 @@
       <button class="chip" data-type="all home-cooked" aria-pressed="false" onclick="setTypeFilter(this,'all home-cooked')">Home-Cooked</button>
       <button class="chip" data-type="other" aria-pressed="false" onclick="setTypeFilter(this,'other')">Other</button>
     </div>
+
+    <h2 class="sr-only">Filter by pantry status</h2>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem">
+      <div class="filter-chips" id="statusFilter" style="margin:0">
+        <button class="chip active" data-status="" aria-pressed="true" onclick="setStatusFilter(this,'')">All</button>
+        <button class="chip" data-status="soon" aria-pressed="false" onclick="setStatusFilter(this,'soon')">Expiring Soon</button>
+        <button class="chip" data-status="past" aria-pressed="false" onclick="setStatusFilter(this,'past')">Expired</button>
+        <button class="chip" data-status="low" aria-pressed="false" onclick="setStatusFilter(this,'low')">Low Stock</button>
+        <button class="chip" data-status="out" aria-pressed="false" onclick="setStatusFilter(this,'out')">Out of Stock</button>
+      </div>
+      <div class="window-picker">
+        <label for="expWindowSel">Expiring soon =</label>
+        <select id="expWindowSel" class="form-control" onchange="onExpiryWindowChange(this.value)"></select>
+      </div>
+    </div>
+
 
     <!-- Inventory list -->
     <h2 class="sr-only">Your food items</h2>
@@ -216,6 +237,11 @@
         <p class="form-hint">Leave blank to skip tracking</p>
       </div>
     </div>
+    <div class="form-group">
+      <label for="fLowStock">Low-Stock Alert At</label>
+      <input id="fLowStock" type="number" min="0" step="any" class="form-control" placeholder="Optional"/>
+      <p class="form-hint" id="fLowStockHint"></p>
+    </div>
 
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="showStep1()">← Back</button>
@@ -241,6 +267,11 @@
   <div class="form-group">
     <label for="newExpQty">Inventory Qty</label>
     <input id="newExpQty" type="number" min="0" class="form-control" placeholder="Optional — leave blank to skip"/>
+  </div>
+  <div class="form-group">
+    <label for="newExpLowStock">Low-Stock Alert At</label>
+    <input id="newExpLowStock" type="number" min="0" step="any" class="form-control" placeholder="Optional"/>
+    <p class="form-hint" id="newExpLowStockHint"></p>
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal('addExpModal')">Cancel</button>
@@ -272,6 +303,7 @@
   if (!(await Auth.require())) return;
   renderUserChip();
   highlightNav('inventory');
+  initExpiryWindowPicker();
   await renderInventory();
 })();
 
@@ -281,8 +313,23 @@ const BRANDS = ['home-made','Weruva','Weruva BFF','Instinct','Tiki Cat','Wellnes
   'Blue Buffalo','Nulo','Royal Canin','other'];
 
 let typeFilter = '';
+let statusFilterVal = '';
 let _addExpFoodId = null;
 const renderInventoryDebounced = debounce(renderInventory, 250);
+
+// Fills the "Expiring soon =" picker from the shared choices in app.js so the
+// list and the stored preference can't disagree.
+function initExpiryWindowPicker() {
+  const sel = document.getElementById('expWindowSel');
+  const current = expiryWindowDays();
+  sel.innerHTML = EXPIRY_WINDOW_CHOICES
+    .map(d => `<option value="${d}"${d === current ? ' selected' : ''}>${d} days</option>`).join('');
+}
+
+function onExpiryWindowChange(days) {
+  setExpiryWindowDays(days);
+  renderInventory();
+}
 
 // ── Render stats ──────────────────────────────────────────────
 async function renderStats() {
@@ -296,87 +343,183 @@ async function renderStats() {
 }
 
 // ── Render inventory list ─────────────────────────────────────
+// Cards are ordered by how much attention they need, not alphabetically:
+// something expired or out of stock is the reason you opened this page.
+const ATTENTION_ORDER = ['past', 'out', 'soon', 'low', 'ok'];
+
+function attentionRank(a) {
+  if (a.expiry === 'past') return 0;
+  if (a.stock.level === 'out') return 1;
+  if (a.expiry === 'soon') return 2;
+  if (a.stock.level === 'low') return 3;
+  return 4;
+}
+
+// Expanded cards are identified by DOM class, so a re-render would collapse
+// them. Capture before replacing the list, re-open after.
+function openCardIds() {
+  return [...document.querySelectorAll('.card-body.open')].map(el => el.id);
+}
+function restoreOpenCards(ids) {
+  ids.forEach(id => { if (document.getElementById(id)) toggleCard(id); });
+}
+
 async function renderInventory() {
   const q = (document.getElementById('searchInput').value || '').toLowerCase();
   const [allFoods, invAll] = await Promise.all([Store.list('food_items'), Store.list('inventory')]);
+  const windowDays = expiryWindowDays();
+
   let foods = allFoods;
   if (typeFilter) foods = foods.filter(f => f.type === typeFilter);
   if (q) foods = foods.filter(f =>
     f.brand.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
 
+  // Work out each food's status once, then filter, sort and render off it.
+  const annotated = foods.map(food => ({
+    food,
+    invRows: invAll.filter(i => i.foodItemId === food.id)
+      .sort((a, b) => (a.expirationDate || '9999') > (b.expirationDate || '9999') ? 1 : -1),
+    stock: foodStock(food, invAll),
+    expiry: foodExpiry(food, invAll, windowDays)
+  }));
+
+  // The banner follows the type/search filter (so it describes what you are
+  // looking at) but not the status filter (which would make it circular).
+  renderPantryAlert(annotated, windowDays);
+
+  let visible = annotated;
+  if (statusFilterVal === 'soon')      visible = visible.filter(a => a.expiry === 'soon');
+  else if (statusFilterVal === 'past') visible = visible.filter(a => a.expiry === 'past');
+  else if (statusFilterVal === 'low')  visible = visible.filter(a => a.stock.level === 'low');
+  else if (statusFilterVal === 'out')  visible = visible.filter(a => a.stock.level === 'out');
+
+  visible.sort((a, b) =>
+    attentionRank(a) - attentionRank(b) ||
+    a.food.brand.localeCompare(b.food.brand) ||
+    a.food.name.localeCompare(b.food.name));
+
   const el = document.getElementById('inventoryList');
 
-  if (!foods.length) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🥫</div>
-      <p>No food items yet. Tap <strong>+ Add Food</strong> to get started!</p></div>`;
+  if (!visible.length) {
+    el.innerHTML = allFoods.length
+      ? `<div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <p>No food items match these filters.</p></div>`
+      : `<div class="empty-state">
+          <div class="empty-icon">🥫</div>
+          <p>No food items yet. Tap <strong>+ Add Food</strong> to get started!</p></div>`;
+    await renderStats();
     return;
   }
 
-  // group foods by brand, sort each food's inv by expDate
-  const grouped = {};
-  foods.forEach(f => { (grouped[f.brand] = grouped[f.brand] || []).push(f); });
-
-  el.innerHTML = Object.keys(grouped).sort().map(brand => {
-    const items = grouped[brand];
-    return items.map(food => {
-      const invRows = invAll.filter(i => i.foodItemId === food.id)
-        .sort((a,b) => (a.expirationDate||'9999') > (b.expirationDate||'9999') ? 1 : -1);
-
-      const colorDot = food.color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${food.color};margin-left:4px;vertical-align:middle"></span>` : '';
-      const sizeStr  = food.sizeNum ? `${food.sizeNum} ${food.sizeUnit}` : '';
-      const proteins = (food.proteins||[]).join(', ');
-
-      const expHTML = invRows.length ? invRows.map(inv => {
-        const cls = expClass(inv.expirationDate);
-        const lbl = expLabel(inv.expirationDate);
-        const qtyDisplay = inv.inventoryNumber !== null && inv.inventoryNumber !== ''
-          ? `<span class="exp-qty">${inv.inventoryNumber} units</span>`
-          : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
-        return `<div class="exp-row" id="exprow-${inv.id}">
-          <span class="exp-badge ${cls}">${lbl}</span>
-          <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(inv.expirationDate)}</span>
-          ${qtyDisplay}
-          <div class="exp-actions">
-            <button class="btn btn-ghost btn-sm" onclick="startAdjust('${inv.id}')">Adjust</button>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${inv.id}')" aria-label="Delete expiration entry">🗑️</button>
-          </div>
-        </div>`;
-      }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
-
-      const photos = food.photos || [];
-      const foodLabel = `${food.brand} ${food.name}`;
-      const cardIcon = photos.length
-        ? `<img class="card-icon-photo" src="${photos[0]}" alt="${foodLabel}"/>`
-        : typeIcon(food.type);
-      const photoStrip = photos.length
-        ? `<div class="card-photo-strip">${photos.map((url,i) =>
-            `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${foodLabel} photo ${i+1}"/></a>`).join('')}</div>`
-        : '';
-
-      return `<div class="card">
-        <div class="card-header" id="ch-${food.id}" role="button" tabindex="0" aria-expanded="false" aria-controls="cb-${food.id}" onclick="toggleCard('cb-${food.id}')" onkeydown="handleCardKeydown(event,'cb-${food.id}')">
-          <div class="card-icon">${cardIcon}</div>
-          <div class="card-title">
-            <h3>${food.brand} – ${food.name}${colorDot}</h3>
-            <p>${food.type} · ${sizeStr}${proteins ? ' · ' + proteins : ''}</p>
-          </div>
-          <svg class="card-chevron" id="chev-${food.id}" viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="card-body" id="cb-${food.id}">
-          ${photoStrip}
-          ${expHTML}
-          <div style="display:flex;gap:.5rem;margin-top:.75rem">
-            <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}','${foodLabel}')">+ Add Expiration Date</button>
-            <button class="btn btn-ghost btn-sm" onclick="editFood('${food.id}')">Edit Item</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${food.id}')">Delete Item</button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }).join('');
+  const wasOpen = openCardIds();
+  el.innerHTML = visible.map(a => renderFoodCard(a, windowDays)).join('');
+  restoreOpenCards(wasOpen);
 
   await renderStats();
+}
+
+function renderFoodCard(a, windowDays) {
+  const { food, invRows, stock, expiry } = a;
+
+  const colorDot = food.color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${food.color};margin-left:4px;vertical-align:middle"></span>` : '';
+  const sizeStr  = food.sizeNum ? `${food.sizeNum} ${food.sizeUnit}` : '';
+  const proteins = (food.proteins||[]).join(', ');
+
+  // Status pills. A log-only food (no counted quantity anywhere) gets no
+  // stock pill at all — "0 units" would misreport a deliberate choice not
+  // to count as an empty shelf.
+  const pills = [];
+  if (expiry === 'past')      pills.push('<span class="status-pill danger">Expired</span>');
+  else if (expiry === 'soon') pills.push('<span class="status-pill warn">Expiring soon</span>');
+  if (stock.level === 'out')      pills.push('<span class="status-pill danger">Out of stock</span>');
+  else if (stock.level === 'low') pills.push(`<span class="status-pill warn">Low stock · ${stock.total} left</span>`);
+  const statusHTML = pills.length ? `<div class="card-status">${pills.join('')}</div>` : '';
+
+  const invHTML = invRows.length ? invRows.map(inv => {
+    const cls = expClass(inv.expirationDate, windowDays);
+    const lbl = expLabel(inv.expirationDate);
+    const qtyDisplay = inv.inventoryNumber !== null && inv.inventoryNumber !== ''
+      ? `<span class="exp-qty">${inv.inventoryNumber} units</span>`
+      : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
+    return `<div class="exp-row" id="exprow-${inv.id}">
+      <span class="exp-badge ${cls}">${lbl}</span>
+      <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(inv.expirationDate)}</span>
+      ${qtyDisplay}
+      <div class="exp-actions">
+        <button class="btn btn-ghost btn-sm" onclick="startAdjust('${inv.id}','${food.id}')">Adjust</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${inv.id}')" aria-label="Delete expiration entry">🗑️</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="exp-row" style="color:var(--text-muted);font-size:.82rem">No inventory entries yet.</div>`;
+
+  const stockSummary = stock.tracked
+    ? `<div class="exp-row" style="font-size:.8rem;color:var(--text-muted)">
+         ${stock.total} units on hand · alerts below ${stock.threshold}
+       </div>`
+    : `<div class="exp-row" style="font-size:.8rem;color:var(--text-muted)">
+         Not tracking quantity for this food.
+       </div>`;
+
+  const photos = food.photos || [];
+  const foodLabel = `${food.brand} ${food.name}`;
+  const cardIcon = photos.length
+    ? `<img class="card-icon-photo" src="${photos[0]}" alt="${foodLabel}"/>`
+    : typeIcon(food.type);
+  const photoStrip = photos.length
+    ? `<div class="card-photo-strip">${photos.map((url,i) =>
+        `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${foodLabel} photo ${i+1}"/></a>`).join('')}</div>`
+    : '';
+
+  return `<div class="card">
+    <div class="card-header" id="ch-${food.id}" role="button" tabindex="0" aria-expanded="false" aria-controls="cb-${food.id}" onclick="toggleCard('cb-${food.id}')" onkeydown="handleCardKeydown(event,'cb-${food.id}')">
+      <div class="card-icon">${cardIcon}</div>
+      <div class="card-title">
+        <h3>${food.brand} – ${food.name}${colorDot}</h3>
+        <p>${food.type} · ${sizeStr}${proteins ? ' · ' + proteins : ''}</p>
+        ${statusHTML}
+      </div>
+      <svg class="card-chevron" id="chev-${food.id}" viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body" id="cb-${food.id}">
+      ${photoStrip}
+      ${invHTML}
+      ${stockSummary}
+      <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="openAddExp('${food.id}')">+ Add Expiration Date</button>
+        <button class="btn btn-ghost btn-sm" onclick="editFood('${food.id}')">Edit Item</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${food.id}')">Delete Item</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Needs-attention summary ───────────────────────────────────
+// Renders nothing at all when the pantry is healthy, so the banner reads as
+// a real alert rather than as permanent page furniture.
+function renderPantryAlert(annotated, windowDays) {
+  const el = document.getElementById('pantryAlert');
+  const name = a => `${a.food.brand} ${a.food.name}`;
+
+  const expired = annotated.filter(a => a.expiry === 'past');
+  const soon    = annotated.filter(a => a.expiry === 'soon');
+  const out     = annotated.filter(a => a.stock.level === 'out');
+  const low     = annotated.filter(a => a.stock.level === 'low');
+
+  if (!expired.length && !soon.length && !out.length && !low.length) { el.innerHTML = ''; return; }
+
+  const line = (items, pill, cls, suffix = () => '') => items.map(a =>
+    `<li><span class="status-pill ${cls}">${pill}</span> <strong>${name(a)}</strong>${suffix(a)}</li>`).join('');
+
+  el.innerHTML = `<div class="pantry-alert" role="status">
+    <h2>🔔 Needs attention</h2>
+    <ul>
+      ${line(expired, 'Expired', 'danger')}
+      ${line(out, 'Out of stock', 'danger')}
+      ${line(soon, 'Expiring soon', 'warn', () => ` — within ${windowDays} days`)}
+      ${line(low, 'Low stock', 'warn', a => ` — ${a.stock.total} left`)}
+    </ul>
+  </div>`;
 }
 
 function typeIcon(t) {
@@ -396,12 +539,26 @@ function handleCardKeydown(e, id) {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(id); }
 }
 
-// ── Type filter ───────────────────────────────────────────────
-function setTypeFilter(btn, val) {
-  typeFilter = val;
-  document.querySelectorAll('.filter-chips .chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
+// ── Filters ───────────────────────────────────────────────────
+// Each chip row is cleared by its own container id: a bare '.filter-chips
+// .chip' selector would now also deselect the other row.
+function selectChip(containerId, btn) {
+  document.querySelectorAll(`#${containerId} .chip`).forEach(c => {
+    c.classList.remove('active'); c.setAttribute('aria-pressed','false');
+  });
   btn.classList.add('active');
   btn.setAttribute('aria-pressed','true');
+}
+
+function setTypeFilter(btn, val) {
+  typeFilter = val;
+  selectChip('typeFilter', btn);
+  renderInventory();
+}
+
+function setStatusFilter(btn, val) {
+  statusFilterVal = val;
+  selectChip('statusFilter', btn);
   renderInventory();
 }
 
@@ -424,9 +581,19 @@ function openAddFoodModal() {
   document.getElementById('fPurchased').value = '';
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
+  setLowStockField('');
   document.querySelectorAll('#proteinChips .multi-chip').forEach(c => { c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   resetPhotoPicker();
   openModal('addFoodModal');
+}
+
+// The threshold is per food item, not per expiration entry — a blank value
+// means "use the app default", which the hint spells out so an empty box
+// doesn't read as "no alerts".
+function setLowStockField(value) {
+  document.getElementById('fLowStock').value = value ?? '';
+  document.getElementById('fLowStockHint').textContent =
+    `Badge the card as low stock at or below this many units. Leave blank for the default of ${DEFAULT_LOW_STOCK}.`;
 }
 
 // ── Photo picker ──────────────────────────────────────────────
@@ -572,6 +739,7 @@ function openScannedItemForm(p) {
   document.querySelectorAll('#proteinChips .multi-chip').forEach(c => { c.classList.remove('sel'); c.setAttribute('aria-pressed','false'); });
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
+  setLowStockField('');
   resetPhotoPicker();
 
   document.getElementById('step1').style.display = 'none';
@@ -588,7 +756,7 @@ async function onBrandChange() {
   if (foods.length) {
     el.innerHTML = `<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">You already have these items. Select one to add more inventory:</p>` +
       foods.map(f => `<button class="btn btn-ghost btn-full" style="margin-bottom:.35rem;justify-content:flex-start"
-        onclick="quickAddExp('${f.id}','${f.brand} ${f.name}')">${f.name} <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted)">${f.type} · ${f.sizeNum} ${f.sizeUnit}</span></button>`).join('');
+        onclick="quickAddExp('${f.id}')">${f.name} <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted)">${f.type} · ${f.sizeNum} ${f.sizeUnit}</span></button>`).join('');
   } else { el.innerHTML = ''; }
   document.getElementById('newItemBtn').style.display = '';
 }
@@ -650,6 +818,8 @@ async function saveFoodItem() {
   const purchased=document.getElementById('fPurchased').value.trim();
   const expRaw  = document.getElementById('fExp').value.trim();
   const qty     = document.getElementById('fQty').value;
+  const lowRaw  = document.getElementById('fLowStock').value;
+  const lowStockThreshold = lowRaw === '' ? null : Number(lowRaw);
 
   if (!brand||!name||!type||!sizeNum||!proteins.length) {
     toast('Please fill all required fields','danger'); return;
@@ -660,9 +830,9 @@ async function saveFoodItem() {
   let food;
 
   if (editId) {
-    food = await Store.update('food_items', editId, {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,lastModifiedDate:now});
+    food = await Store.update('food_items', editId, {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,lowStockThreshold,lastModifiedDate:now});
   } else {
-    food = await Store.insert('food_items', {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,createdDate:now,lastModifiedDate:now});
+    food = await Store.insert('food_items', {brand,name,type,sizeNum:Number(sizeNum),sizeUnit,proteins,color,purchased,lowStockThreshold,createdDate:now,lastModifiedDate:now});
   }
 
   // create inventory entry if exp or qty provided
@@ -714,6 +884,7 @@ async function editFood(foodId) {
   });
   document.getElementById('fExp').value = '';
   document.getElementById('fQty').value = '';
+  setLowStockField(food.lowStockThreshold ?? '');
   _photoItems = (food.photos||[]).map(url => ({ existing: true, url, previewUrl: url }));
   _originalPhotoUrls = food.photos||[];
   renderPhotoGrid();
@@ -736,42 +907,51 @@ async function deleteFoodItem(foodId) {
 }
 
 // ── Adjust inline ─────────────────────────────────────────────
-async function startAdjust(invId) {
+// Edits the entry's quantity and the food's low-stock threshold together,
+// since "how many are left" and "tell me when that's too few" are the same
+// thought. The threshold spans every entry for the food, so the field says so.
+async function startAdjust(invId, foodId) {
   const row = document.getElementById('exprow-'+invId);
-  const inv = (await Store.list('inventory')).find(i=>i.id===invId);
-  if (!inv) return;
-  const cur = inv.inventoryNumber !== null ? inv.inventoryNumber : '';
   const existing = row.querySelector('.inline-adjust');
   if (existing) { existing.remove(); return; }
+
+  const [invs, foods] = await Promise.all([Store.list('inventory'), Store.list('food_items')]);
+  const inv = invs.find(i=>i.id===invId);
+  if (!inv) return;
+  const food = foods.find(f=>f.id===foodId);
+
+  const cur = inv.inventoryNumber !== null ? inv.inventoryNumber : '';
+  const curThresh = food?.lowStockThreshold ?? '';
+
   const div = document.createElement('div');
   div.className='inline-adjust';
-  div.innerHTML=`<input type="number" min="0" value="${cur}" id="adj-${invId}" style="width:72px"/>
-    <button class="btn btn-primary btn-sm" onclick="saveAdjust('${invId}')">Update</button>
+  div.innerHTML=`<label class="sr-only" for="adj-${invId}">Units in this entry</label>
+    <input type="number" min="0" value="${cur}" id="adj-${invId}" style="width:76px" placeholder="Units"/>
+    <label class="sr-only" for="adjLow-${invId}">Low-stock alert threshold, across all entries for this food</label>
+    <input type="number" min="0" step="any" value="${curThresh}" data-was="${curThresh}" id="adjLow-${invId}" style="width:104px" placeholder="Alert at ${DEFAULT_LOW_STOCK}"/>
+    <button class="btn btn-primary btn-sm" onclick="saveAdjust('${invId}','${foodId}')">Update</button>
     <button class="btn btn-ghost btn-sm" onclick="document.getElementById('exprow-${invId}').querySelector('.inline-adjust').remove()">Cancel</button>`;
   row.appendChild(div);
 }
 
-async function saveAdjust(invId) {
+async function saveAdjust(invId, foodId) {
   const val = document.getElementById('adj-'+invId).value;
-  const updated = await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
-  const row = document.getElementById('exprow-'+invId);
-  if (row) {
-    const cls = expClass(updated.expirationDate);
-    const lbl = expLabel(updated.expirationDate);
-    const qtyDisplay = updated.inventoryNumber !== null && updated.inventoryNumber !== ''
-      ? `<span class="exp-qty">${updated.inventoryNumber} units</span>`
-      : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
-    row.innerHTML = `
-      <span class="exp-badge ${cls}">${lbl}</span>
-      <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(updated.expirationDate)}</span>
-      ${qtyDisplay}
-      <div class="exp-actions">
-        <button class="btn btn-ghost btn-sm" onclick="startAdjust('${updated.id}')">Adjust</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteInventoryEntry('${updated.id}')" aria-label="Delete expiration entry">🗑️</button>
-      </div>`;
+  const lowInput = document.getElementById('adjLow-'+invId);
+
+  await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
+  // Only write the food row if the threshold actually moved — most adjusts
+  // are quantity-only and shouldn't cost a second round trip.
+  if (foodId && lowInput.value !== lowInput.dataset.was) {
+    await Store.update('food_items', foodId, {
+      lowStockThreshold: lowInput.value === '' ? null : Number(lowInput.value)
+    });
   }
-  await renderStats();
+
   toast('Inventory updated!','success');
+  // Full re-render rather than an in-place row patch: the change can flip the
+  // card's stock badge, move the card in the attention order, and add or clear
+  // a line in the summary banner. Expanded cards are preserved across it.
+  await renderInventory();
 }
 
 async function deleteInventoryEntry(invId) {
@@ -783,23 +963,40 @@ async function deleteInventoryEntry(invId) {
 }
 
 // ── Add new expiration date ───────────────────────────────────
-function openAddExp(foodId, foodName) {
+// Takes only the food id and reads the name back from the record, rather
+// than being handed a display label through an inline onclick attribute.
+async function openAddExp(foodId) {
+  const food = (await Store.list('food_items')).find(f=>f.id===foodId);
+  if (!food) return;
   _addExpFoodId = foodId;
-  document.getElementById('addExpFoodName').textContent = foodName;
+  document.getElementById('addExpFoodName').textContent = `${food.brand} ${food.name}`;
   document.getElementById('newExpDate').value='';
   document.getElementById('newExpQty').value='';
+  const low = document.getElementById('newExpLowStock');
+  low.value = food.lowStockThreshold ?? '';
+  low.dataset.was = food.lowStockThreshold ?? '';
+  document.getElementById('newExpLowStockHint').textContent =
+    `Applies to every entry for this food. Leave blank for the default of ${DEFAULT_LOW_STOCK}.`;
   openModal('addExpModal');
 }
-function quickAddExp(foodId,foodName) {
+async function quickAddExp(foodId) {
   closeModal('addFoodModal');
-  openAddExp(foodId,foodName);
+  await openAddExp(foodId);
 }
 async function saveNewExp() {
   const expRaw = document.getElementById('newExpDate').value.trim();
   const qty    = document.getElementById('newExpQty').value;
   const expISO = parseMDY(expRaw);
+  const low    = document.getElementById('newExpLowStock');
+
   await Store.insert('inventory', {foodItemId:_addExpFoodId,
     expirationDate:expISO||null, inventoryNumber:qty!==''?Number(qty):null});
+  if (low.value !== low.dataset.was) {
+    await Store.update('food_items', _addExpFoodId, {
+      lowStockThreshold: low.value === '' ? null : Number(low.value)
+    });
+  }
+
   closeModal('addExpModal');
   toast('Inventory entry added!','success');
   await renderInventory();
