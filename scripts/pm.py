@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pm.py — read/write the Pet Pantry PM tracker (public.pm_tracker, row "default").
+pm.py- read/write the Pet Pantry PM tracker (public.pm_tracker, row "default").
 
 The tracker page stores its entire state as one JSON blob. This talks to the
 same row over Supabase's REST API so the tracker can be edited from the
@@ -65,7 +65,7 @@ def _auth_post(grant, payload):
 
 def do_login():
     """Interactive only, by design: the password is typed by the account owner
-    into their own terminal and is never stored — only the returned tokens are."""
+    into their own terminal and is never stored- only the returned tokens are."""
     import getpass
     if not sys.stdin.isatty():
         sys.exit("login must be run interactively in your own terminal:\n"
@@ -125,8 +125,8 @@ def fetch():
     rows = req("GET", f"{TABLE}?select=state,updatedAt")
     if not rows:
         sys.exit(
-            "No tracker row yet. Open pm.html in a browser and sign in once — it\n"
-            "seeds your row from the page's built-in defaults — then re-run this."
+            "No tracker row yet. Open pm.html in a browser and sign in once- it\n"
+            "seeds your row from the page's built-in defaults- then re-run this."
         )
     return rows[0]["state"], rows[0]["updatedAt"]
 
@@ -206,7 +206,7 @@ def shape(st):
 def snapshots():
     rows = req("GET", f"{HIST}?select=id,savedAt,state&order=savedAt.desc&limit=50", soft404=True)
     if rows is None:
-        sys.exit("history table missing — run supabase/pm_tracker_history_migration.sql")
+        sys.exit("history table missing- run supabase/pm_tracker_history_migration.sql")
     return rows
 
 
@@ -251,7 +251,7 @@ def main():
         print(f"  from: {shape(cur)}")
         print(f"  to:   {shape(snap['state'])}")
         # The restore is itself an update, so the trigger snapshots the state
-        # being replaced — this is undoable in turn.
+        # being replaced- this is undoable in turn.
         push(snap["state"], at)
         return
 
@@ -262,7 +262,7 @@ def main():
         by = {}
         for s in stories:
             by[s.get("status", "?")] = by.get(s.get("status", "?"), 0) + 1
-        print(f"{ov.get('name','?')}  — health: {ov.get('health','?')}")
+        print(f"{ov.get('name','?')}- health: {ov.get('health','?')}")
         print(f"updated: {at}")
         print(f"stories: {len(stories)}  " + "  ".join(f"{k}={v}" for k, v in sorted(by.items())))
         print(f"roadmap: {len(st.get('timeline', []))} milestones")

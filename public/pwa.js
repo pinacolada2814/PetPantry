@@ -12,7 +12,7 @@
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   // Registered after load so it never competes with the first paint or the
-  // auth check — the post-login path is the one place this app has had a
+  // auth check- the post-login path is the one place this app has had a
   // measurable lag problem before.
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(err => {

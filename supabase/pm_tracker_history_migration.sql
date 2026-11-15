@@ -2,7 +2,7 @@
 -- Run this once in the Supabase SQL Editor, after pm_tracker_migration.sql.
 --
 -- The tracker is a single JSON row that every save overwrites in place, so a
--- bad edit — from the page or from scripts/pm.py — is otherwise unrecoverable.
+-- bad edit- from the page or from scripts/pm.py- is otherwise unrecoverable.
 -- This keeps the previous state on every change, giving a rollback point.
 --
 -- A database trigger does the snapshotting rather than the clients, so the page

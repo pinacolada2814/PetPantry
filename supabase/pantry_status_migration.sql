@@ -1,6 +1,6 @@
 -- Pet Pantry: low-stock thresholds
 -- Run this once in the Supabase SQL Editor (your database already exists,
--- so schema.sql can't be re-run as-is — this adds just the new piece).
+-- so schema.sql can't be re-run as-is- this adds just the new piece).
 --
 -- The threshold lives on food_items rather than inventory because "am I
 -- running low on this food?" is a question about the food as a whole, not

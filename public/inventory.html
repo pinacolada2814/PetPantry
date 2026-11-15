@@ -147,7 +147,7 @@
     <div class="form-group">
       <label for="brandSelect">Brand <span class="req">*</span></label>
       <select id="brandSelect" class="form-control" onchange="onBrandChange()">
-        <option value="">— Select Brand —</option>
+        <option value="">Select Brand</option>
         <option>home-made</option><option>Weruva</option><option>Weruva BFF</option>
         <option>Instinct</option><option>Tiki Cat</option><option>Wellness CORE</option>
         <option>Hill's</option><option>Purina Pro Plan</option><option>Orijen</option>
@@ -181,7 +181,7 @@
       <div class="form-group">
         <label for="fType">Type <span class="req">*</span></label>
         <select id="fType" class="form-control">
-          <option value="">— Select —</option>
+          <option value="">Select</option>
           <option>dry</option><option>wet</option><option>raw</option>
           <option>freeze dried</option><option>all home-cooked</option><option>other</option>
         </select>
@@ -189,7 +189,7 @@
       <div class="form-group">
         <label for="fColor">Can/Bag Color</label>
         <select id="fColor" class="form-control">
-          <option value="">— None —</option>
+          <option value="">None</option>
           <option>red</option><option>yellow</option><option>green</option>
           <option>blue</option><option>pink</option><option>white</option>
           <option>black</option><option>orange</option><option>purple</option>
@@ -274,7 +274,7 @@
   </div>
   <div class="form-group">
     <label for="newExpQty">Inventory Qty</label>
-    <input id="newExpQty" type="number" min="0" class="form-control" placeholder="Optional — leave blank to skip"/>
+    <input id="newExpQty" type="number" min="0" class="form-control" placeholder="Optional- leave blank to skip"/>
   </div>
   <div class="form-group">
     <label for="newExpLowStock">Low-Stock Alert At</label>
@@ -436,7 +436,7 @@ function renderFoodCard(a, windowDays) {
   const proteins = (food.proteins||[]).join(', ');
 
   // Status pills. A log-only food (no counted quantity anywhere) gets no
-  // stock pill at all — "0 units" would misreport a deliberate choice not
+  // stock pill at all- "0 units" would misreport a deliberate choice not
   // to count as an empty shelf.
   const pills = [];
   if (expiry === 'past')      pills.push('<span class="status-pill danger">Expired</span>');
@@ -450,7 +450,7 @@ function renderFoodCard(a, windowDays) {
     const lbl = expLabel(inv.expirationDate);
     const qtyDisplay = inv.inventoryNumber !== null && inv.inventoryNumber !== ''
       ? `<span class="exp-qty">${inv.inventoryNumber} units</span>`
-      : `<span class="exp-qty" style="color:var(--text-muted)">—</span>`;
+      : `<span class="exp-qty" style="color:var(--text-muted)">-</span>`;
     return `<div class="exp-row" id="exprow-${inv.id}">
       <span class="exp-badge ${cls}">${lbl}</span>
       <span style="font-size:.8rem;color:var(--text-muted)">${fmtDate(inv.expirationDate)}</span>
@@ -525,8 +525,8 @@ function renderPantryAlert(annotated, windowDays) {
     <ul>
       ${line(expired, 'Expired', 'danger')}
       ${line(out, 'Out of stock', 'danger')}
-      ${line(soon, 'Expiring soon', 'warn', () => ` — within ${windowDays} days`)}
-      ${line(low, 'Low stock', 'warn', a => ` — ${a.stock.total} left`)}
+      ${line(soon, 'Expiring soon', 'warn', () => `- within ${windowDays} days`)}
+      ${line(low, 'Low stock', 'warn', a => `- ${a.stock.total} left`)}
     </ul>
   </div>`;
 }
@@ -596,7 +596,7 @@ function openAddFoodModal() {
   openModal('addFoodModal');
 }
 
-// The threshold is per food item, not per expiration entry — a blank value
+// The threshold is per food item, not per expiration entry- a blank value
 // means "use the app default", which the hint spells out so an empty box
 // doesn't read as "no alerts".
 function setLowStockField(value) {
@@ -717,7 +717,7 @@ async function lookupBarcode(barcode) {
       data = await res.json();
     }
     if (!data.product || data.status === 0) {
-      toast('Product not found — please enter details manually', 'warning');
+      toast('Product not found- please enter details manually', 'warning');
       openAddFoodModal();
       return;
     }
@@ -948,7 +948,7 @@ async function saveAdjust(invId, foodId) {
   const lowInput = document.getElementById('adjLow-'+invId);
 
   await Store.update('inventory', invId, { inventoryNumber: val===''? null : Number(val) });
-  // Only write the food row if the threshold actually moved — most adjusts
+  // Only write the food row if the threshold actually moved- most adjusts
   // are quantity-only and shouldn't cost a second round trip.
   if (foodId && lowInput.value !== lowInput.dataset.was) {
     await Store.update('food_items', foodId, {

@@ -2,11 +2,11 @@
    Pet Pantry – sw.js  (service worker: offline app shell)
    ═══════════════════════════════════════════════════════════
 
-   Scope is the directory this file is served from — /PetPantry/ on GitHub
-   Pages — which covers every page including /demo/. Every path below is
+   Scope is the directory this file is served from- /PetPantry/ on GitHub
+   Pages- which covers every page including /demo/. Every path below is
    relative, so the app keeps working if it ever moves to a custom domain.
 
-   VERSION is the cache key, and it is STAMPED AT DEPLOY TIME — the workflow
+   VERSION is the cache key, and it is STAMPED AT DEPLOY TIME- the workflow
    in .github/workflows/deploy.yml rewrites the line below with git's tree
    hash for public/, which changes exactly when something served changes.
    Nobody has to remember to bump it, and a release can't ship stale.
@@ -25,7 +25,7 @@ const VENDOR_CACHE = `pp-vendor-v${VERSION}`;
 const CURRENT_CACHES = [SHELL_CACHE, VENDOR_CACHE];
 
 // The app shell: enough to open any page and render its chrome with no network.
-// pm.html is deliberately absent — it is internal tooling, not product surface,
+// pm.html is deliberately absent- it is internal tooling, not product surface,
 // and it is the largest page in the repo.
 const SHELL = [
   './',
@@ -47,7 +47,7 @@ const SHELL = [
 
 // Third-party code the app shell genuinely needs to boot. app.js calls
 // supabase.createClient() at the top level, so without the CDN bundle the
-// whole script throws and every page renders blank — worth caching precisely
+// whole script throws and every page renders blank- worth caching precisely
 // so that an offline load fails gracefully instead of catastrophically.
 const VENDOR_HOSTS = new Set([
   'cdn.jsdelivr.net',

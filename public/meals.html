@@ -102,7 +102,7 @@
   <div class="form-group">
     <label for="mPet">Pet <span class="req">*</span></label>
     <select id="mPet" class="form-control">
-      <option value="">— Select pet —</option>
+      <option value="">Select pet</option>
     </select>
     <p class="form-hint" id="mPetHint"></p>
   </div>
@@ -117,14 +117,14 @@
       <input type="checkbox" id="mLogOnly" onchange="setLogOnly(this.checked)"/>
       <span>Not tracking this in my pantry</span>
     </label>
-    <p class="form-hint" id="mLogOnlyHint" style="display:none">Type anything you fed — a vet sample, food at a friend's house, a bag you don't count. Nothing is deducted from your inventory.</p>
+    <p class="form-hint" id="mLogOnlyHint" style="display:none">Type anything you fed- a vet sample, food at a friend's house, a bag you don't count. Nothing is deducted from your inventory.</p>
   </div>
 
   <div class="form-row">
     <div class="form-group">
       <label for="mSize" id="mSizeLabel">Serving Size</label>
       <select id="mSize" class="form-control">
-        <option value="">— Select a food first —</option>
+        <option value="">Select a food first</option>
       </select>
       <label for="mSizeText" id="mSizeTextLabel" style="display:none">Serving Size</label>
       <input id="mSizeText" class="form-control" style="display:none" placeholder="e.g. 3 oz"/>
@@ -170,7 +170,7 @@
   await renderMeals();
 
   // Straight into the log form when launched from the "Log a meal" shortcut
-  // on the installed app's icon (see shortcuts in manifest.json) — that path
+  // on the installed app's icon (see shortcuts in manifest.json)- that path
   // exists to save taps at feeding time, so it shouldn't land on the list.
   if (new URLSearchParams(location.search).get('log') === '1') openMealModal();
 })();
@@ -223,7 +223,7 @@ async function renderMeals() {
     return `<div class="meal-card">
       <div>
         <div class="mc-pet">${pet?pet.name:'Unknown pet'}</div>
-        <div class="mc-food">${food? food.brand+' '+food.name : log.foodLabel||'—'}</div>
+        <div class="mc-food">${food? food.brand+' '+food.name : log.foodLabel||'-'}</div>
         <div class="mc-meta">${sizeStr}${log.amount||''} serving${logOnlyTag}${log.note?' · '+log.note:''}</div>
         ${stars?`<div class="star-rating">${stars}</div>`:''}
       </div>
@@ -241,7 +241,7 @@ async function renderMeals() {
 // ── Log-only mode ─────────────────────────────────────────────
 // Feeding away from home, a vet sample, a bag the household doesn't count:
 // the meal still belongs in the diary, but there is no inventory row to
-// deduct from. The schema has always allowed a null inventoryTableId — this
+// deduct from. The schema has always allowed a null inventoryTableId- this
 // is the UI for it, and the Food field becomes plain text.
 function setLogOnly(on) {
   _logOnly = on;
@@ -275,7 +275,7 @@ function setLogOnly(on) {
 async function openMealModal() {
   const pets = await Store.list('pets');
   const petSel = document.getElementById('mPet');
-  petSel.innerHTML = '<option value="">— Select pet —</option>';
+  petSel.innerHTML = '<option value="">Select pet</option>';
 
   if (!pets.length) {
     document.getElementById('mPetHint').innerHTML =
@@ -295,7 +295,7 @@ async function openMealModal() {
   document.getElementById('mFoodInvId').value='';
   document.getElementById('mFoodSelected').textContent='';
   document.getElementById('mAmount').value='1';
-  document.getElementById('mSize').innerHTML = '<option value="">— Select a food first —</option>';
+  document.getElementById('mSize').innerHTML = '<option value="">Select a food first</option>';
   document.getElementById('mNote').value='';
   document.getElementById('mSizeText').value='';
   document.getElementById('mLogOnly').checked = false;
@@ -312,7 +312,7 @@ async function editMeal(id) {
 
   const pets = await Store.list('pets');
   const petSel = document.getElementById('mPet');
-  petSel.innerHTML = '<option value="">— Select pet —</option>';
+  petSel.innerHTML = '<option value="">Select pet</option>';
   if (!pets.length) {
     document.getElementById('mPetHint').innerHTML =
       '<a href="pets.html">Please add your pet profile first →</a>';
@@ -335,7 +335,7 @@ async function editMeal(id) {
   document.getElementById('mNote').value = log.note || '';
 
   const sizeSel = document.getElementById('mSize');
-  sizeSel.innerHTML = log.size ? `<option value="${log.size}">${log.size}</option>` : '<option value="">—</option>';
+  sizeSel.innerHTML = log.size ? `<option value="${log.size}">${log.size}</option>` : '<option value="">No size</option>';
 
   _mRating = log.catRating || null;
   document.querySelectorAll('#ratingChips .multi-chip').forEach(c=>{
@@ -346,7 +346,7 @@ async function editMeal(id) {
   _lastMatches = [];
 
   // No inventory row behind the log means it was logged without pantry
-  // tracking — reopen it that way so saving doesn't silently change its mode.
+  // tracking- reopen it that way so saving doesn't silently change its mode.
   // The saved foodLabel carries over either way, so nothing is lost.
   const logOnly = !log.inventoryTableId;
   document.getElementById('mLogOnly').checked = logOnly;
@@ -431,7 +431,7 @@ function selectFood(matchIdx) {
     const val = `${m.food.sizeNum} ${m.food.sizeUnit}`;
     sizeSel.innerHTML = `<option value="${val}">${val}</option>`;
   } else {
-    sizeSel.innerHTML = '<option value="">—</option>';
+    sizeSel.innerHTML = '<option value="">No size</option>';
   }
 }
 

@@ -8,7 +8,7 @@ web
 
 ## Users
 
-A single cat owner (or small household) tracking food inventory and feeding logs for one or more cats. Not built for multi-tenant/business use (e.g. a shelter or store) — each account's data is private to that user. The defining moment of use is at the kitchen counter, at feeding time, on a phone: "what do I feed my cat right now, and how much do I have left?"
+A single cat owner (or small household) tracking food inventory and feeding logs for one or more cats. Not built for multi-tenant/business use (e.g. a shelter or store)- each account's data is private to that user. The defining moment of use is at the kitchen counter, at feeding time, on a phone: "what do I feed my cat right now, and how much do I have left?"
 
 The PRD names five personas, each mapping to a distinct primary need:
 
@@ -24,9 +24,9 @@ These are not decorative. The Casual Logger is the reason inventory tracking is 
 
 ## Product Purpose
 
-The problem, as stated in the PRD: cat owners who buy in bulk or shop sales buy duplicates of food they already own, don't know what's in stock before a sale, let food expire before it's used, keep no record of what their cat has eaten or liked, and have no easy way to track inventory across multiple food types, sizes, and brands. Existing pet apps are either full health platforms (too complex) or plain notes (too simple) — there is no lightweight, cat-food-focused inventory and meal-logging tool that is free, install-free, and mobile-first.
+The problem, as stated in the PRD: cat owners who buy in bulk or shop sales buy duplicates of food they already own, don't know what's in stock before a sale, let food expire before it's used, keep no record of what their cat has eaten or liked, and have no easy way to track inventory across multiple food types, sizes, and brands. Existing pet apps are either full health platforms (too complex) or plain notes (too simple)- there is no lightweight, cat-food-focused inventory and meal-logging tool that is free, install-free, and mobile-first.
 
-Pet Pantry helps a cat owner see at a glance what food is in stock and what's expiring soon, and log every meal fast enough to do it at every single feeding — with inventory deducting automatically so stock counts stay accurate without extra bookkeeping. It runs entirely in the browser, no install, free to run and free to use.
+Pet Pantry helps a cat owner see at a glance what food is in stock and what's expiring soon, and log every meal fast enough to do it at every single feeding- with inventory deducting automatically so stock counts stay accurate without extra bookkeeping. It runs entirely in the browser, no install, free to run and free to use.
 
 Success criteria, as originally specified and since met:
 
@@ -38,26 +38,26 @@ Success criteria, as originally specified and since met:
 - Inventory auto-deducts on meal log when quantity is being tracked.
 - Landing page live, with Fenty featured.
 
-The two tap-count targets are the load-bearing ones — they are the only criteria that constrain future design work, and any change that pushes either flow past three taps is a regression regardless of what else it improves.
+The two tap-count targets are the load-bearing ones- they are the only criteria that constrain future design work, and any change that pushes either flow past three taps is a regression regardless of what else it improves.
 
 ## Positioning
 
-Not a general pet-management suite (no vet records, health tracking, etc.) — narrowly built for one real, recurring use case: the moment of deciding what to feed and confirming there's enough on hand. Meal logging and inventory are one tightly coupled flow (logging a meal auto-deducts stock; editing/deleting a log correctly reverses it) rather than two separate tools a user has to reconcile by hand.
+Not a general pet-management suite (no vet records, health tracking, etc.)- narrowly built for one real, recurring use case: the moment of deciding what to feed and confirming there's enough on hand. Meal logging and inventory are one tightly coupled flow (logging a meal auto-deducts stock; editing/deleting a log correctly reverses it) rather than two separate tools a user has to reconcile by hand.
 
 Explicit non-goals, carried forward from the PRD's V1 scope boundary:
 
 - No nutritional or calorie tracking; no vet appointments or health records. Either would change the product's core focus and needs its own PRD rather than being added as a feature.
-- No social features — no sharing of profiles or meal logs.
+- No social features- no sharing of profiles or meal logs.
 - No multi-household or shared pantry across logins.
 - No push notifications or reminders for expiring food or low stock. (In-app low-stock and expiry badges shipped 2026-09-10; the non-goal is the notification channel, not the surfacing.)
 - No shopping list generation, CSV/PDF export, or dark mode. These sit in the backlog as wanted-but-unbuilt, not as rejected.
 
 Four original non-goals have since shipped and are no longer out of scope:
 
-- **Cloud database and cross-device sync** — Supabase replaced the original localStorage-only data layer on 2026-07-17. Any doc still describing localStorage as the data layer is superseded.
-- **Barcode scanning** — shipped 2026-07-20, ahead of its original "nice to have" target.
-- **Photo uploads for food items** — shipped 2026-07-23, up to 5 photos per item.
-- **PWA / installable app** — shipped 2026-11-14. A manifest plus a service worker make the app installable to a home screen, with the app shell cached so it opens without waiting on the network. The no-install-required promise is unchanged: installing is an option, and the app stays fully usable in a browser tab.
+- **Cloud database and cross-device sync**- Supabase replaced the original localStorage-only data layer on 2026-07-17. Any doc still describing localStorage as the data layer is superseded.
+- **Barcode scanning**- shipped 2026-07-20, ahead of its original "nice to have" target.
+- **Photo uploads for food items**- shipped 2026-07-23, up to 5 photos per item.
+- **PWA / installable app**- shipped 2026-11-14. A manifest plus a service worker make the app installable to a home screen, with the app shell cached so it opens without waiting on the network. The no-install-required promise is unchanged: installing is an option, and the app stays fully usable in a browser tab.
 
 ## Operating Context
 
@@ -70,44 +70,44 @@ A demo mode (shipped 2026-08-19) lets a visitor use a fully working copy of the 
 ## Capabilities and Constraints
 
 - Pure HTML/CSS/JS, no build step or framework; deployed to GitHub Pages via GitHub Actions on push to `main`.
-- Supabase (Postgres + Auth) is the only backend — called directly from the browser, secured by row-level security rather than a server-side API layer. No traditional backend server exists in this stack.
+- Supabase (Postgres + Auth) is the only backend- called directly from the browser, secured by row-level security rather than a server-side API layer. No traditional backend server exists in this stack.
 - Email/password auth via Supabase Auth. Email confirmation is currently disabled for frictionless testing; the PRD flags this as something to reconsider before wider/public use.
-- Inventory tracking is optional at two levels: a food item's inventory row can carry a null quantity ("food logging only" mode), and a meal can be logged with no inventory row behind it at all — free text, for a vet sample or a feeding away from home. Neither deducts stock.
-- Barcode scanning uses the free, client-side `html5-qrcode` library (camera via `getUserMedia`) against the free Open Food Facts / Open Pet Food Facts public API — no API key, CORS-open. Coverage depends on that crowdsourced database; niche or newer products may not be found and fall back to manual entry. The scanner bundle is lazy-loaded so it stays off the sign-in path.
+- Inventory tracking is optional at two levels: a food item's inventory row can carry a null quantity ("food logging only" mode), and a meal can be logged with no inventory row behind it at all- free text, for a vet sample or a feeding away from home. Neither deducts stock.
+- Barcode scanning uses the free, client-side `html5-qrcode` library (camera via `getUserMedia`) against the free Open Food Facts / Open Pet Food Facts public API- no API key, CORS-open. Coverage depends on that crowdsourced database; niche or newer products may not be found and fall back to manual entry. The scanner bundle is lazy-loaded so it stays off the sign-in path.
 - Food items support up to 5 photos each, stored via the `photos` array column on `food_items`.
-- Single-user-per-account model — no household/family sharing of one pet's data across multiple logins.
+- Single-user-per-account model- no household/family sharing of one pet's data across multiple logins.
 - No push notifications or reminders; inventory/expiration status is only visible when the user opens the app, as badges on the Food Inventory cards plus a needs-attention summary at the top of that page.
-- Low-stock thresholds are per food item and compare against the sum of quantity across all of that food's inventory rows; a blank threshold falls back to an app-wide default. The "expiring soon" window is a per-device preference (localStorage), not synced across devices — there is no user-settings table.
-- Installable as a PWA (shipped 2026-11-14): `public/manifest.json` plus a service worker at `public/sw.js`, scoped to the deployment directory so it holds on a GitHub Pages project site. The worker caches the app shell — pages, CSS, `app.js`, the Supabase CDN bundle, fonts — so an installed app opens without waiting on the network.
-- The shell loads offline; the data does not. Supabase requests are never cached, deliberately: a stale can-count shown as current would break the one thing the app exists to get right. With no connection the shell renders and then surfaces the failure, and a page that was never cached falls back to `offline.html`. Writes made offline are lost, not queued — there is no background sync.
-- Cache invalidation rests on the `VERSION` constant in `public/sw.js`, which the deploy workflow stamps with git's tree hash for `public/` — so it changes when, and only when, something actually served changes. The site has no build step and filenames are never content-hashed, so this is the only signal an installed app gets that its cached copy is stale; it is automated rather than manual because a forgotten bump would silently serve the old app with no error anywhere. The deploy greps for the rewritten line and fails if the stamp didn't take.
+- Low-stock thresholds are per food item and compare against the sum of quantity across all of that food's inventory rows; a blank threshold falls back to an app-wide default. The "expiring soon" window is a per-device preference (localStorage), not synced across devices- there is no user-settings table.
+- Installable as a PWA (shipped 2026-11-14): `public/manifest.json` plus a service worker at `public/sw.js`, scoped to the deployment directory so it holds on a GitHub Pages project site. The worker caches the app shell- pages, CSS, `app.js`, the Supabase CDN bundle, fonts- so an installed app opens without waiting on the network.
+- The shell loads offline; the data does not. Supabase requests are never cached, deliberately: a stale can-count shown as current would break the one thing the app exists to get right. With no connection the shell renders and then surfaces the failure, and a page that was never cached falls back to `offline.html`. Writes made offline are lost, not queued- there is no background sync.
+- Cache invalidation rests on the `VERSION` constant in `public/sw.js`, which the deploy workflow stamps with git's tree hash for `public/`- so it changes when, and only when, something actually served changes. The site has no build step and filenames are never content-hashed, so this is the only signal an installed app gets that its cached copy is stale; it is automated rather than manual because a forgotten bump would silently serve the old app with no error anywhere. The deploy greps for the rewritten line and fails if the stamp didn't take.
 - Must run mobile-first with a working desktop layout (bottom tab bar on mobile, sidebar on desktop, ≥768px breakpoint per the existing implementation).
-- Cost constraint: must stay $0 to run at current scale — no paid infrastructure for a single-household-scale user base drives technology choices (GitHub Pages, Supabase free tier, free public APIs).
+- Cost constraint: must stay $0 to run at current scale- no paid infrastructure for a single-household-scale user base drives technology choices (GitHub Pages, Supabase free tier, free public APIs).
 
 ## Brand Commitments
 
-None fixed. The current identity (purple/pink palette, Fenty the developer's cat as landing-page mascot, playful "reviews from cats" joke copy) is the incumbent look, not a locked brand commitment — future design work is free to propose a different visual world.
+None fixed. The current identity (purple/pink palette, Fenty the developer's cat as landing-page mascot, playful "reviews from cats" joke copy) is the incumbent look, not a locked brand commitment- future design work is free to propose a different visual world.
 
 ## Evidence on Hand
 
-- `Fenty the cat` — the developer's own cat, used as the landing page mascot; a real photo asset exists at `public/fenty.jpg`.
-- Landing page "testimonials" are written as jokes from the cats' point of view, not real human customer testimonials — future work should preserve that framing (or replace it deliberately) rather than fabricate real-sounding customer quotes/logos/press, none of which exist.
+- `Fenty the cat`- the developer's own cat, used as the landing page mascot; a real photo asset exists at `public/fenty.jpg`.
+- Landing page "testimonials" are written as jokes from the cats' point of view, not real human customer testimonials- future work should preserve that framing (or replace it deliberately) rather than fabricate real-sounding customer quotes/logos/press, none of which exist.
 - `Pet Pantry PRD.pdf` (2026-07-20) documents the shipped state of the app: goals, feature set, data model, technical architecture, non-functional requirements, and known limitations.
-- `public/pm.html` is an internal project tracker holding the original PRD v1.0 (2026-04-23) alongside a backlog, roadmap, and meeting notes. It is internal tooling, not part of the product surface. It authenticates with Supabase Auth — the same email/password login as the rest of the app — and persists to a `pm_tracker` row keyed by the owner's user id, RLS-scoped exactly like `pets` / `food_items` / `inventory` / `meal_logs`, so one tracker per user. Every change is snapshotted to `pm_tracker_history` by a database trigger (50 most recent per user), giving rollback from either the page or `scripts/pm.py`, which edits the same row from the command line.
-- `.impeccable/critique/2026-08-12T10-43-16Z__public.md` — a design critique scoring the app 19/40 across ten usability heuristics, with the resulting fixes merged in PR #1.
+- `public/pm.html` is an internal project tracker holding the original PRD v1.0 (2026-04-23) alongside a backlog, roadmap, and meeting notes. It is internal tooling, not part of the product surface. It authenticates with Supabase Auth- the same email/password login as the rest of the app- and persists to a `pm_tracker` row keyed by the owner's user id, RLS-scoped exactly like `pets` / `food_items` / `inventory` / `meal_logs`, so one tracker per user. Every change is snapshotted to `pm_tracker_history` by a database trigger (50 most recent per user), giving rollback from either the page or `scripts/pm.py`, which edits the same row from the command line.
+- `.impeccable/critique/2026-08-12T10-43-16Z__public.md`- a design critique scoring the app 19/40 across ten usability heuristics, with the resulting fixes merged in PR #1.
 - No case studies, press mentions, or usage metrics exist to cite. The success criteria above are acceptance criteria, not measured user outcomes.
 
 ## Product Principles
 
-1. Feeding-time logging must stay fast and thumb-friendly — it's the highest-frequency action and happens standing in a kitchen, often one-handed.
-2. Inventory and meal logs are one system, not two — every design and data decision should keep the auto-deduct relationship between them correct and legible.
-3. Zero paid infrastructure is a hard constraint, not a preference — features should fit within free-tier Supabase, free public APIs, and static hosting.
-4. Optional rigor: a user can track exact quantities or just log meals with no inventory tracking at all — neither mode should feel like the unsupported path.
-5. No install, no friction — the browser-only, no-app-store nature of the product is a stated goal, not an accident of the current stack.
+1. Feeding-time logging must stay fast and thumb-friendly- it's the highest-frequency action and happens standing in a kitchen, often one-handed.
+2. Inventory and meal logs are one system, not two- every design and data decision should keep the auto-deduct relationship between them correct and legible.
+3. Zero paid infrastructure is a hard constraint, not a preference- features should fit within free-tier Supabase, free public APIs, and static hosting.
+4. Optional rigor: a user can track exact quantities or just log meals with no inventory tracking at all- neither mode should feel like the unsupported path.
+5. No install, no friction- the browser-only, no-app-store nature of the product is a stated goal, not an accident of the current stack.
 
 ## Accessibility & Inclusion
 
-WCAG AA is a live requirement, established by the 2026-08-12 audit and the remediation merged in PR #1 — not an aspiration. The audit found the original accessibility NFR was largely unmet in practice: zero `label`/`for` associations, near-zero `aria-label`s, no keyboard-operable custom controls, no modal focus management, and 50+ contrast findings clustered on the muted purple/pink text tokens.
+WCAG AA is a live requirement, established by the 2026-08-12 audit and the remediation merged in PR #1- not an aspiration. The audit found the original accessibility NFR was largely unmet in practice: zero `label`/`for` associations, near-zero `aria-label`s, no keyboard-operable custom controls, no modal focus management, and 50+ contrast findings clustered on the muted purple/pink text tokens.
 
 What the remediation established, and what future work must preserve:
 

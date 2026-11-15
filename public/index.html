@@ -47,7 +47,7 @@ body {
   overflow-x: hidden;
 }
 /* Custom cursor only replaces the pointer once JS confirms a fine pointer
-   is present and motion isn't reduced — see the cursor script below. If JS
+   is present and motion isn't reduced- see the cursor script below. If JS
    never runs, the native cursor stays visible instead of vanishing. */
 body.custom-cursor-active,
 body.custom-cursor-active .hamburger,
@@ -601,7 +601,7 @@ footer .footer-logo {
     <div class="hero-text reveal">
       <div class="hero-badge">🌸 Made with love for cat parents</div>
       <h1>Your cat's pantry,<br/><span class="highlight">finally organized.</span></h1>
-      <p>Never scramble during a sale again. Pet Pantry helps you track your cat's food inventory, log every meal, and always know exactly what's in stock — all in one adorable app.</p>
+      <p>Never scramble during a sale again. Pet Pantry helps you track your cat's food inventory, log every meal, and always know exactly what's in stock- all in one adorable app.</p>
       <div class="hero-btns">
 <a href="app.html" class="btn-primary-lg">Start for Free 🐾</a>        <a href="demo/" class="btn-ghost-lg" id="heroDemoLink">Try the Demo 👀</a>
       </div>
@@ -629,7 +629,7 @@ footer .footer-logo {
   <div class="center reveal">
     <div class="section-tag">✨ Features</div>
     <h2 class="section-title">Everything your cat's pantry needs</h2>
-    <p class="section-sub">From tracking what's expiring to logging every meal— Pet Pantry has you covered.</p>
+    <p class="section-sub">From tracking what's expiring to logging every meal- Pet Pantry has you covered.</p>
   </div>
   <div class="features-grid">
     <div class="feat-card c1 reveal">
@@ -640,7 +640,7 @@ footer .footer-logo {
     <div class="feat-card c2 reveal">
       <div class="feat-icon">🍽️</div>
       <h3>Meal Logging</h3>
-      <p>Log every meal with one tap. Inventory auto-deducts when you feed your cat— or skip tracking entirely and just log meals for fun.</p>
+      <p>Log every meal with one tap. Inventory auto-deducts when you feed your cat- or skip tracking entirely and just log meals for fun.</p>
     </div>
     <div class="feat-card c3 reveal">
       <div class="feat-icon">🐱</div>
@@ -671,7 +671,7 @@ footer .footer-logo {
     <div class="step reveal">
       <div class="step-num">2</div>
       <h3>Add your food stash</h3>
-      <p>Log your food inventory by brand, type, size, and expiration date. Or skip quantities — totally optional!</p>
+      <p>Log your food inventory by brand, type, size, and expiration date. Or skip quantities- totally optional!</p>
     </div>
     <div class="step reveal">
       <div class="step-num">3</div>
@@ -719,7 +719,7 @@ footer .footer-logo {
 <!-- ══ CTA ════════════════════════════════ -->
 <section class="cta-section reveal">
   <h2>Ready to organize your cat's pantry? 🐾</h2>
-  <p>Free forever. No app store. No subscriptions. Just open your browser and go.</p>
+  <p>Free forever, no subscription, no app store- Pet Pantry runs right in your browser, ready whenever your cat is.</p>
 <a href="app.html" class="btn-white">Get Started for Free 🌸</a>
   <p style="margin-top:1rem"><a href="demo/" style="color:rgba(255,255,255,.85);font-weight:700;text-decoration:underline">or try the demo first, no signup needed →</a></p>
 </section>
@@ -835,7 +835,7 @@ function initIosInstallHint() {
   if (!el) return;
 
   // Private mode can throw on access, so a storage failure must not take the
-  // page down with it — it just means the tip may reappear next visit.
+  // page down with it- it just means the tip may reappear next visit.
   let dismissed = false;
   try { dismissed = localStorage.getItem(IOS_HINT_KEY) === '1'; } catch (e) {}
   if (dismissed || !isIosBrowserVisit(navigator, window)) return;

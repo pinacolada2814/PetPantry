@@ -10,7 +10,7 @@ function mapUser(u) {
   return { id: u.id, name: u.user_metadata?.name || '', email: u.email, createdDate: u.created_at };
 }
 
-// ── Demo mode (no account — sample data lives in localStorage only) ─
+// ── Demo mode (no account- sample data lives in localStorage only) ─
 const DEMO_MODE_KEY = 'pp_demo_mode';
 const DEMO_DATA_KEY = 'pp_demo_data';
 const DEMO_SEED_KEY = 'pp_demo_seed_version';
@@ -19,11 +19,11 @@ const DEMO_USER = { id: 'demo-user', name: 'Demo Cat Parent', email: 'demo@petpa
 // Bump whenever seedDemoData() changes in a way returning visitors should see.
 // Demo data is cached in localStorage and would otherwise be kept forever, so
 // a visitor who tried the demo once would keep an old fixture that no longer
-// shows what the app does — exactly the drift the demo is supposed to avoid.
+// shows what the app does- exactly the drift the demo is supposed to avoid.
 // Bumping discards their local demo changes, which the demo banner already
 // tells them are throwaway.
-//   1 — original seed
-//   2 — 2026-09-10: lowercase food types (the type filter and typeIcon key off
+//   1- original seed
+//   2- 2026-09-10: lowercase food types (the type filter and typeIcon key off
 //       them), lowStockThreshold, and one food per pantry status
 const DEMO_SEED_VERSION = 2;
 
@@ -38,8 +38,8 @@ function seedDemoData() {
   const petFenty   = { id: crypto.randomUUID(), userId: uid, name: 'Fenty', gender: 'F', age: '4 years', breed: 'American Curl', createdDate: now, lastModifiedDate: now };
   const petBiscuit = { id: crypto.randomUUID(), userId: uid, name: 'Biscuit', gender: 'M', age: '2 years', breed: 'Domestic Shorthair', createdDate: now, lastModifiedDate: now };
 
-  // Seeded to put one food in each pantry state a card can show — expiring
-  // soon, expired, low stock, out of stock, and log-only — so the demo
+  // Seeded to put one food in each pantry state a card can show- expiring
+  // soon, expired, low stock, out of stock, and log-only- so the demo
   // exercises the badges rather than showing five healthy cards.
   const foodWeruva   = { id: crypto.randomUUID(), userId: uid, brand: 'Weruva', name: 'Cats in the Kitchen Grain-Free Pate', type: 'wet', sizeNum: 3, sizeUnit: 'oz', proteins: ['Chicken'], color: '#f9a8d4', purchased: 'Chewy', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
   const foodTiki     = { id: crypto.randomUUID(), userId: uid, brand: 'Tiki Cat', name: 'Luau Original', type: 'wet', sizeNum: 2.8, sizeUnit: 'oz', proteins: ['Tuna', 'Chicken'], color: '#bae6fd', purchased: 'Petco', photos: [], lowStockThreshold: null, createdDate: now, lastModifiedDate: now };
@@ -58,7 +58,7 @@ function seedDemoData() {
     { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 1 * dayMs).toISOString(), petId: petFenty.id, inventoryTableId: invWeruvaFresh.id, foodLabel: 'Weruva Cats in the Kitchen Grain-Free Pate', size: '3 oz', amount: 1, catRating: 5, note: 'Devoured it', createdDate: now },
     { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 1 * dayMs - 8 * 3600000).toISOString(), petId: petBiscuit.id, inventoryTableId: invTiki.id, foodLabel: 'Tiki Cat Luau Original', size: '2.8 oz', amount: 1, catRating: 4, note: '', createdDate: now },
     { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 2 * dayMs).toISOString(), petId: petFenty.id, inventoryTableId: invHomemade.id, foodLabel: 'home-made Chicken & Rice Mix', size: '', amount: 1, catRating: 5, note: 'Log-only, no inventory tracked', createdDate: now },
-    { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 3 * dayMs).toISOString(), petId: petBiscuit.id, inventoryTableId: null, foodLabel: 'Vet sample — hydrolysed protein', size: '2 oz', amount: 1, catRating: 2, note: 'Not in the pantry, logged for the record', createdDate: now }
+    { id: crypto.randomUUID(), userId: uid, dateTime: new Date(Date.now() - 3 * dayMs).toISOString(), petId: petBiscuit.id, inventoryTableId: null, foodLabel: 'Vet sample- hydrolysed protein', size: '2 oz', amount: 1, catRating: 2, note: 'Not in the pantry, logged for the record', createdDate: now }
   ];
 
   return {
@@ -261,12 +261,12 @@ function toast(msg, type = '') {
 
 // ── Date helpers ─────────────────────────────────────────────
 function fmtDate(isoStr) {
-  if (!isoStr) return '—';
+  if (!isoStr) return '-';
   const d = new Date(isoStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function fmtDateTime(isoStr) {
-  if (!isoStr) return '—';
+  if (!isoStr) return '-';
   const d = new Date(isoStr);
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
@@ -306,7 +306,7 @@ function setExpiryWindowDays(days) {
   localStorage.setItem(EXPIRY_WINDOW_KEY, String(Number(days)));
 }
 
-// Whole days from now until dateStr — negative once the date has passed.
+// Whole days from now until dateStr- negative once the date has passed.
 // Both sides are floored to local midnight so "expires today" reads as 0
 // rather than as a fraction of a day that rounds either way.
 function daysUntil(dateStr) {
@@ -334,7 +334,7 @@ function expLabel(dateStr) {
 
 // Rolls a food item's inventory rows up into the one status the card shows.
 // `tracked` is false when the food is in log-only mode (every row has a null
-// quantity) — those foods get no stock badge at all, since "0 units" would
+// quantity)- those foods get no stock badge at all, since "0 units" would
 // be a lie about a food the user deliberately chose not to count.
 function foodStock(food, invRows) {
   const rows = invRows.filter(i => i.foodItemId === food.id);
@@ -502,7 +502,7 @@ function injectDemoBanner() {
   bar.className = 'demo-banner';
   bar.setAttribute('role', 'status');
   bar.innerHTML = `
-    <span>🐾 Demo Mode — nothing here is saved to an account, changes stay on this device.</span>
+    <span>🐾 Demo Mode- nothing here is saved to an account, changes stay on this device.</span>
     <button type="button" class="db-btn" id="demoResetBtn">Reset Demo Data</button>
   `;
   document.body.insertBefore(bar, document.body.firstChild);
