@@ -495,6 +495,39 @@ legend.form-legend {
 }
 .auth-toggle { text-align: center; margin-top: 1rem; font-size: .85rem; }
 
+/* Back to home — the only way off the sign-in page, so it is built as a
+   control rather than body text. As muted .82rem type with no underline it
+   carried none of the link signal the page's other anchors use, and read as a
+   caption. Sits above the header, where a back affordance is looked for. */
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 44px;              /* the touch target the Aug 2026 a11y pass set */
+  margin: -.35rem 0 1rem;
+  padding: .5rem 1rem .5rem .8rem;
+  border-radius: 999px;
+  background: var(--primary-l);
+  color: var(--primary-d);
+  font-size: .85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+}
+.auth-back:hover,
+.auth-back:focus-visible {
+  background: hsl(var(--brand-h) 60% 92%);
+  color: var(--primary-d);
+  text-decoration: none;         /* it reads as a button, not inline text */
+}
+.auth-back:focus-visible { outline: 3px solid var(--primary-d); outline-offset: 2px; }
+.auth-back svg { transition: transform .22s cubic-bezier(.2, .8, .2, 1); }
+.auth-back:hover svg { transform: translateX(-3px); }
+@media (prefers-reduced-motion: reduce) {
+  .auth-back svg { transition: none; }
+  .auth-back:hover svg { transform: none; }
+}
+
 /* ---------- Animations ---------- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp {
