@@ -1,6 +1,6 @@
 
 /* ═══════════════════════════════════════════════════════════
-   Pet Pantry – app.js  (Supabase-backed data layer + utilities)
+   Pet Pantry- app.js  (Supabase-backed data layer + utilities)
 ═══════════════════════════════════════════════════════════ */
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

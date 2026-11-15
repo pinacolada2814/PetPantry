@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pet Pantry – Food Inventory</title>
+<title>Pet Pantry- Food Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="styles.css"/>
@@ -484,7 +484,7 @@ function renderFoodCard(a, windowDays) {
     <div class="card-header" id="ch-${food.id}" role="button" tabindex="0" aria-expanded="false" aria-controls="cb-${food.id}" onclick="toggleCard('cb-${food.id}')" onkeydown="handleCardKeydown(event,'cb-${food.id}')">
       <div class="card-icon">${cardIcon}</div>
       <div class="card-title">
-        <h3>${food.brand} – ${food.name}${colorDot}</h3>
+        <h3>${food.brand}- ${food.name}${colorDot}</h3>
         <p>${food.type} · ${sizeStr}${proteins ? ' · ' + proteins : ''}</p>
         ${statusHTML}
       </div>
@@ -571,7 +571,7 @@ function setStatusFilter(btn, val) {
   renderInventory();
 }
 
-// ── Add Food modal – Step 1 ───────────────────────────────────
+// ── Add Food modal- Step 1 ───────────────────────────────────
 function openAddFoodModal() {
   document.getElementById('editFoodId').value = '';
   document.getElementById('addFoodTitle').textContent = 'Add Food Item';
