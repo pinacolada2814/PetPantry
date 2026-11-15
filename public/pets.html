@@ -90,8 +90,8 @@
       </select>
     </div>
     <div class="form-group">
-      <label for="pAge">Age</label>
-      <input id="pAge" class="form-control" placeholder="e.g. 3 years"/>
+      <label for="pBirthday">Birthday</label>
+      <input type="date" id="pBirthday" class="form-control"/>
     </div>
   </div>
   <div class="form-group">
@@ -108,6 +108,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="petage.js"></script>
 <script src="pwa.js" defer></script>
 <script>
 (async () => {
@@ -129,7 +130,7 @@ async function renderPets() {
   el.innerHTML = pets.map((p,i)=>{
     const emoji = PET_EMOJIS[i % PET_EMOJIS.length];
     const gLabel = {M:'Male',F:'Female'}[p.gender]||'';
-    const meta = [gLabel, p.breed, p.age].filter(Boolean).join(' · ');
+    const meta = [gLabel, p.breed, petAgeLabel(p.birthday)].filter(Boolean).join(' · ');
     return `<div class="pet-card">
       <div class="pet-avatar">${emoji}</div>
       <div class="pet-info">
@@ -149,8 +150,10 @@ function openPetModal(editId) {
   document.getElementById('petModalTitle').textContent = editId ? 'Edit Pet' : 'Add Pet';
   document.getElementById('pName').value='';
   document.getElementById('pGender').value='';
-  document.getElementById('pAge').value='';
+  document.getElementById('pBirthday').value='';
   document.getElementById('pBreed').value='';
+  // A cat cannot be born tomorrow, so the picker will not offer it.
+  document.getElementById('pBirthday').max = new Date().toISOString().slice(0,10);
   openModal('petModal');
 }
 
@@ -161,15 +164,18 @@ async function editPet(id) {
   document.getElementById('petModalTitle').textContent = 'Edit Pet';
   document.getElementById('pName').value   = p.name;
   document.getElementById('pGender').value = p.gender||'';
-  document.getElementById('pAge').value    = p.age||'';
+  document.getElementById('pBirthday').value = (p.birthday||'').slice(0,10);
   document.getElementById('pBreed').value  = p.breed||'';
+  document.getElementById('pBirthday').max = new Date().toISOString().slice(0,10);
   openModal('petModal');
 }
 
 async function savePet() {
   const name   = document.getElementById('pName').value.trim();
   const gender = document.getElementById('pGender').value;
-  const age    = document.getElementById('pAge').value.trim();
+  // Empty stays empty rather than becoming '', so a pet with no birthday on
+  // record reads as "not known" in the database instead of a blank date.
+  const birthday = document.getElementById('pBirthday').value || null;
   const breed  = document.getElementById('pBreed').value.trim();
   if (!name) { toast('Name is required','danger'); return; }
 
@@ -177,9 +183,9 @@ async function savePet() {
   const editId = document.getElementById('editPetId').value;
 
   if (editId) {
-    await Store.update('pets', editId, {name,gender,age,breed,lastModifiedDate:now});
+    await Store.update('pets', editId, {name,gender,birthday,breed,lastModifiedDate:now});
   } else {
-    await Store.insert('pets', {name,gender,age,breed,createdDate:now,lastModifiedDate:now});
+    await Store.insert('pets', {name,gender,birthday,breed,createdDate:now,lastModifiedDate:now});
   }
   closeModal('petModal');
   toast(editId?'Pet updated!':'Pet added! 🐾','success');

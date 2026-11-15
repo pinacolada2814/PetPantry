@@ -7,7 +7,7 @@ create table public.pets (
   "userId" uuid not null references auth.users(id) on delete cascade,
   name text not null,
   gender text,
-  age text,
+  birthday date,
   breed text,
   "createdDate" timestamptz not null default now(),
   "lastModifiedDate" timestamptz not null default now()

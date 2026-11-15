@@ -328,6 +328,7 @@ figcaption { font-family: var(--font-display); font-weight: 500; font-size: var(
       <p class="lead">Fenty eats four brands, rates every one of them, and is the reason anybody counted the cans.</p>
       <dl class="facts">
         <div><dt>breed</dt><dd>American Curl</dd></div>
+        <div><dt>age</dt><dd id="fenty-age" data-birthday="2020-10-01">6 yr 1 mo</dd></div>
         <div><dt>eats</dt><dd>wet and dry</dd></div>
         <div><dt>rates</dt><dd>0/5 for anything chicken, 5/5 for shrimp</dd></div>
       </dl>
@@ -502,6 +503,18 @@ initIosInstallHint();
 </script>
 <script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
 document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
+<script src="petage.js"></script>
+<script>
+// Fenty's age, from her birthday on the element above, so the page does not go
+// stale as she gets older. If the date is ever unusable, the markup's fallback
+// text is left where it is rather than replaced with nothing.
+(() => {
+  const el = document.getElementById('fenty-age');
+  if (!el) return;
+  const label = petAgeLabel(el.dataset.birthday);
+  if (label) el.textContent = label;
+})();
+</script>
 <script src="pwa.js" defer></script>
 </body>
 </html>

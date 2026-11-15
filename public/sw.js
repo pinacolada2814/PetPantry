@@ -38,6 +38,7 @@ const SHELL = [
   'offline.html',
   'styles.css',
   'app.js',
+  'petage.js',
   'config.js',
   'pwa.js',
   'manifest.json',
