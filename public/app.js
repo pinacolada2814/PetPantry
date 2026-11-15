@@ -16,6 +16,10 @@ const DEMO_DATA_KEY = 'pp_demo_data';
 const DEMO_SEED_KEY = 'pp_demo_seed_version';
 const DEMO_USER = { id: 'demo-user', name: 'Demo Cat Parent', email: 'demo@petpantry.app', createdDate: '2026-01-01T00:00:00.000Z' };
 
+// Fenty's real birthday, and the one date in the demo that is not made up.
+// The landing page shows her age from the same figure; keep them in step.
+const FENTY_BIRTHDAY = '2020-10-01';
+
 // Bump whenever seedDemoData() changes in a way returning visitors should see.
 // Demo data is cached in localStorage and would otherwise be kept forever, so
 // a visitor who tried the demo once would keep an old fixture that no longer
@@ -25,7 +29,9 @@ const DEMO_USER = { id: 'demo-user', name: 'Demo Cat Parent', email: 'demo@petpa
 //   1- original seed
 //   2- 2026-09-10: lowercase food types (the type filter and typeIcon key off
 //       them), lowStockThreshold, and one food per pantry status
-const DEMO_SEED_VERSION = 2;
+//   3- 2026-11-15: pets carry a birthday instead of a free-text age, so the
+//       cached fixture has to be rebuilt or the demo cards show no age
+const DEMO_SEED_VERSION = 3;
 
 function isDemoMode() { return localStorage.getItem(DEMO_MODE_KEY) === '1'; }
 
@@ -35,8 +41,8 @@ function seedDemoData() {
   const dayMs = 86400000;
   const isoDate = offsetDays => new Date(Date.now() + offsetDays * dayMs).toISOString().slice(0, 10);
 
-  const petFenty   = { id: crypto.randomUUID(), userId: uid, name: 'Fenty', gender: 'F', age: '4 years', breed: 'American Curl', createdDate: now, lastModifiedDate: now };
-  const petBiscuit = { id: crypto.randomUUID(), userId: uid, name: 'Biscuit', gender: 'M', age: '2 years', breed: 'Domestic Shorthair', createdDate: now, lastModifiedDate: now };
+  const petFenty   = { id: crypto.randomUUID(), userId: uid, name: 'Fenty', gender: 'F', birthday: FENTY_BIRTHDAY, breed: 'American Curl', createdDate: now, lastModifiedDate: now };
+  const petBiscuit = { id: crypto.randomUUID(), userId: uid, name: 'Biscuit', gender: 'M', birthday: '2024-06-15', breed: 'Domestic Shorthair', createdDate: now, lastModifiedDate: now };
 
   // Seeded to put one food in each pantry state a card can show- expiring
   // soon, expired, low stock, out of stock, and log-only- so the demo
