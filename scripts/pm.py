@@ -10,6 +10,9 @@ command line as well as in the browser.
   ./scripts/pm.py show                  summary of the whole board
   ./scripts/pm.py get <dotpath>         print one field  (e.g. prd.problem)
   ./scripts/pm.py stories [status]      list stories, optionally filtered
+  ./scripts/pm.py epics                 list epics with their progress
+  ./scripts/pm.py add-epic t=... ...    append a new epic
+  ./scripts/pm.py epic <id|#n> k=v...   edit one epic's fields
   ./scripts/pm.py set <dotpath> <value> set one scalar field
   ./scripts/pm.py patch < patch.json    deep-merge a JSON object into state
   ./scripts/pm.py story <id|#n> k=v...  edit one story's fields
@@ -179,8 +182,22 @@ def find_story(stories, ref):
     sys.exit(f"no story matching {ref!r}")
 
 
+def find_epic(epics, ref):
+    """Same lookup as find_story: #n by position, then id, then title substring."""
+    if ref.startswith("#"):
+        return epics[int(ref[1:]) - 1]
+    for e in epics:
+        if e.get("id") == ref:
+            return e
+    for e in epics:
+        if ref.lower() in e.get("title", "").lower():
+            return e
+    sys.exit(f"no epic matching {ref!r}")
+
+
 FIELD_ALIASES = {"t": "title", "d": "desc", "a": "acceptance",
-                 "p": "priority", "s": "status", "pts": "points"}
+                 "p": "priority", "s": "status", "pts": "points",
+                 "e": "epicId", "epic": "epicId", "c": "color"}
 
 
 def kvs(args):
@@ -301,6 +318,42 @@ def main():
         s = find_story(st.setdefault("stories", []), args[0])
         s.update(kvs(args[1:]))
         print(f"{s['title']} -> {json.dumps(kvs(args[1:]), ensure_ascii=False)}")
+        push(st, at)
+
+    elif cmd == "epics":
+        st, _ = fetch()
+        epics = st.get("epics", [])
+        stories = st.get("stories", [])
+        if not epics:
+            print("no epics yet- add one with: ./scripts/pm.py add-epic t=<title>")
+        for i, e in enumerate(epics, 1):
+            mine = [s for s in stories if s.get("epicId") == e.get("id")]
+            done = [s for s in mine if s.get("status") == "done"]
+            pts = lambda rows: sum(float(s.get("points") or 0) for s in rows)
+            pct = round(len(done) / len(mine) * 100) if mine else 0
+            print(f"{i:3}. [{e.get('status','?'):8}] {e.get('title','')}")
+            print(f"       {len(done)}/{len(mine)} stories  "
+                  f"{pts(done):g}/{pts(mine):g} pts  {pct}%  id={e.get('id')}")
+        loose = [s for s in stories if not s.get("epicId")]
+        if epics:
+            print(f"     ({len(loose)} stories in no epic)")
+
+    elif cmd == "epic":
+        st, at = fetch()
+        e = find_epic(st.setdefault("epics", []), args[0])
+        e.update(kvs(args[1:]))
+        print(f"{e['title']} -> {json.dumps(kvs(args[1:]), ensure_ascii=False)}")
+        push(st, at)
+
+    elif cmd == "add-epic":
+        st, at = fetch()
+        e = {"id": uuid.uuid4().hex[:12], "title": "", "desc": "",
+             "status": "planned", "color": "#7C3AED"}
+        e.update(kvs(args))
+        if not e["title"]:
+            sys.exit("a new epic needs t=<title>")
+        st.setdefault("epics", []).append(e)
+        print(f"added epic: {e['title']}  [{e['status']}]  id={e['id']}")
         push(st, at)
 
     elif cmd == "add-story":

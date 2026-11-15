@@ -113,6 +113,22 @@ label.field:first-child{margin-top:0;}
 .tag.pts{background:var(--accent-soft);color:var(--primary-dark);}
 .add-jar-btn{width:100%;background:none;border:1px dashed var(--border);color:var(--ink-soft);border-radius:6px;padding:8px;font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
 .add-jar-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* Epics: a story belongs to at most one, so the chip is an identity marker
+   rather than a status. Colour comes from the epic, hence the inline style. */
+.tag.epic{background:var(--accent-soft);color:var(--primary-dark);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.epic-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.epic-chip{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);cursor:pointer;}
+.epic-chip:hover{border-color:var(--accent);color:var(--accent);}
+.epic-chip.active{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff;}
+.epic-item{border-bottom:1px solid var(--border);padding:16px 0;}
+.epic-item:last-child{border-bottom:none;}
+.epic-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.epic-name{font-family:'Inter',sans-serif;font-weight:800;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.epic-swatch{width:10px;height:10px;border-radius:3px;flex:none;}
+.epic-desc{font-size:13px;color:var(--ink-soft);margin:6px 0 10px;white-space:pre-wrap;}
+.epic-stats{display:flex;gap:14px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:6px;}
+.epic-bar{height:6px;border-radius:3px;background:var(--shelf);overflow:hidden;}
+.epic-bar span{display:block;height:100%;border-radius:3px;background:var(--success);transition:width .2s;}
 
 /* timeline */
 .tl-item{display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--border);}
@@ -160,7 +176,7 @@ label.field:first-child{margin-top:0;}
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9Z" stroke="#FFFFFF" stroke-width="1.6"/><path d="M4 10 6 4h12l2 6" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14v3M12 14v3M15 14v3" stroke="#EC4899" stroke-width="1.6" stroke-linecap="round"/></svg>
     </div>
     <h2>PetPantry PM</h2>
-    <p>Internal tracker &mdash; sign in with your Pet Pantry account.</p>
+    <p>Internal tracker- sign in with your Pet Pantry account.</p>
     <label for="pmGateEmail" class="sr-only" style="position:absolute;left:-9999px;">Email</label>
     <input type="email" id="pmGateEmail" placeholder="Email" autocomplete="username"/>
     <label for="pmGatePass" class="sr-only" style="position:absolute;left:-9999px;">Password</label>
@@ -179,7 +195,7 @@ label.field:first-child{margin-top:0;}
       </div>
       <div>
         <h1>PetPantry PM</h1>
-        <p>Product tracker &mdash; PRD, backlog, roadmap &amp; notes</p>
+        <p>Product tracker- PRD, backlog, roadmap &amp; notes</p>
       </div>
     </div>
     <div class="hdr-right">
@@ -191,6 +207,7 @@ label.field:first-child{margin-top:0;}
     <button class="tab active" data-tab="overview">Overview</button>
     <button class="tab" data-tab="prd">PRD</button>
     <button class="tab" data-tab="backlog">Backlog</button>
+    <button class="tab" data-tab="epics">Epics</button>
     <button class="tab" data-tab="roadmap">Roadmap</button>
     <button class="tab" data-tab="notes">Notes &amp; Enhancements</button>
     <button class="tab" data-tab="scratch">Scratchpad</button>
@@ -228,6 +245,7 @@ label.field:first-child{margin-top:0;}
         targetUsers:'Persona → Primary need:\n- The Bulk Buyer → know what\'s in stock before shopping\n- The Multi-Cat Parent → track meals per cat individually\n- The Expiry Tracker → see expiration dates at a glance\n- The Casual Logger → log meals without inventory setup\n- The Cat Food Connoisseur → rate meals and track preferences',
         fullDoc:'PET PANTRY- PRD & DESIGN DOC (v1.0, April 23 2026, Adrianna Zhang)\nStatus: Live- Deployed on GitHub Pages\nLive URL: https://pinacolada2814.github.io/PetPantry/\nRepo: https://github.com/pinacolada2814/PetPantry\nChief Taste Tester: Fenty (American Curl)\n\n- EXECUTIVE SUMMARY- \nMobile-first, browser-based web app for cat food inventory + meal logging. Originally built as a static HTML/CSS/JS site with localStorage as the data layer (no backend). Conceived, designed, built, and deployed in a single AI-assisted ("vibe coding") session. [Superseded: now running on Supabase, see Requirements tab note.]\n\n- PROBLEM- \nSee Problem Statement field.\n\n- TARGET USERS- \nSee Target Users field.\n\n- DATA MODEL (as originally specified)- \nlocalStorage keys: pp_users, pp_current_user, pp_pets, pp_food_items, pp_inventory, pp_meal_logs\nUser: id, name, email, password, createdDate, lastModifiedDate\nPet: id, userId, name, gender, age, breed, createdDate, lastModifiedDate\nFoodItem: id, userId, brand, name, type, sizeNum, sizeUnit, proteins[], color, purchased, createdDate, lastModifiedDate\nInventory: id, userId, foodItemId, expirationDate, inventoryNumber (null = no tracking)\nMealLog: id, userId, dateTime, petId, inventoryTableId, foodLabel, size, amount, catRating, note, createdDate\n[Note: this table-per-key model maps directly onto the Supabase tables now in use- pets, food_items, inventory, meal_logs- just Postgres-backed with RLS instead of localStorage.]\n\n- DESIGN SYSTEM- \nPrinciples: mobile-first (375px baseline), soft & cute pastel palette, rounded corners, playful emoji accents, progressive disclosure (e.g. 2-step food add), inventory always optional, instant feedback via toasts, zero-friction modals.\nColor tokens: --primary #7C3AED · --primary-d #6D28D9 · --primary-l #F3E8FF · --accent #EC4899 · --success #16A34A · --warning #D97706 · --danger #DC2626 · --bg #F8F7FC · --surface #FFFFFF · --text #1E1433 · --text-muted #7B6A8D · --border #E8E0F0 · Landing pink #F9A8D4 · Landing purple #C084FC · Landing peach #FED7AA\nTypography: App body/headings- Inter (400/600/700/800/900). Landing headings- Playfair Display (700/900). Landing body- Nunito. Labels/chips- Inter 700, 0.78-0.82rem. Code/IDs- system monospace.\nSpacing/layout: --radius 14px (cards/modals/inputs) · --radius-sm 8px (buttons/badges) · --shadow 0 2px 12px rgba(90,60,140,.10) · --shadow-md 0 4px 24px rgba(90,60,140,.16) · mobile max-width 680px · desktop max-width 820px · sidebar 220px\nComponents: expandable Card, Modal/Bottom Sheet, Toast (3.2s auto-dismiss), Filter Chips, Multi-Select Chips, Inline Adjust, FAB (56px), mobile Tab Bar (Pantry/Meals/Pets/Profile), desktop Sidebar, Stat Chips, Expiry Badge (green/yellow/red), Avatar Chip.\n\n- TECH ARCHITECTURE (as originally specified)- \nFrontend: vanilla HTML5/CSS3/JS (ES6+), no build step. Data layer: localStorage [superseded by Supabase, July 17]. Fonts: Google Fonts (Inter, Playfair Display, Nunito). Hosting: GitHub Pages. CI/CD: GitHub Pages auto-deploy from gh-pages / GitHub Actions.\nFile structure: index.html (landing), app.html (auth), inventory.html, meals.html, pets.html, profile.html, app.js, styles.css, fenty.jpg, README.md.\nAuth flow: register/login → session stored → Auth.require() gates protected pages → logout clears session.\nMeal logging + auto-deduction flow: select food (only items with inventoryNumber null or >0) → capture inventoryTableId → log meal → decrement inventory by amount (floored at 0) → toast → re-render.\n\n- PAGE MAP- \nLanding (index.html, public) · Login/Register (app.html, public) · Food Inventory (inventory.html, auth) · Meal Logs (meals.html, auth) · My Pets (pets.html, auth) · My Profile (profile.html, auth). Mobile: bottom tab bar (4 tabs) + sticky top nav. Desktop: 220px left sidebar, no top nav.\n\n- NON-FUNCTIONAL REQUIREMENTS- \nPage load < 2s on 4G · responsive 375px- 1440px · semantic HTML + aria-labels + contrast [audited Aug 13, 2026- was largely unmet (labels/aria-labels/contrast all had real gaps), fixed in the PR #1 audit pass, see Aug 13 note in Notes tab] · Chrome/Safari/Firefox/Edge latest 2 versions · works offline after first load (as localStorage app- revisit now that Supabase requires connectivity) · storage ~5MB/origin (as localStorage app) · V1 passwords were plaintext in localStorage, Firebase auth recommended for V2 [superseded- Supabase Auth now handles this] · all data stayed on-device in V1 [superseded- now server-side via Supabase, RLS-scoped] · no build tools required · zero-config GitHub Pages deploy.\n\n- OUT OF SCOPE (V1)- see Non-Goals field.\n\n- FUTURE ROADMAP (as originally specified)- \nV1.1: Firebase integration (Firestore+Auth) [superseded- Supabase chosen instead, already shipped] · PWA support (installable, service worker)- High, not yet done\nV1.2: Low stock alerts- Medium, tracked in Backlog · Expiry alerts- Medium, tracked in Backlog · Shopping list generation- Medium, not yet done\nV1.3: Food stats & charts (favorite proteins, meal frequency)- Nice to have, overlaps with "Ratings dashboard" in Backlog · Dark mode- Nice to have, not yet done · Barcode scanner- Nice to have, shipped July 20 ahead of schedule\nV2.0: Multi-household/sharing- Future · Vet & health records- Future, likely out of current scope'
       },
+      epics:[],
       stories:[
         {id:uid(), title:'User can register and sign in', desc:'Supabase Auth-backed accounts on app.html.', acceptance:'- Can register with email/password\n- Can sign in and stay signed in\n- Row-level security scopes all data to the signed-in user', priority:'high', points:'', status:'done'},
         {id:uid(), title:'User can add/edit/delete a pet profile', desc:'My Pets page.', acceptance:'- Add pet with name, gender, age, breed\n- Edit and delete existing pets', priority:'high', points:'', status:'done'},
@@ -291,6 +309,10 @@ label.field:first-child{margin-top:0;}
     try{
       const { data, error } = await sb.from('pm_tracker').select('state').eq('userId', USER_ID).maybeSingle();
       if(error || !data) return null;
+      // Boards saved before epics existed have no epics key, and a story with
+      // no epicId is simply unassigned. Default it here so every renderer can
+      // assume the array is present.
+      if(!Array.isArray(data.state.epics)) data.state.epics = [];
       return data.state;
     }catch(e){
       return null;
@@ -400,13 +422,154 @@ label.field:first-child{margin-top:0;}
     const map = {high:'prio-high',med:'prio-med',low:'prio-low'};
     return `<span class="tag ${map[p]||'prio-low'}">${p}</span>`;
   }
+  // ---------- EPICS ----------
+  // An epic groups stories that ship as one body of work. A story belongs to
+  // at most one epic via epicId; unassigned stories stay visible everywhere,
+  // so adopting epics is optional rather than a migration.
+  const EPIC_COLORS = ['#7C3AED','#EC4899','#0EA5E9','#16A34A','#D97706','#DC2626'];
+
+  let epicFilter = 'all';  // 'all' | 'none' | <epicId>
+
+  function epicById(id){ return (state.epics||[]).find(e=>e.id===id) || null; }
+
+  function epicChip(story){
+    const e = epicById(story.epicId);
+    if(!e) return '';
+    return `<span class="tag epic" style="background:${esc(e.color)}1A;color:${esc(e.color)}" title="${esc(e.title)}">${esc(e.title)}</span>`;
+  }
+
+  function epicProgress(epicId){
+    const items = state.stories.filter(s=>s.epicId===epicId);
+    const done = items.filter(s=>s.status==='done');
+    const pts = arr => arr.reduce((n,s)=> n + (parseFloat(s.points)||0), 0);
+    return {total:items.length, done:done.length, points:pts(items), donePoints:pts(done),
+            pct: items.length ? Math.round(done.length/items.length*100) : 0};
+  }
+
+  function renderEpics(){
+    const items = (state.epics||[]).map(e=>{
+      const p = epicProgress(e.id);
+      return `
+      <div class="epic-item">
+        <div class="epic-head">
+          <div>
+            <p class="epic-name"><span class="epic-swatch" style="background:${esc(e.color)}"></span>${esc(e.title)}</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${statusPill(e.status)}
+            <button class="btn ghost small" data-edit-epic="${e.id}">Edit</button>
+          </div>
+        </div>
+        ${e.desc?`<p class="epic-desc">${esc(e.desc)}</p>`:''}
+        <div class="epic-stats">
+          <span>${p.done}/${p.total} stories</span>
+          <span>${p.donePoints}/${p.points} pts</span>
+          <span>${p.pct}% complete</span>
+        </div>
+        <div class="epic-bar"><span style="width:${p.pct}%;background:${esc(e.color)}"></span></div>
+      </div>`;
+    }).join('');
+    const loose = state.stories.filter(s=>!s.epicId).length;
+    return `
+      <div class="card">
+        <h3>Epics</h3>
+        <p class="hint">Bodies of work that span several stories. ${loose} ${loose===1?'story is':'stories are'} not assigned to one.</p>
+        ${items || `<div class="empty"><strong>No epics yet</strong>Group related stories into an epic to track them as one.</div>`}
+        <button class="btn" id="addEpicBtn" style="margin-top:14px;">+ Add epic</button>
+      </div>`;
+  }
+
+  function epicModalHTML(e){
+    const isNew = !e;
+    const item = e || {id:uid(), title:'', desc:'', status:'planned', color:EPIC_COLORS[(state.epics||[]).length % EPIC_COLORS.length]};
+    const count = isNew ? 0 : state.stories.filter(s=>s.epicId===item.id).length;
+    return `
+    <div class="modal-overlay" id="epicModalOverlay">
+      <div class="modal">
+        <h3 style="font-family:'Inter',sans-serif;font-weight:800;">${isNew?'New epic':'Edit epic'}</h3>
+        <label class="field">Title</label>
+        <input type="text" id="e-title" value="${esc(item.title)}" placeholder="AI Update v1.0"/>
+        <label class="field">Description</label>
+        <textarea id="e-desc" rows="4" placeholder="What this epic covers, and what done looks like">${esc(item.desc)}</textarea>
+        <div class="two-col">
+          <div>
+            <label class="field">Status</label>
+            <select id="e-status">
+              <option value="planned" ${item.status==='planned'?'selected':''}>Planned</option>
+              <option value="active" ${item.status==='active'?'selected':''}>In progress</option>
+              <option value="shipped" ${item.status==='shipped'?'selected':''}>Shipped</option>
+            </select>
+          </div>
+          <div>
+            <label class="field">Colour</label>
+            <select id="e-color">
+              ${EPIC_COLORS.map(c=>`<option value="${c}" ${item.color===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        ${!isNew?`<p class="hint" style="margin-top:10px;">${count} ${count===1?'story is':'stories are'} in this epic. Deleting the epic keeps them and clears their epic.</p>`:''}
+        <div class="modal-actions">
+          ${!isNew?`<button class="btn danger" id="e-delete">Delete</button>`:''}
+          <button class="btn ghost" id="e-cancel">Cancel</button>
+          <button class="btn" id="e-save">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function openEpicModal(epicId){
+    const epic = epicId ? epicById(epicId) : null;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = epicModalHTML(epic);
+    document.body.appendChild(wrap.firstElementChild);
+    const overlay = document.getElementById('epicModalOverlay');
+    overlay.addEventListener('click',(e)=>{ if(e.target===overlay) overlay.remove(); });
+    document.getElementById('e-cancel').onclick = ()=>overlay.remove();
+    const del = document.getElementById('e-delete');
+    if(del){
+      del.onclick = ()=>{
+        // Stories outlive their epic: clear the link, never cascade a delete.
+        state.stories.forEach(s=>{ if(s.epicId===epic.id) delete s.epicId; });
+        state.epics = state.epics.filter(x=>x.id!==epic.id);
+        if(epicFilter===epic.id) epicFilter = 'all';
+        overlay.remove(); scheduleSave(); render();
+      };
+    }
+    document.getElementById('e-save').onclick = ()=>{
+      const data = {
+        title: document.getElementById('e-title').value.trim(),
+        desc: document.getElementById('e-desc').value,
+        status: document.getElementById('e-status').value,
+        color: document.getElementById('e-color').value
+      };
+      if(!data.title){ document.getElementById('e-title').focus(); return; }
+      if(epic){ Object.assign(epic, data); }
+      else {
+        if(!Array.isArray(state.epics)) state.epics = [];
+        state.epics.push({id: uid(), ...data});
+      }
+      overlay.remove(); scheduleSave(); render();
+    };
+  }
+
   function renderBacklog(){
+    const epics = state.epics || [];
+    const visible = state.stories.filter(s=>
+      epicFilter==='all' ? true : epicFilter==='none' ? !s.epicId : s.epicId===epicFilter);
+
+    const filter = epics.length ? `
+      <div class="epic-filter">
+        <button class="epic-chip ${epicFilter==='all'?'active':''}" data-epic-filter="all">All stories</button>
+        ${epics.map(e=>`<button class="epic-chip ${epicFilter===e.id?'active':''}" data-epic-filter="${e.id}">${esc(e.title)}</button>`).join('')}
+        <button class="epic-chip ${epicFilter==='none'?'active':''}" data-epic-filter="none">No epic</button>
+      </div>` : '';
+
     const cols = COLUMNS.map(col=>{
-      const items = state.stories.filter(s=>s.status===col.key);
+      const items = visible.filter(s=>s.status===col.key);
       const jars = items.map(s=>`
         <div class="jar" data-story="${s.id}">
           <p class="jar-title">${esc(s.title)}</p>
-          <div class="jar-meta">${prioTag(s.priority)}${s.points?`<span class="tag pts">${esc(s.points)} pt</span>`:''}</div>
+          <div class="jar-meta">${prioTag(s.priority)}${s.points?`<span class="tag pts">${esc(s.points)} pt</span>`:''}${epicChip(s)}</div>
         </div>`).join('');
       return `
         <div class="shelf-col">
@@ -415,7 +578,7 @@ label.field:first-child{margin-top:0;}
           <button class="add-jar-btn" data-add-status="${col.key}">+ Add story</button>
         </div>`;
     }).join('');
-    return `<div class="board">${cols}</div>`;
+    return `${filter}<div class="board">${cols}</div>`;
   }
 
   function storyModalHTML(story){
@@ -445,10 +608,21 @@ label.field:first-child{margin-top:0;}
             <input type="text" id="m-points" value="${esc(s.points)}" placeholder="1, 2, 3, 5…"/>
           </div>
         </div>
-        <label class="field">Status</label>
-        <select id="m-status">
-          ${COLUMNS.map(c=>`<option value="${c.key}" ${s.status===c.key?'selected':''}>${c.label}</option>`).join('')}
-        </select>
+        <div class="two-col">
+          <div>
+            <label class="field">Status</label>
+            <select id="m-status">
+              ${COLUMNS.map(c=>`<option value="${c.key}" ${s.status===c.key?'selected':''}>${c.label}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="field">Epic</label>
+            <select id="m-epic">
+              <option value="">No epic</option>
+              ${(state.epics||[]).map(e=>`<option value="${e.id}" ${s.epicId===e.id?'selected':''}>${esc(e.title)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
         <div class="modal-actions">
           ${!isNew?`<button class="btn danger" id="m-delete">Delete</button>`:''}
           <button class="btn ghost" id="m-cancel">Cancel</button>
@@ -479,11 +653,16 @@ label.field:first-child{margin-top:0;}
         acceptance: document.getElementById('m-acc').value,
         priority: document.getElementById('m-prio').value,
         points: document.getElementById('m-points').value.trim(),
-        status: document.getElementById('m-status').value
+        status: document.getElementById('m-status').value,
+        epicId: document.getElementById('m-epic').value
       };
       if(!data.title){ document.getElementById('m-title').focus(); return; }
+      // "No epic" is the absence of the key, not an empty string, so a story
+      // without one stays shaped the way it was before epics existed.
+      if(!data.epicId) delete data.epicId;
       if(story){
         Object.assign(story, data);
+        if(!data.epicId) delete story.epicId;
       } else {
         state.stories.push({id: uid(), ...data});
       }
@@ -494,6 +673,11 @@ label.field:first-child{margin-top:0;}
   function openStoryModalWithStatus(status){
     openStoryModal(null);
     document.getElementById('m-status').value = status;
+    // Adding a story while the board is filtered to one epic means adding it
+    // to that epic; anything else would be busywork.
+    if(epicFilter !== 'all' && epicFilter !== 'none'){
+      document.getElementById('m-epic').value = epicFilter;
+    }
   }
 
   // ---------- RENDER: ROADMAP ----------
@@ -690,6 +874,7 @@ label.field:first-child{margin-top:0;}
     overview: renderOverview,
     prd: renderPRD,
     backlog: renderBacklog,
+    epics: renderEpics,
     roadmap: renderRoadmap,
     notes: renderNotes,
     scratch: renderScratch
@@ -732,6 +917,15 @@ label.field:first-child{margin-top:0;}
     });
     document.querySelectorAll('[data-add-status]').forEach(el=>{
       el.addEventListener('click', ()=> openStoryModalWithStatus(el.getAttribute('data-add-status')));
+    });
+    // epics
+    document.querySelectorAll('[data-epic-filter]').forEach(el=>{
+      el.addEventListener('click', ()=>{ epicFilter = el.getAttribute('data-epic-filter'); render(); });
+    });
+    const addEpic = document.getElementById('addEpicBtn');
+    if(addEpic) addEpic.addEventListener('click', ()=> openEpicModal(null));
+    document.querySelectorAll('[data-edit-epic]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); openEpicModal(el.getAttribute('data-edit-epic')); });
     });
     // roadmap
     const addMs = document.getElementById('addMilestoneBtn');
