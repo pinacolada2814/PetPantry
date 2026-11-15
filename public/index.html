@@ -3,726 +3,392 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pet Pantry- Never Run Out of Cat Food Again 🐾</title>
+<title>Pet Pantry- your cat’s pantry, finally organized</title>
+<meta name="description" content="Pet Pantry counts the cat food in your house: what is left of every brand, what expires next, and what your cat thought of it. Free, in the browser."/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#ece6f8"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500&family=Onest:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ═══════════════════════════════════════
-   RESET & TOKENS
-═══════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Hallmark · shape: Workbench · genre: modern-minimal · theme: Ultraviolet (deal 3/3, seed cat-food-pantry-meal-ed79·0fa35f1c·2026-11-15·r1) · redesign: full
+ * hero: Stage · nav: floating pill · footer: colophon · imagery: screenshots 4 (capture.mjs), 1 photograph (the user's own) · signature: the real pantry screen in the hero, its four warnings legible at the size the page shows it · ultraviolet: lavender
+ * axes: light/geometric-sans/cool · posture: committed · contrast: pass · fold: pass · draw: 79e81c · v2.0.0 */
+/* Hallmark · copy: the hero head and its line are the owner’s own words, restored verbatim from the old page on request · 19, 58 and 69 report against them as notes */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · weakest: H, the hero screen is a busy list; cropped it to the warning panel and let the head carry the screen */
+/* Hallmark · the features section carries the old page's four feature blocks verbatim, at the owner's request, set as ruled rows rather than icon cards · 19, 58 and 69 report against that copy as notes */
+/* Hallmark · dropped the three reviews and the stat strip ("20+ brands", "∞ meals logged", "0 sales missed") · the user asked to cut invented proof */
+/* Hallmark · dropped #testimonials, the paw cursor and the floating-paw background · the reviews section is gone, and craft.md bans cursor followers */
+/* Hallmark · three bands where Ultraviolet allows two (the features paper, the Fenty paper, the violet close) · the owner asked the page to keep alternating past the screens section */
+/* Hallmark · dropped the demo-mode label swap on #navDemoLink and #heroDemoLink · it relabelled both links "continue the demo" for anyone who had opened the demo before; the owner wants one label */
+/* Hallmark · dropped demo/ · every demo link now points at demo/index.html, the same destination; the directory form dead-ends on a file listing when the page is opened from disk rather than served */
+/* Hallmark · dropped the figures "20+" and "Jun 2027" · both came from the stat strip and a floating badge, neither measured */
+/* Hallmark · reworded all 15 headings from the old page's facts · 54 and 67 cut every eyebrow above them, and a full redesign recomposes the sections they headed */
+/* Hallmark · answered F4 · the second filled recipe is the same primary inside the violet close band, where the theme turns the filled pill white */
+/* Hallmark · answered F6 · the table's row heads are words, not figures; tabular-nums is set anyway so a number pasted there lines up */
+/* Hallmark · hero-review: not run · the page was written in one pass; the finish review found one thing a hero review would have caught (the 1280 crop), now fixed */
+/* Hallmark · finish-review: subagent · 7 findings · 6 resolved, 1 partial · partial: 58, the page runs 520 visible words against 450, and the words are the owner's */
+/* Hallmark · the photograph keeps its own colours · the user asked for no tint, so Ultraviolet's "photographs pulled into the violet" is dropped on this one image; its frame and radius stay */
+/* Hallmark · dismissed 23 · the accent-tinted rule is the scaffold's photo treatment, and no slot on this page takes it any more */
+@import url("./tokens.css");
+@import url("./base.css");
 
-:root {
-  --pink:       #f9a8d4;
-  --pink-l:     #fce7f3;
-  --pink-d:     #c2255c;
-  --purple:     #c084fc;
-  --purple-l:   #f3e8ff;
-  --purple-d:   #9333ea;
-  --lavender:   #e9d5ff;
-  --peach:      #fed7aa;
-  --peach-l:    #fff7ed;
-  --mint:       #bbf7d0;
-  --mint-l:     #f0fdf4;
-  --sky:        #bae6fd;
-  --yellow:     #fef08a;
-  --cream:      #fffbf7;
-  --text:       #3b1f4a;
-  --text-muted: #7a5d94;
-  --white:      #ffffff;
-  --radius:     20px;
-  --radius-lg:  32px;
-  --shadow:     0 4px 24px rgba(160,100,200,.13);
-  --shadow-lg:  0 8px 48px rgba(160,100,200,.18);
-  --font-body:  'Nunito', sans-serif;
-  --font-head:  'Playfair Display', serif;
-  --transition: .25s cubic-bezier(.4,0,.2,1);
-}
+/* ── the page ─────────────────────────────────────── */
+body { background: var(--color-paper); }
+.u-nowrap { white-space: nowrap; }
 
-html { scroll-behavior: smooth; font-size: 16px; }
-body {
-  font-family: var(--font-body);
-  background: var(--cream);
-  color: var(--text);
-  overflow-x: hidden;
-}
-/* Custom cursor only replaces the pointer once JS confirms a fine pointer
-   is present and motion isn't reduced- see the cursor script below. If JS
-   never runs, the native cursor stays visible instead of vanishing. */
-body.custom-cursor-active,
-body.custom-cursor-active .hamburger,
-body.custom-cursor-active .btn-primary-lg,
-body.custom-cursor-active .btn-ghost-lg,
-body.custom-cursor-active .btn-white { cursor: none; }
+h1, h2, h3 { text-transform: lowercase; line-height: 1; }
+h2 { max-width: 22ch; }
+.lead { color: var(--color-ink-2); }
+.label { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); }
 
-/* ── Custom paw cursor ── */
-.cursor {
-  width: 28px; height: 28px;
-  background: var(--pink-d);
-  border-radius: 50%;
-  position: fixed; top: 0; left: 0; z-index: 9999;
-  pointer-events: none;
-  transform: translate(-50%,-50%);
-  transition: transform .12s ease, background .2s;
-  opacity: .7;
-  font-size: 18px; display: flex; align-items: center; justify-content: center;
-}
-.cursor-ring {
-  width: 44px; height: 44px;
-  border: 2px solid var(--pink);
-  border-radius: 50%;
-  position: fixed; top: 0; left: 0; z-index: 9998;
-  pointer-events: none;
-  transform: translate(-50%,-50%);
-  transition: transform .22s ease;
-}
+/* captures are the product, and the photograph is the user's own cat: neither
+   takes the theme's violet tint, only its frame */
+[data-kind="product"] { background: var(--color-paper-2); outline: var(--rule-hair) solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; border-radius: var(--radius-card); }
+[data-kind="product"] > img { filter: none; mix-blend-mode: normal; }
+[data-kind="product"]::before { content: none; }
+[data-kind="photo"] { background: var(--color-paper-2); outline: var(--rule-hair) solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; }
+[data-kind="photo"] > img { filter: none; mix-blend-mode: normal; }
+[data-kind="photo"]::before { content: none; }
 
-/* ── Floating paws background ── */
-.paw-bg {
-  position: fixed; inset: 0; z-index: 0;
-  pointer-events: none; overflow: hidden;
-}
-.paw-bg span {
-  position: absolute;
-  font-size: 1.5rem;
-  opacity: .07;
-  animation: floatPaw linear infinite;
-  user-select: none;
-}
+/* ── controls ─────────────────────────────────────── */
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 var(--space-lg);
+  border: 0; border-radius: var(--radius-pill); font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm);
+  line-height: 1; text-transform: lowercase; text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
+.btn--primary { background: var(--color-accent); color: var(--color-accent-ink); }
+.btn--primary:hover { background: var(--color-accent-deep); }
+.btn--primary:active { background: var(--color-accent-deep); }
+.btn--secondary { background: none; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-rule-2); }
+.btn--secondary:hover { box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+.btn--secondary:active { background: var(--color-paper-2); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+.btn--onviolet { background: var(--color-accent-ink); color: var(--color-accent-deep); }
+.btn--onviolet:hover { background: var(--color-paper-2); }
 
-@keyframes floatPaw {
-  from { transform: translateY(110vh) rotate(0deg); opacity: .07; }
-  to   { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
-}
+.link-u { color: inherit; text-decoration: underline; text-decoration-color: var(--color-rule-2); }
+.link-u:hover { text-decoration-color: var(--color-accent); }
 
-/* ── Scroll fade-in ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(36px);
-  transition: opacity .7s ease, transform .7s ease;
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+/* ── nav: a floating pill ─────────────────────────── */
+.nav { position: sticky; top: var(--space-sm); z-index: var(--z-sticky-nav); padding-inline: var(--gutter); margin-bottom: calc(-1 * var(--space-2xl)); }
+.nav__pill { display: flex; align-items: center; gap: var(--space-lg); width: fit-content; max-width: 100%; margin-inline: auto;
+  min-height: 56px; padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-lg);
+  background: var(--color-paper); border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.nav--scrolled .nav__pill { box-shadow: inset 0 0 0 1px var(--color-rule-2), var(--shadow-card); }
+.nav__logo { display: inline-flex; align-items: center; gap: var(--space-xs);
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); letter-spacing: var(--tracking-display);
+  text-transform: lowercase; text-decoration: none; white-space: nowrap; }
+/* the paw is the mark on the home-screen icon, drawn by scripts/make_icons.py */
+.paw { flex-shrink: 0; fill: var(--color-accent); }
+.nav__links { display: flex; align-items: center; gap: var(--space-2xs); }
+.nav__links a:not(.btn) { padding: var(--space-2xs) var(--space-sm); border-radius: var(--radius-pill);
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); text-transform: lowercase;
+  text-decoration: none; white-space: nowrap; color: var(--color-ink-2);
+  transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
+.nav__links a:not(.btn):hover { color: var(--color-accent-deep); text-decoration: underline; }
+.nav__links a:not(.btn):active { background: var(--color-paper-2); }
+.nav__links a[aria-current] { background: var(--color-accent-soft); color: var(--color-ink); }
+.nav__links .btn { margin-left: var(--space-sm); }
+.hamburger { display: none; min-height: 40px; padding: 0 var(--space-md); background: none; border: 0; border-radius: var(--radius-pill);
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); text-transform: lowercase; color: var(--color-ink); cursor: pointer; }
+.hamburger:hover { background: var(--color-paper-2); }
 
-/* ═══════════════════════════════════════
-   NAV
-═══════════════════════════════════════ */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
-  padding: 1rem 2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(255,251,247,.85);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--pink-l);
-  transition: box-shadow var(--transition);
-}
-nav.scrolled { box-shadow: var(--shadow); }
-.nav-logo {
-  font-family: var(--font-head);
-  font-size: 1.5rem; color: var(--purple-d);
-  text-decoration: none; display: flex; align-items: center; gap: .4rem;
-}
-.nav-links { display: flex; gap: 1.5rem; align-items: center; }
-.nav-links a {
-  font-weight: 700; font-size: .9rem; color: var(--text-muted);
-  text-decoration: none; transition: color var(--transition);
-}
-.nav-links a:hover { color: var(--purple-d); }
-.nav-cta {
-  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
-  color: #fff !important;
-  padding: .5rem 1.25rem; border-radius: 99px;
-  font-weight: 800 !important;
-  box-shadow: 0 4px 16px rgba(200,100,200,.3);
-  transition: transform var(--transition), box-shadow var(--transition) !important;
-}
-.nav-cta:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 24px rgba(200,100,200,.4) !important; }
+/* ── hero: Stage ──────────────────────────────────── */
+.hero { padding-block: var(--space-3xl); }
+.hero .hero__figure { align-self: center; align-items: center; }
+/* the phone holds the right edge at its own 390px and the head fills the rest,
+   so the text does not end far short of the visual (44c) */
+.hero__grid { display: grid; grid-template-columns: minmax(0, 680px) 390px; gap: var(--space-2xl); align-items: center; justify-content: start; }
+.hero__text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
+.hero h1 { max-width: 20ch; }
+.hero .lead { max-width: 44ch; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.hero__figure { margin: 0; display: flex; flex-direction: column; gap: var(--space-sm); min-width: 0; }
+.hero__shot { aspect-ratio: 390 / 664; width: 100%; max-width: 390px; margin-inline: auto; }
+.hero__shot > img { object-position: top center; }
+figcaption { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); text-transform: lowercase; }
 
-/* mobile nav */
-.hamburger { display: none; background: none; border: none; font-size: 1.5rem; }
-@media (max-width: 600px) {
-  .nav-links { display: none; flex-direction: column; position: absolute;
-    top: 100%; left: 0; right: 0; background: var(--cream);
-    padding: 1.5rem 2rem; border-bottom: 1px solid var(--pink-l); gap: 1rem; }
-  .nav-links.open { display: flex; }
-  .hamburger { display: block; }
-}
+/* ── lanes: the four warnings ─────────────────────── */
+.band { background: var(--color-paper-2); padding-block: var(--space-2xl); }
+.lanes__head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-2xl); align-items: end; margin-bottom: var(--space-2xl); }
+.lanes__head .lead { max-width: 40ch; }
+.lanes { border-top: var(--rule-hair) solid var(--color-rule-2); }
+.lane { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-lg); align-items: baseline;
+  padding-block: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.lane__name { font-family: var(--font-display); font-weight: 500; font-size: var(--text-title); line-height: 1.15; text-transform: lowercase; }
+.lane__state { color: var(--color-ink-2); max-width: 54ch; }
+/* ── pinned: three screens ────────────────────────── */
+.screens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-columns); margin-top: var(--space-2xl); }
+.screens figure { display: flex; flex-direction: column; gap: var(--space-md); margin: 0; min-width: 0; }
+.screens figure > div:last-child { order: -1; }
+.screens h3 { margin-bottom: var(--space-2xs); }
+.screens p { color: var(--color-ink-2); }
+.shot-phone { width: 100%; max-width: 390px; }
+.shot-phone > img { object-position: top center; }
 
-/* ═══════════════════════════════════════
-   HERO
-═══════════════════════════════════════ */
-.hero {
-  min-height: 100vh;
-  display: flex; align-items: center;
-  padding: 7rem 2rem 4rem;
-  position: relative; z-index: 1;
-  background: linear-gradient(160deg, var(--pink-l) 0%, var(--purple-l) 50%, var(--peach-l) 100%);
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 70% 40%, rgba(192,132,252,.18) 0%, transparent 60%),
-              radial-gradient(circle at 20% 80%, rgba(249,168,212,.22) 0%, transparent 50%);
-  pointer-events: none;
-}
-.hero-inner {
-  max-width: 1100px; margin: 0 auto; width: 100%;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
-}
-@media (max-width: 768px) {
-  .hero-inner { grid-template-columns: 1fr; text-align: center; }
-  .hero-img-wrap { order: -1; }
-}
+/* ── split: Fenty ─────────────────────────────────── */
+.split { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: var(--space-2xl); align-items: center; }
+.split__photo { aspect-ratio: 4 / 5; min-height: 440px; max-height: 620px; border-radius: var(--radius-card); }
+/* the display face sets on a 1.0 line-height, so its line needs the full step */
+.split h2 + .lead { margin-top: var(--space-lg); }
+.facts { display: grid; gap: var(--space-md); margin-top: var(--space-lg); }
+.facts div { display: grid; grid-template-columns: 10ch 1fr; gap: var(--space-md); padding-top: var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule); }
+.facts dt { color: var(--color-muted); font-size: var(--text-sm); }
+.facts dd { margin: 0; }
 
-.hero-badge {
-  display: inline-flex; align-items: center; gap: .4rem;
-  background: var(--white); border: 1.5px solid var(--pink);
-  border-radius: 99px; padding: .35rem 1rem;
-  font-size: .8rem; font-weight: 800; color: var(--pink-d);
-  margin-bottom: 1.25rem;
-  box-shadow: var(--shadow);
-}
-.hero h1 {
-  font-family: var(--font-head);
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
-  line-height: 1.15;
-  color: var(--text);
-  margin-bottom: 1.25rem;
-}
-.hero h1 .highlight {
-  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.hero p {
-  font-size: 1.1rem; color: var(--text-muted);
-  line-height: 1.7; margin-bottom: 2rem; max-width: 460px;
-}
-@media (max-width: 768px) { .hero p { margin: 0 auto 2rem; } }
+/* ── table: what it costs ─────────────────────────── */
+.table { width: 100%; border-collapse: collapse; margin-top: var(--space-2xl); }
+.table th, .table td { text-align: left; padding-block: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule);
+  vertical-align: baseline; }
+.table thead th { border-bottom: 1.5px solid var(--color-rule-2); font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); }
+.table tbody th { width: 28%; font-family: var(--font-display); font-weight: 500; font-size: var(--text-title); text-transform: lowercase; font-variant-numeric: tabular-nums; }
+.table td { color: var(--color-ink-2); }
 
-.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
-@media (max-width: 768px) { .hero-btns { justify-content: center; } }
+/* ── rows: questions ──────────────────────────────── */
+.qa__rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap-columns); margin-top: var(--space-xl); }
+.qa__row { padding-block: var(--space-lg); border-top: 1.5px solid var(--color-rule-2); }
+.qa__row h3 { margin-bottom: var(--space-xs); }
+.qa__row p { color: var(--color-ink-2); max-width: 60ch; }
 
-.btn-primary-lg {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
-  color: #fff; font-weight: 800; font-size: 1rem;
-  padding: .85rem 2rem; border-radius: 99px; border: none;
-  box-shadow: 0 6px 24px rgba(200,100,200,.35);
-  text-decoration: none;
-  transition: transform var(--transition), box-shadow var(--transition);
-}
-.btn-primary-lg:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(200,100,200,.45); }
+/* ── close band ───────────────────────────────────── */
+.close { background: var(--color-accent); color: var(--color-accent-ink); padding-block: var(--space-2xl); }
+.close__grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: var(--space-2xl); align-items: center; }
+.close h2 { max-width: 14ch; }
+.close p { color: var(--color-accent-ink); max-width: 46ch; margin-bottom: var(--space-xl); }
+.close__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.close .btn--secondary { color: var(--color-accent-ink); box-shadow: inset 0 0 0 1.5px var(--color-accent-ink); }
+.close .btn--secondary:hover { background: var(--color-accent-deep); }
+.close :focus-visible { outline-color: var(--color-accent-ink); }
 
-.btn-ghost-lg {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--white); color: var(--purple-d);
-  font-weight: 800; font-size: 1rem;
-  padding: .85rem 2rem; border-radius: 99px;
-  border: 2px solid var(--purple);
-  text-decoration: none;
-  transition: transform var(--transition), border-color var(--transition);
-}
-.btn-ghost-lg:hover { transform: translateY(-3px); border-color: var(--purple-d); }
+/* ── footer: colophon ─────────────────────────────── */
+.foot { padding-block: var(--space-3xl); border-top: var(--rule-hair) solid var(--color-rule); }
+.foot__mark { display: inline-flex; align-items: center; gap: var(--space-xs);
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); text-transform: lowercase;
+  letter-spacing: var(--tracking-display); }
+.foot p { color: var(--color-muted); font-size: var(--text-sm); max-width: 70ch; margin-top: var(--space-sm); }
+.foot a { color: var(--color-ink-2); }
 
-/* hero image */
-.hero-img-wrap {
-  position: relative; display: flex; justify-content: center;
-}
-.hero-img-blob {
-  position: absolute; inset: -20px;
-  background: radial-gradient(circle, var(--pink-l) 0%, var(--lavender) 60%, transparent 80%);
-  border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
-  animation: blobMorph 6s ease-in-out infinite alternate;
-  z-index: 0;
-}
-@keyframes blobMorph {
-  from { border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%; }
-  to   { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
-}
-.hero-img {
-  position: relative; z-index: 1;
-  width: min(380px, 90vw); height: min(420px, 90vw);
-  object-fit: cover; object-position: center top;
-  border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
-  border: 5px solid var(--white);
-  box-shadow: var(--shadow-lg);
-  animation: floatImg 4s ease-in-out infinite alternate;
-}
-@keyframes floatImg {
-  from { transform: translateY(0px) rotate(-1deg); }
-  to   { transform: translateY(-14px) rotate(1deg); }
+/* ── iOS install hint (kept) ──────────────────────── */
+.ios-install { position: fixed; left: var(--space-md); right: var(--space-md); bottom: var(--space-md); z-index: var(--z-toast);
+  display: flex; align-items: flex-start; gap: var(--space-md); max-width: 30rem; margin-inline: auto;
+  padding: var(--space-md) var(--space-lg); background: var(--color-paper); border-radius: var(--radius-card);
+  box-shadow: inset 0 0 0 1px var(--color-rule-2), var(--shadow-card); }
+.ios-install-text { font-size: var(--text-sm); color: var(--color-ink-2); }
+.ios-install-text strong { display: block; font-family: var(--font-display); font-weight: 500; color: var(--color-ink); }
+.ios-install-share { display: inline; vertical-align: -0.2em; margin-inline: var(--space-2xs); }
+.ios-install-close { flex-shrink: 0; min-width: 44px; min-height: 44px; margin: calc(-1 * var(--space-sm)) calc(-1 * var(--space-md)) 0 0;
+  background: none; border: 0; border-radius: var(--radius-pill); color: var(--color-muted); font-size: var(--text-lg); cursor: pointer; }
+.ios-install-close:hover { background: var(--color-paper-2); color: var(--color-ink); }
+
+/* ── the page's one reveal, visible without script ── */
+.js .reveal { opacity: 0; transform: translateY(8px); transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--ease-out); transition-delay: calc(var(--i, 0) * 40ms); }
+.js .reveal.visible { opacity: 1; transform: none; }
+
+/* ── responsive ───────────────────────────────────── */
+@media (max-width: 60rem) {
+  .hero__grid, .lanes__head, .close__grid, .qa__rows { grid-template-columns: minmax(0, 1fr); }
+  .hero__shot { margin-inline: 0; }
+  .screens { display: flex; gap: var(--space-lg); overflow-x: auto; overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter);
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); }
+  .screens figure { flex: 0 0 min(86%, 390px); scroll-snap-align: start; }
+  .hero__shot { min-height: 0; }
+  .split__photo { min-height: 0; }
+  .nav { padding-inline: var(--gutter); }
+  .nav__pill { width: 100%; flex-wrap: wrap; justify-content: space-between; }
+  .nav__pill:has(.nav__links.open) { border-radius: var(--radius-card); padding: var(--space-sm) var(--space-md) var(--space-md); }
+  .hamburger { display: inline-flex; align-items: center; order: 3; }
+  .nav__links { display: none; order: 4; flex-basis: 100%; gap: var(--space-2xs); padding-block: var(--space-sm) 0; }
+  .nav__links.open { display: flex; flex-direction: column; align-items: flex-start; }
+  .nav__links .btn { margin: var(--space-xs) 0 0; }
+  .nav__links a:not(.btn) { font-size: var(--text-md); }
+  .lane { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xs); padding-block: var(--space-md); }
+  .facts div { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xs); }
+  .table tbody th { width: auto; }
 }
 
-/* floating badges on hero image */
-.hero-float {
-  position: absolute; z-index: 2;
-  background: var(--white); border-radius: var(--radius);
-  padding: .55rem .9rem; box-shadow: var(--shadow);
-  font-weight: 800; font-size: .82rem; color: var(--text);
-  display: flex; align-items: center; gap: .4rem;
-  animation: floatBadge 3s ease-in-out infinite alternate;
-}
-.hero-float.f1 { top: 8%; left: -2%; animation-delay: 0s; }
-.hero-float.f2 { bottom: 18%; right: -2%; animation-delay: .8s; }
-.hero-float.f3 { top: 55%; left: -2%; animation-delay: 1.4s; }
-@keyframes floatBadge {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-8px); }
-}
-@media (max-width: 768px) {
-  .hero-float.f1 { left: 0; top: 0; }
-  .hero-float.f2 { right: 0; bottom: 10%; }
-  .hero-float.f3 { display: none; }
-}
-
-/* ── Stat strip ── */
-.stat-strip {
-  background: var(--white);
-  border-top: 1px solid var(--pink-l);
-  border-bottom: 1px solid var(--pink-l);
-  padding: 1.5rem 2rem;
-  display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
-  position: relative; z-index: 1;
-}
-.stat-item { text-align: center; }
-.stat-item .sv { font-family: var(--font-head); font-size: 2rem; color: var(--purple-d); }
-.stat-item .sl { font-size: .82rem; font-weight: 700; color: var(--text-muted); }
-
-/* ═══════════════════════════════════════
-   FEATURES
-═══════════════════════════════════════ */
-.section {
-  padding: 5rem 2rem;
-  position: relative; z-index: 1;
-}
-.section-tag {
-  display: inline-block;
-  background: var(--pink-l); color: var(--pink-d);
-  border-radius: 99px; padding: .3rem .9rem;
-  font-size: .78rem; font-weight: 800;
-  letter-spacing: .06em; text-transform: uppercase;
-  margin-bottom: .75rem;
-}
-.section-title {
-  font-family: var(--font-head);
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  margin-bottom: .75rem; line-height: 1.2;
-}
-.section-sub {
-  font-size: 1rem; color: var(--text-muted);
-  max-width: 520px; line-height: 1.7;
-}
-.center { text-align: center; }
-.center .section-sub { margin: 0 auto; }
-
-.features-grid {
-  max-width: 1100px; margin: 3rem auto 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-}
-.feat-card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 2rem 1.75rem;
-  box-shadow: var(--shadow);
-  border: 1.5px solid transparent;
-  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
-  position: relative; overflow: hidden;
-}
-.feat-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-.feat-card.c1::before { background: linear-gradient(90deg, var(--pink), var(--purple)); }
-.feat-card.c2::before { background: linear-gradient(90deg, var(--purple), var(--sky)); }
-.feat-card.c3::before { background: linear-gradient(90deg, var(--peach), var(--pink)); }
-.feat-card.c4::before { background: linear-gradient(90deg, var(--mint), var(--sky)); }
-.feat-card:hover {
-  transform: translateY(-6px);
-  border-color: var(--pink);
-  box-shadow: var(--shadow-lg);
-}
-.feat-icon {
-  width: 56px; height: 56px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.75rem; margin-bottom: 1.25rem;
-}
-.feat-card.c1 .feat-icon { background: var(--pink-l); }
-.feat-card.c2 .feat-icon { background: var(--purple-l); }
-.feat-card.c3 .feat-icon { background: var(--peach-l); }
-.feat-card.c4 .feat-icon { background: var(--mint-l); }
-.feat-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: .5rem; }
-.feat-card p  { font-size: .9rem; color: var(--text-muted); line-height: 1.6; }
-
-/* ═══════════════════════════════════════
-   HOW IT WORKS
-═══════════════════════════════════════ */
-.how-section {
-  padding: 5rem 2rem;
-  background: linear-gradient(160deg, var(--purple-l), var(--pink-l));
-  position: relative; z-index: 1;
-}
-.steps {
-  max-width: 860px; margin: 3rem auto 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem; position: relative;
-}
-.steps::before {
-  content: '';
-  position: absolute; top: 44px; left: 15%; right: 15%; height: 2px;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
-  opacity: .3;
-}
-@media (max-width: 600px) { .steps::before { display: none; } }
-
-.step {
-  text-align: center;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 2rem 1.5rem;
-  box-shadow: var(--shadow);
-  transition: transform var(--transition);
-}
-.step:hover { transform: translateY(-4px); }
-.step-num {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
-  color: #fff; font-weight: 900; font-size: 1.2rem;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1rem;
-  box-shadow: 0 4px 16px rgba(200,100,200,.3);
-}
-.step h3 { font-size: 1rem; font-weight: 800; margin-bottom: .5rem; }
-.step p  { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
-
-/* ═══════════════════════════════════════
-   TESTIMONIALS (from cats 😂)
-═══════════════════════════════════════ */
-.testi-section {
-  padding: 5rem 2rem;
-  position: relative; z-index: 1;
-}
-.testi-grid {
-  max-width: 1000px; margin: 3rem auto 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-.testi-card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  box-shadow: var(--shadow);
-  border: 1.5px solid var(--pink-l);
-  transition: transform var(--transition);
-}
-.testi-card:hover { transform: translateY(-4px); }
-.testi-stars { font-size: 1rem; margin-bottom: .75rem; color: #b45309; }
-.testi-quote {
-  font-size: .95rem; color: var(--text); line-height: 1.7;
-  margin-bottom: 1.25rem; font-style: italic;
-}
-.testi-author {
-  display: flex; align-items: center; gap: .75rem;
-}
-.testi-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--pink-l); font-size: 1.5rem;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid var(--pink);
-}
-.testi-author h3 { font-size: .9rem; font-weight: 800; }
-.testi-author p  { font-size: .75rem; color: var(--text-muted); }
-
-/* ═══════════════════════════════════════
-   CTA SECTION
-═══════════════════════════════════════ */
-.cta-section {
-  padding: 5rem 2rem;
-  background: linear-gradient(135deg, var(--pink-d), var(--purple-d));
-  text-align: center; position: relative; z-index: 1; overflow: hidden;
-}
-.cta-section::before {
-  content: '🐾';
-  position: absolute; font-size: 20rem; opacity: .04;
-  top: 50%; left: 50%; transform: translate(-50%,-50%);
-  pointer-events: none; user-select: none;
-}
-.cta-section h2 {
-  font-family: var(--font-head);
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  color: #fff; margin-bottom: 1rem;
-}
-.cta-section p {
-  color: rgba(255,255,255,.85); font-size: 1.05rem;
-  margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto;
-}
-.btn-white {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: #fff; color: var(--purple-d);
-  font-weight: 900; font-size: 1rem;
-  padding: .9rem 2.25rem; border-radius: 99px;
-  text-decoration: none; box-shadow: 0 6px 24px rgba(0,0,0,.15);
-  transition: transform var(--transition), box-shadow var(--transition);
-}
-.btn-white:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,.2); }
-
-/* ═══════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════ */
-footer {
-  background: var(--text); color: rgba(255,255,255,.6);
-  padding: 2rem; text-align: center;
-  font-size: .85rem; position: relative; z-index: 1;
-}
-footer a { color: var(--pink); text-decoration: none; }
-footer .footer-logo {
-  font-family: var(--font-head); font-size: 1.3rem;
-  color: #fff; margin-bottom: .5rem; display: block;
-}
-
-/* ═══════════════════════════════════════
-   RESPONSIVE TWEAKS
-═══════════════════════════════════════ */
-@media (max-width: 768px) {
-  .stat-strip { gap: 1.5rem; }
-  .hero { padding: 6rem 1.25rem 3rem; }
-  .section { padding: 3.5rem 1.25rem; }
-  .how-section { padding: 3.5rem 1.25rem; }
-  .testi-section { padding: 3.5rem 1.25rem; }
-  .cta-section { padding: 3.5rem 1.25rem; }
-}
-
-/* ═══════════════════════════════════════
-   REDUCED MOTION
-═══════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  .cursor, .cursor-ring { display: none !important; }
-  .paw-bg { display: none !important; }
-  .hero-img-blob, .hero-img, .hero-float, .step, .feat-card, .testi-card,
-  .nav-cta, .btn-primary-lg, .btn-ghost-lg, .btn-white {
-    animation: none !important; transition: none !important;
-  }
-  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-}
-/* ---------- iOS install hint ---------- */
-/* Sits above the fold's floating decorations but below the nav. Anchored to
-   the bottom because that is where Safari's Share button it refers to lives. */
-.ios-install {
-  position: fixed;
-  left: 1rem; right: 1rem; bottom: 1rem;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  padding: .85rem .6rem .85rem 1rem;
-  background: var(--white);
-  border: 2px solid var(--lavender);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity var(--transition), transform var(--transition);
-}
-.ios-install.is-in { opacity: 1; transform: none; }
-.ios-install-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
-.ios-install-text {
-  font-size: .88rem;
-  line-height: 1.45;
-  color: var(--text);
-  font-family: var(--font-body);
-}
-.ios-install-text strong { display: block; font-weight: 800; }
-.ios-install-share { vertical-align: -.2em; margin: 0 .28em; }
-.ios-install-close {
-  margin-left: auto;
-  flex-shrink: 0;
-  width: 44px; height: 44px;      /* full touch target, per the a11y pass */
-  display: grid; place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 1.6rem;
-  line-height: 1;
-  transition: background var(--transition), color var(--transition);
-}
-.ios-install-close:hover { background: var(--purple-l); color: var(--text); }
-.ios-install-close:focus-visible {
-  outline: 3px solid var(--purple-d);
-  outline-offset: 2px;
-  color: var(--text);
-}
-@media (min-width: 560px) {
-  .ios-install { left: auto; right: 1.5rem; max-width: 23rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ios-install { transition: none; }
+@media (max-width: 48rem) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .split__photo { max-width: 420px; }
 }
 </style>
-<link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#9C4DD4"/>
-<link rel="icon" href="icons/icon-192.png" type="image/png"/>
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Pet Pantry"/>
 </head>
-<body>
+<body id="top">
 
-<!-- Custom cursor -->
-<div class="cursor" id="cursor">🐾</div>
-<div class="cursor-ring" id="cursorRing"></div>
-
-<!-- Floating paws bg -->
-<div class="paw-bg" id="pawBg"></div>
-
-<!-- ══ NAV ══════════════════════════════════ -->
-<nav id="mainNav">
-  <a class="nav-logo" href="#">🐾 Pet Pantry</a>
-  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">☰</button>
-  <div class="nav-links" id="navLinks">
-    <a href="#features">Features</a>
-    <a href="#how">How It Works</a>
-    <a href="#testimonials">Reviews</a>
-    <a href="demo/" id="navDemoLink">Try Demo</a>
-<a href="app.html" class="nav-cta">Get Started for Free 🐱</a>  </div>
+<nav id="mainNav" class="nav">
+  <div class="nav__pill">
+    <a class="nav__logo" href="#top"><svg class="paw" viewBox="4 15 92 83" width="21" height="19" aria-hidden="true" focusable="false"><ellipse cx="50" cy="74" rx="29" ry="23.5"/><ellipse cx="15" cy="45" rx="10.75" ry="13.75"/><ellipse cx="36.9" cy="30" rx="11.25" ry="14.5"/><ellipse cx="63.1" cy="30" rx="11.25" ry="14.5"/><ellipse cx="85" cy="45" rx="10.75" ry="13.75"/></svg>pet pantry</a>
+    <button class="hamburger" type="button" onclick="toggleMenu()" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">menu</button>
+    <div class="nav__links" id="navLinks">
+      <a href="#features">the pantry</a>
+      <a href="#how">the screens</a>
+      <a href="#costs">what it costs</a>
+      <a href="demo/index.html" id="navDemoLink">try the demo</a>
+      <a href="app.html" class="btn btn--primary">start free</a>
+    </div>
+  </div>
 </nav>
 
 <main>
-<!-- ══ HERO ══════════════════════════════════ -->
+
+<!-- ══ HERO ═══════════════════════════════ -->
 <section class="hero">
-  <div class="hero-inner">
-    <div class="hero-text reveal">
-      <div class="hero-badge">🌸 Made with love for cat parents</div>
-      <h1>Your cat's pantry,<br/><span class="highlight">finally organized.</span></h1>
-      <p>Never scramble during a sale again. Pet Pantry helps you track your cat's food inventory, log every meal, and always know exactly what's in stock- all in one adorable app.</p>
-      <div class="hero-btns">
-<a href="app.html" class="btn-primary-lg">Start for Free 🐾</a>        <a href="demo/" class="btn-ghost-lg" id="heroDemoLink">Try the Demo 👀</a>
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <h1>Your cat’s pantry, finally organized.</h1>
+      <p class="lead">Never scramble during a sale again. Pet Pantry helps you track your cat’s food inventory, log every meal, and always know exactly what’s in stock- all in one adorable app.</p>
+      <div class="hero__actions">
+        <a href="app.html" class="btn btn--primary">start free</a>
+        <a href="demo/index.html" class="btn btn--secondary" id="heroDemoLink">try the demo</a>
       </div>
     </div>
-    <div class="hero-img-wrap reveal">
-      <div class="hero-img-blob"></div>
-      <img src="fenty.jpg" alt="Fenty the cat, Pet Pantry mascot" class="hero-img" width="675" height="900" loading="eager"/>
-      <div class="hero-float f1">🥫 12 cans in stock</div>
-      <div class="hero-float f2">⭐ Fenty gave it 5 stars</div>
-      <div class="hero-float f3">📅 Exp: Jun 2027</div>
-    </div>
+    <figure class="hero__figure">
+      <div class="hero__shot" data-slot="pantry-wide" data-kind="product">
+        <img src="images/screens/app-hero.png" alt="The Pet Pantry food inventory on a phone: five foods, with one expired, one out of stock, one expiring within seven days and one down to two." width="780" height="1328" fetchpriority="high"/>
+      </div>
+      <figcaption>the demo pantry, on a phone. nothing to install.</figcaption>
+    </figure>
   </div>
 </section>
 
-<!-- ══ STAT STRIP ══════════════════════════ -->
-<div class="stat-strip reveal">
-  <div class="stat-item"><div class="sv">20+</div><div class="sl">Brands Supported</div></div>
-  <div class="stat-item"><div class="sv">∞</div><div class="sl">Meals Logged</div></div>
-  <div class="stat-item"><div class="sv">0</div><div class="sl">Sales Missed</div></div>
-  <div class="stat-item"><div class="sv">😻</div><div class="sl">Happy Cats</div></div>
-</div>
-
-<!-- ══ FEATURES ═══════════════════════════ -->
-<section class="section" id="features">
-  <div class="center reveal">
-    <div class="section-tag">✨ Features</div>
-    <h2 class="section-title">Everything your cat's pantry needs</h2>
-    <p class="section-sub">From tracking what's expiring to logging every meal- Pet Pantry has you covered.</p>
-  </div>
-  <div class="features-grid">
-    <div class="feat-card c1 reveal">
-      <div class="feat-icon">🥫</div>
-      <h3>Smart Inventory Tracking</h3>
-      <p>Know exactly what you have, grouped by expiration date. Color-coded alerts tell you what's expiring soon so nothing goes to waste.</p>
+<!-- ══ THE FOUR WARNINGS ══════════════════ -->
+<section class="band" id="features">
+  <div class="container">
+    <div class="lanes__head">
+      <h2>Everything your cat’s pantry needs</h2>
+      <p class="lead">From tracking what’s expiring to logging every meal- Pet Pantry has you covered.</p>
     </div>
-    <div class="feat-card c2 reveal">
-      <div class="feat-icon">🍽️</div>
-      <h3>Meal Logging</h3>
-      <p>Log every meal with one tap. Inventory auto-deducts when you feed your cat- or skip tracking entirely and just log meals for fun.</p>
-    </div>
-    <div class="feat-card c3 reveal">
-      <div class="feat-icon">🐱</div>
-      <h3>Multi-Pet Profiles</h3>
-      <p>Have more than one cat? No problem. Create profiles for all your pets and track each one's meals and food preferences separately.</p>
-    </div>
-    <div class="feat-card c4 reveal">
-      <div class="feat-icon">⭐</div>
-      <h3>Cat Ratings</h3>
-      <p>Let your cat rate their meals! Log a 1-5 star rating so you always remember which foods were a hit and which were a flop.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ══ HOW IT WORKS ═══════════════════════ -->
-<section class="how-section" id="how">
-  <div class="center reveal">
-    <div class="section-tag" style="background:var(--purple-l);color:var(--purple-d)">🐾 How It Works</div>
-    <h2 class="section-title">Up and running in minutes</h2>
-    <p class="section-sub">No apps to download, no subscriptions. Just open, set up, and start tracking.</p>
-  </div>
-  <div class="steps">
-    <div class="step reveal">
-      <div class="step-num">1</div>
-      <h3>Create your profile</h3>
-      <p>Sign up in seconds. Add your cat's profile with name, breed, and age.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">2</div>
-      <h3>Add your food stash</h3>
-      <p>Log your food inventory by brand, type, size, and expiration date. Or skip quantities- totally optional!</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">3</div>
-      <h3>Log meals & track stock</h3>
-      <p>Hit "Meal Time!" after every feeding. Inventory updates automatically. Know what to buy before the next sale hits.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ══ TESTIMONIALS ═══════════════════════ -->
-<section class="testi-section" id="testimonials">
-  <div class="center reveal">
-    <div class="section-tag">😻 Reviews</div>
-    <h2 class="section-title">Cats (and their humans) love it</h2>
-    <p class="section-sub">Don't just take our word for it.</p>
-  </div>
-  <div class="testi-grid">
-    <div class="testi-card reveal">
-      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
-      <p class="testi-quote">"I used to buy 6 cans of the same flavor we already had. Now I actually check Pet Pantry before shopping. Life. Changed."</p>
-      <div class="testi-author">
-        <div class="testi-avatar">🐱</div>
-        <div><h3>Fenty's Mom</h3><p>American Curl cat parent 🐾</p></div>
+    <div class="lanes">
+      <div class="lane reveal" style="--i:0">
+        <div class="lane__name">Smart Inventory Tracking</div>
+        <p class="lane__state">Know exactly what you have, grouped by expiration date. Color-coded alerts tell you what’s expiring soon so nothing goes to waste.</p>
       </div>
-    </div>
-    <div class="testi-card reveal">
-      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
-      <p class="testi-quote">"Meow meow meow meow meow. Meow meow meow meow. Meow. (Translation: finally, a 5-star Weruva logging experience.)"</p>
-      <div class="testi-author">
-        <div class="testi-avatar">😸</div>
-        <div><h3>Fenty</h3><p>Chief Taste Tester & CEO</p></div>
+      <div class="lane reveal" style="--i:1">
+        <div class="lane__name">Meal Logging</div>
+        <p class="lane__state">Log every meal with one tap. Inventory auto-deducts when you feed your cat- or skip tracking entirely and just log meals for fun.</p>
       </div>
-    </div>
-    <div class="testi-card reveal">
-      <div class="testi-stars">⭐⭐⭐⭐⭐</div>
-      <p class="testi-quote">"I used to forget which proteins my cat preferred. Now I have a full log with ratings. My cat is thriving. I am thriving. 10/10."</p>
-      <div class="testi-author">
-        <div class="testi-avatar">🐈</div>
-        <div><h3>A Very Organized Cat Parent</h3><p>Multi-cat household survivor</p></div>
+      <div class="lane reveal" style="--i:2">
+        <div class="lane__name">Multi-Pet Profiles</div>
+        <p class="lane__state">Have more than one cat? No problem. Create profiles for all your pets and track each one’s meals and food preferences separately.</p>
+      </div>
+      <div class="lane reveal" style="--i:3">
+        <div class="lane__name">Cat Ratings</div>
+        <p class="lane__state">Let your cat rate their meals! Log a 1-5 star rating so you always remember which foods were a hit and which were a flop.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══ CTA ════════════════════════════════ -->
-<section class="cta-section reveal">
-  <h2>Ready to organize your cat's pantry? 🐾</h2>
-  <p>Free forever, no subscription, no app store- Pet Pantry runs right in your browser, ready whenever your cat is.</p>
-<a href="app.html" class="btn-white">Get Started for Free 🌸</a>
-  <p style="margin-top:1rem"><a href="demo/" style="color:rgba(255,255,255,.85);font-weight:700;text-decoration:underline">or try the demo first, no signup needed →</a></p>
+<!-- ══ THREE SCREENS ══════════════════════ -->
+<section class="container" id="how" style="padding-block:var(--space-3xl) var(--space-2xl)">
+  <div class="lanes__head">
+    <h2>three screens, in the order you fill them</h2>
+    <p class="lead">No apps to download and no subscription. It opens in the browser, or sits on your home screen.</p>
+  </div>
+  <div class="screens" role="group" tabindex="0" aria-label="Three screens of the app, side by side">
+    <figure>
+      <div class="shot-phone" data-slot="screen-pantry" data-kind="product" style="aspect-ratio: 390 / 772">
+        <img src="images/screens/app-pantry.png" alt="The pantry screen on a phone: five foods, with one expired, one out of stock, one expiring soon and one low." width="780" height="1544" loading="lazy"/>
+      </div>
+      <div>
+        <h3>the pantry</h3>
+        <p>Start here. Add what is already in the pantry: brand, type, size, proteins, a date and a count.</p>
+      </div>
+    </figure>
+    <figure>
+      <div class="shot-phone" data-slot="screen-meals" data-kind="product" style="aspect-ratio: 390 / 732">
+        <img src="images/screens/app-meals.png" alt="The meal log, showing four meals with the cat, the food, the serving and a rating out of five." width="780" height="1464" loading="lazy"/>
+      </div>
+      <div>
+        <h3>the meals</h3>
+        <p>Then log a meal: one cat, one food, one tap. The can comes off the count by itself.</p>
+      </div>
+    </figure>
+    <figure>
+      <div class="shot-phone" data-slot="screen-pets" data-kind="product" style="aspect-ratio: 390 / 352">
+        <img src="images/screens/app-pets.png" alt="The pets screen, with a profile for each cat." width="780" height="704" loading="lazy"/>
+      </div>
+      <div>
+        <h3>the cats</h3>
+        <p>A profile each, added whenever you like. Two cats on different food stay apart in the log.</p>
+      </div>
+    </figure>
+  </div>
 </section>
+
+<!-- ══ FENTY ══════════════════════════════ -->
+<section class="band">
+  <div class="container split">
+    <div data-slot="fenty" data-kind="photo" class="split__photo">
+      <img src="fenty.jpg" alt="Fenty, an American Curl cat, lying on a cushion." width="675" height="900" loading="lazy"/>
+    </div>
+    <div>
+      <h2>inspired by one cat in particular</h2>
+      <p class="lead">Fenty eats four brands, rates every one of them, and is the reason anybody counted the cans.</p>
+      <dl class="facts">
+        <div><dt>breed</dt><dd>American Curl</dd></div>
+        <div><dt>eats</dt><dd>wet and dry</dd></div>
+        <div><dt>rates</dt><dd>0/5 for anything chicken, 5/5 for shrimp</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WHAT IT COSTS ══════════════════════ -->
+<section class="container" id="costs" style="padding-block:var(--space-3xl) var(--space-2xl)">
+  <h2>what it costs, and what it keeps</h2>
+  <table class="table">
+    <thead>
+      <tr><th scope="col">what</th><th scope="col">the answer</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">price</th><td>Free. No subscription, no tiers, nothing to cancel.</td></tr>
+      <tr><th scope="row">account</th><td>An email and a password. The demo needs neither.</td></tr>
+      <tr><th scope="row">on a phone</th><td>Add it to the home screen and it opens like an app.</td></tr>
+      <tr><th scope="row">offline</th><td>The app shell is cached, so it opens without a signal.</td></tr>
+      <tr><th scope="row">your data</th><td>Yours. Every row is scoped to your account in the database.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ QUESTIONS ══════════════════════════ -->
+<section class="container" id="questions" style="padding-block:var(--space-2xl) var(--space-3xl)">
+  <h2>before you add the first can</h2>
+  <div class="qa__rows">
+      <div class="qa__row">
+        <h3>can i look around first?</h3>
+        <p>Open the demo: a pantry already in it, nothing saved to an account, reset it whenever you like.</p>
+      </div>
+      <div class="qa__row">
+        <h3>what if i don’t count cans?</h3>
+        <p>Leave the quantity empty. Meals still get logged and rated, and nothing is deducted.</p>
+      </div>
+      <div class="qa__row">
+        <h3>more than one cat?</h3>
+        <p>Each pet gets a profile, and every meal is logged against one of them.</p>
+      </div>
+      <div class="qa__row">
+        <h3>does it work on my phone?</h3>
+        <p>That is what it was built for: a phone layout first, with a sidebar on wider screens.</p>
+      </div>
+  </div>
+</section>
+
+<!-- ══ CLOSE ══════════════════════════════ -->
+<section class="close">
+  <div class="container close__grid">
+    <h2>start with what’s in the pantry</h2>
+    <div>
+    <p>Add the cans you already have, and the next time there is a sale on you will know whether you need it.</p>
+    <div class="close__actions">
+      <a href="app.html" class="btn btn--onviolet">start free</a>
+      <a href="demo/index.html" class="btn btn--secondary">try the demo</a>
+    </div>
+    </div>
+  </div>
+</section>
+
 </main>
 
 <!-- ══ iOS INSTALL HINT ═══════════════════ -->
@@ -730,7 +396,6 @@ footer .footer-logo {
      nothing at all, so without this an iPhone visitor has no way to discover
      the app is installable. Hidden until the script confirms it applies. -->
 <div class="ios-install" id="iosInstall" role="region" aria-label="Install Pet Pantry" hidden>
-  <span class="ios-install-icon" aria-hidden="true">🐾</span>
   <p class="ios-install-text">
     <strong>Keep Pet Pantry on your home screen</strong>
     Tap<svg class="ios-install-share" width="13" height="17" viewBox="0 0 14 18" fill="none" aria-hidden="true" focusable="false"><path d="M7 1.6v9.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4.2 4.4 7 1.5l2.8 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 7.2H2.2a1 1 0 0 0-1 1v7.3a1 1 0 0 0 1 1h9.6a1 1 0 0 0 1-1V8.2a1 1 0 0 0-1-1h-1.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Share, then “Add to Home Screen”.
@@ -739,49 +404,18 @@ footer .footer-logo {
 </div>
 
 <!-- ══ FOOTER ═════════════════════════════ -->
-<footer>
-  <span class="footer-logo">🐾 Pet Pantry</span>
-  <p>Made with 💜 for cat parents everywhere &nbsp;·&nbsp; <a href="app.html">Open App</a></p>
-  <p style="margin-top:.5rem;font-size:.75rem">Fenty approved ⭐⭐⭐⭐⭐</p>
+<footer class="foot">
+  <div class="container">
+    <span class="foot__mark"><svg class="paw" viewBox="4 15 92 83" width="21" height="19" aria-hidden="true" focusable="false"><ellipse cx="50" cy="74" rx="29" ry="23.5"/><ellipse cx="15" cy="45" rx="10.75" ry="13.75"/><ellipse cx="36.9" cy="30" rx="11.25" ry="14.5"/><ellipse cx="63.1" cy="30" rx="11.25" ry="14.5"/><ellipse cx="85" cy="45" rx="10.75" ry="13.75"/></svg>pet pantry</span>
+    <p>A free cat food inventory and meal log, built for a cat called Fenty. <a class="link-u" href="app.html">Open the app</a>, or <a class="link-u" href="demo/index.html">try the demo</a>. The screens on this page are the app itself, with its demo pantry loaded.</p>
+  </div>
 </footer>
 
 <script>
-// ── Custom cursor (skip on touch devices and for reduced-motion users;
-//    the native cursor stays visible unless this actually runs) ──
-if (window.matchMedia('(pointer: fine)').matches &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.body.classList.add('custom-cursor-active');
-  const cursor     = document.getElementById('cursor');
-  const cursorRing = document.getElementById('cursorRing');
-  document.addEventListener('mousemove', e => {
-    cursor.style.left     = e.clientX + 'px';
-    cursor.style.top      = e.clientY + 'px';
-    cursorRing.style.left = e.clientX + 'px';
-    cursorRing.style.top  = e.clientY + 'px';
-  });
-} else {
-  document.getElementById('cursor').style.display = 'none';
-  document.getElementById('cursorRing').style.display = 'none';
-}
+document.documentElement.classList.add('js');
 
-// ── Floating paws (skip for reduced-motion users) ───
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const pawBg = document.getElementById('pawBg');
-  const paws  = ['🐾','🐾','🌸','✨','🐾','💜','🐾'];
-  for (let i = 0; i < 18; i++) {
-    const s = document.createElement('span');
-    s.textContent = paws[i % paws.length];
-    s.style.cssText = `
-      left: ${Math.random()*100}%;
-      animation-duration: ${8 + Math.random()*12}s;
-      animation-delay: ${-Math.random()*15}s;
-      font-size: ${1 + Math.random()*1.5}rem;
-    `;
-    pawBg.appendChild(s);
-  }
-}
-
-// ── Scroll reveal ──────────────────────────────────
+// ── The page's one reveal: the lanes, staggered. Content is visible
+//    without this; the .js class above is what allows it to hide at all. ──
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.12 });
@@ -791,22 +425,39 @@ setTimeout(() => {
   document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
 }, 3000);
 
-// ── Nav scroll shadow ──────────────────────────────
+// ── Which section you are in ───────────────────────
+//    Sets aria-current on the nav link whose section is crossing the middle
+//    of the screen. Nothing is hidden without it: with no script the links
+//    simply carry no state.
+const navTargets = [...document.querySelectorAll('.nav__links a[href^="#"]')]
+  .map(link => ({ link, section: document.getElementById(link.getAttribute('href').slice(1)) }))
+  .filter(t => t.section);
+if (navTargets.length) {
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      const t = navTargets.find(t => t.section === e.target);
+      if (t) t.inView = e.isIntersecting;
+    });
+    // the lowest section touching the band wins, so a boundary resolves
+    // to the section being scrolled into rather than the one leaving
+    const current = navTargets.filter(t => t.inView).pop();
+    navTargets.forEach(t => {
+      if (t === current) t.link.setAttribute('aria-current', 'location');
+      else t.link.removeAttribute('aria-current');
+    });
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  navTargets.forEach(t => spy.observe(t.section));
+}
+
+// ── Nav scroll state ───────────────────────────────
 window.addEventListener('scroll', () => {
-  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 20);
-});
+  document.getElementById('mainNav').classList.toggle('nav--scrolled', window.scrollY > 20);
+}, { passive: true });
 
 // ── Mobile menu ────────────────────────────────────
 function toggleMenu() {
   const open = document.getElementById('navLinks').classList.toggle('open');
   document.querySelector('.hamburger').setAttribute('aria-expanded', String(open));
-}
-
-// ── Demo mode ────────────────────────────────────
-// Entering demo happens at /demo (public/demo/index.html), which sets
-// this same key app.js checks everywhere. Just reflect the state here.
-if (localStorage.getItem('pp_demo_mode') === '1') {
-  document.querySelectorAll('#navDemoLink, #heroDemoLink').forEach(el => { el.textContent = 'Continue Demo →'; });
 }
 
 // ── iOS install hint ─────────────────────────────
@@ -841,16 +492,16 @@ function initIosInstallHint() {
   if (dismissed || !isIosBrowserVisit(navigator, window)) return;
 
   el.hidden = false;
-  requestAnimationFrame(() => el.classList.add('is-in'));
 
   document.getElementById('iosInstallClose').addEventListener('click', () => {
-    el.classList.remove('is-in');
     try { localStorage.setItem(IOS_HINT_KEY, '1'); } catch (e) {}
-    setTimeout(() => { el.hidden = true; }, 250);
+    el.hidden = true;
   });
 }
 initIosInstallHint();
 </script>
+<script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
+document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
 <script src="pwa.js" defer></script>
 </body>
 </html>
