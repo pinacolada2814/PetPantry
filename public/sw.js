@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Pet Pantry – sw.js  (service worker: offline app shell)
+   Pet Pantry- sw.js  (service worker: offline app shell)
    ═══════════════════════════════════════════════════════════
 
    Scope is the directory this file is served from- /PetPantry/ on GitHub

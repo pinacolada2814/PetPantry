@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Pet Pantry – pwa.js  (service worker registration)
+   Pet Pantry- pwa.js  (service worker registration)
 
    Loaded with defer on every page that is part of the app shell. 'sw.js' is
    resolved relative to the page, which on GitHub Pages gives /PetPantry/sw.js
