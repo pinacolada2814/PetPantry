@@ -229,7 +229,7 @@ textarea:focus-visible, [tabindex]:focus-visible {
 
 /* ---------- Pantry status pills ---------- */
 /* Same colour pairs as the expiry badges above, which the Aug 2026 audit
-   verified at 4.5:1 — reused rather than re-picked so the two systems can't
+   verified at 4.5:1- reused rather than re-picked so the two systems can't
    drift apart. */
 .card-status {
   display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .35rem;
@@ -495,7 +495,7 @@ legend.form-legend {
 }
 .auth-toggle { text-align: center; margin-top: 1rem; font-size: .85rem; }
 
-/* Back to home — the only way off the sign-in page, so it is built as a
+/* Back to home- the only way off the sign-in page, so it is built as a
    control rather than body text. As muted .82rem type with no underline it
    carried none of the link signal the page's other anchors use, and read as a
    caption. Sits above the header, where a back affordance is looked for. */

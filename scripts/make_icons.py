@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-make_icons.py — regenerate the PWA / home-screen icons in public/icons/.
+make_icons.py- regenerate the PWA / home-screen icons in public/icons/.
 
 The icons are a white paw on the app's purple-to-pink gradient (--primary to
 --accent in public/styles.css). They are generated rather than hand-drawn so a
@@ -11,15 +11,15 @@ round trip through an image editor.
 
 Two shapes are produced, because Android and iOS mask icons differently:
 
-  icon-<n>.png           full-bleed, paw at 62% — the "any" purpose
-  icon-maskable-<n>.png  full-bleed, paw at 52% — keeps the paw inside the
+  icon-<n>.png           full-bleed, paw at 62%- the "any" purpose
+  icon-maskable-<n>.png  full-bleed, paw at 52%- keeps the paw inside the
                          maskable safe zone (the centre circle of 80%
                          diameter) that Android crops to
   apple-touch-icon.png   180px, full-bleed; iOS applies its own squircle mask,
                          so this one carries no rounding or transparency
 
 Everything is drawn at 4x and downsampled with LANCZOS, which is what gives the
-curves their antialiasing — PIL's draw calls are hard-edged on their own.
+curves their antialiasing- PIL's draw calls are hard-edged on their own.
 """
 
 import colorsys
@@ -72,7 +72,7 @@ def draw_paw(img, paw_fraction):
     ellipse(cx, cy + paw * 0.18, paw * 0.58, paw * 0.47)
 
     # Four toes in an arc above the pad. Offsets are fractions of the paw size:
-    # (x, y, width, height) — the outer pair sit lower and are a little smaller,
+    # (x, y, width, height)- the outer pair sit lower and are a little smaller,
     # which is what reads as a paw rather than four dots in a row.
     toes = [
         (-0.350, -0.110, 0.215, 0.275),

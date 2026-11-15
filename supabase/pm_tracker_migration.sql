@@ -10,7 +10,7 @@
 -- key being public in config.js grants no access to anyone else's tracker.
 --
 -- Safe to re-run: this drops and recreates the table. It is DESTRUCTIVE if the
--- table already holds data you care about — an earlier revision of this file
+-- table already holds data you care about- an earlier revision of this file
 -- created a shared, world-readable pm_tracker keyed by a text id, and this
 -- replaces it.
 

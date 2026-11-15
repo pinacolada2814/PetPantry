@@ -1,6 +1,6 @@
 -- Pet Pantry: add photo support to food items
 -- Run this once in the Supabase SQL Editor (your database already exists,
--- so schema.sql can't be re-run as-is — this adds just the new pieces).
+-- so schema.sql can't be re-run as-is- this adds just the new pieces).
 
 alter table public.food_items add column photos text[] not null default '{}';
 

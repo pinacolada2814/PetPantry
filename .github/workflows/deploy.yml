@@ -29,7 +29,7 @@ jobs:
       # The site has no build step, so filenames are never content-hashed and
       # the VERSION constant in sw.js is the only signal that tells an
       # installed app its cached copy is stale. Leaving that to a human to
-      # remember is a bug waiting to happen — a missed bump means people keep
+      # remember is a bug waiting to happen- a missed bump means people keep
       # being served the old app with no error anywhere.
       #
       # `HEAD:public` is git's tree hash for the published directory: it

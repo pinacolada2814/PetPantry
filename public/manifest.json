@@ -1,7 +1,7 @@
 {
   "name": "Pet Pantry",
   "short_name": "Pet Pantry",
-  "description": "Track your cat's food inventory and log every meal — see what's in stock and what's expiring before you shop.",
+  "description": "Track your cat's food inventory and log every meal- see what's in stock and what's expiring before you shop.",
   "start_url": "inventory.html",
   "scope": "./",
   "id": "/PetPantry/",
