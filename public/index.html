@@ -509,6 +509,60 @@ footer .footer-logo {
   }
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
+/* ---------- iOS install hint ---------- */
+/* Sits above the fold's floating decorations but below the nav. Anchored to
+   the bottom because that is where Safari's Share button it refers to lives. */
+.ios-install {
+  position: fixed;
+  left: 1rem; right: 1rem; bottom: 1rem;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem .6rem .85rem 1rem;
+  background: var(--white);
+  border: 2px solid var(--lavender);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.ios-install.is-in { opacity: 1; transform: none; }
+.ios-install-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+.ios-install-text {
+  font-size: .88rem;
+  line-height: 1.45;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+.ios-install-text strong { display: block; font-weight: 800; }
+.ios-install-share { vertical-align: -.2em; margin: 0 .28em; }
+.ios-install-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 44px; height: 44px;      /* full touch target, per the a11y pass */
+  display: grid; place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: background var(--transition), color var(--transition);
+}
+.ios-install-close:hover { background: var(--purple-l); color: var(--text); }
+.ios-install-close:focus-visible {
+  outline: 3px solid var(--purple-d);
+  outline-offset: 2px;
+  color: var(--text);
+}
+@media (min-width: 560px) {
+  .ios-install { left: auto; right: 1.5rem; max-width: 23rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-install { transition: none; }
+}
 </style>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#9C4DD4"/>
@@ -671,6 +725,19 @@ footer .footer-logo {
 </section>
 </main>
 
+<!-- ══ iOS INSTALL HINT ═══════════════════ -->
+<!-- Android and desktop Chrome raise their own install prompt. iOS raises
+     nothing at all, so without this an iPhone visitor has no way to discover
+     the app is installable. Hidden until the script confirms it applies. -->
+<div class="ios-install" id="iosInstall" role="region" aria-label="Install Pet Pantry" hidden>
+  <span class="ios-install-icon" aria-hidden="true">🐾</span>
+  <p class="ios-install-text">
+    <strong>Keep Pet Pantry on your home screen</strong>
+    Tap<svg class="ios-install-share" width="13" height="17" viewBox="0 0 14 18" fill="none" aria-hidden="true" focusable="false"><path d="M7 1.6v9.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4.2 4.4 7 1.5l2.8 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 7.2H2.2a1 1 0 0 0-1 1v7.3a1 1 0 0 0 1 1h9.6a1 1 0 0 0 1-1V8.2a1 1 0 0 0-1-1h-1.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Share, then “Add to Home Screen”.
+  </p>
+  <button type="button" class="ios-install-close" id="iosInstallClose" aria-label="Dismiss install tip">×</button>
+</div>
+
 <!-- ══ FOOTER ═════════════════════════════ -->
 <footer>
   <span class="footer-logo">🐾 Pet Pantry</span>
@@ -741,6 +808,48 @@ function toggleMenu() {
 if (localStorage.getItem('pp_demo_mode') === '1') {
   document.querySelectorAll('#navDemoLink, #heroDemoLink').forEach(el => { el.textContent = 'Continue Demo →'; });
 }
+
+// ── iOS install hint ─────────────────────────────
+// Android and desktop Chrome fire beforeinstallprompt and show their own
+// affordance, which is deliberately left alone. iOS fires nothing and offers
+// no visible route to installing, so this is the only place a Safari visitor
+// could learn the app goes on the home screen at all.
+const IOS_HINT_KEY = 'pp_ios_hint_dismissed';
+
+// Split out and kept pure so it can be exercised directly with faked inputs
+// rather than only on a real device.
+function isIosBrowserVisit(nav, win) {
+  const ua = nav.userAgent || '';
+  // iPadOS 13+ reports a Macintosh UA, so touch points are the only tell.
+  const isIpadOS = /Macintosh/.test(ua) && (nav.maxTouchPoints || 0) > 1;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || isIpadOS;
+  // Already installed: iOS sets navigator.standalone, and the media query is
+  // the cross-browser equivalent. Either way there is nothing left to suggest.
+  const installed = nav.standalone === true ||
+    (typeof win.matchMedia === 'function' && win.matchMedia('(display-mode: standalone)').matches);
+  return isIOS && !installed;
+}
+
+function initIosInstallHint() {
+  const el = document.getElementById('iosInstall');
+  if (!el) return;
+
+  // Private mode can throw on access, so a storage failure must not take the
+  // page down with it — it just means the tip may reappear next visit.
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(IOS_HINT_KEY) === '1'; } catch (e) {}
+  if (dismissed || !isIosBrowserVisit(navigator, window)) return;
+
+  el.hidden = false;
+  requestAnimationFrame(() => el.classList.add('is-in'));
+
+  document.getElementById('iosInstallClose').addEventListener('click', () => {
+    el.classList.remove('is-in');
+    try { localStorage.setItem(IOS_HINT_KEY, '1'); } catch (e) {}
+    setTimeout(() => { el.hidden = true; }, 250);
+  });
+}
+initIosInstallHint();
 </script>
 <script src="pwa.js" defer></script>
 </body>
