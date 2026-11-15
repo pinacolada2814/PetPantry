@@ -50,13 +50,14 @@ Explicit non-goals, carried forward from the PRD's V1 scope boundary:
 - No social features — no sharing of profiles or meal logs.
 - No multi-household or shared pantry across logins.
 - No push notifications or reminders for expiring food or low stock. (In-app low-stock and expiry badges shipped 2026-09-10; the non-goal is the notification channel, not the surfacing.)
-- No shopping list generation, CSV/PDF export, dark mode, or PWA/installable app. These sit in the backlog as wanted-but-unbuilt, not as rejected.
+- No shopping list generation, CSV/PDF export, or dark mode. These sit in the backlog as wanted-but-unbuilt, not as rejected.
 
-Three original non-goals have since shipped and are no longer out of scope:
+Four original non-goals have since shipped and are no longer out of scope:
 
 - **Cloud database and cross-device sync** — Supabase replaced the original localStorage-only data layer on 2026-07-17. Any doc still describing localStorage as the data layer is superseded.
 - **Barcode scanning** — shipped 2026-07-20, ahead of its original "nice to have" target.
 - **Photo uploads for food items** — shipped 2026-07-23, up to 5 photos per item.
+- **PWA / installable app** — shipped 2026-11-14. A manifest plus a service worker make the app installable to a home screen, with the app shell cached so it opens without waiting on the network. The no-install-required promise is unchanged: installing is an option, and the app stays fully usable in a browser tab.
 
 ## Operating Context
 
@@ -77,7 +78,9 @@ A demo mode (shipped 2026-08-19) lets a visitor use a fully working copy of the 
 - Single-user-per-account model — no household/family sharing of one pet's data across multiple logins.
 - No push notifications or reminders; inventory/expiration status is only visible when the user opens the app, as badges on the Food Inventory cards plus a needs-attention summary at the top of that page.
 - Low-stock thresholds are per food item and compare against the sum of quantity across all of that food's inventory rows; a blank threshold falls back to an app-wide default. The "expiring soon" window is a per-device preference (localStorage), not synced across devices — there is no user-settings table.
-- No offline support — requires an internet connection to load and use.
+- Installable as a PWA (shipped 2026-11-14): `public/manifest.json` plus a service worker at `public/sw.js`, scoped to the deployment directory so it holds on a GitHub Pages project site. The worker caches the app shell — pages, CSS, `app.js`, the Supabase CDN bundle, fonts — so an installed app opens without waiting on the network.
+- The shell loads offline; the data does not. Supabase requests are never cached, deliberately: a stale can-count shown as current would break the one thing the app exists to get right. With no connection the shell renders and then surfaces the failure, and a page that was never cached falls back to `offline.html`. Writes made offline are lost, not queued — there is no background sync.
+- Cache invalidation rests on the `VERSION` constant in `public/sw.js`, which the deploy workflow stamps with git's tree hash for `public/` — so it changes when, and only when, something actually served changes. The site has no build step and filenames are never content-hashed, so this is the only signal an installed app gets that its cached copy is stale; it is automated rather than manual because a forgotten bump would silently serve the old app with no error anywhere. The deploy greps for the rewritten line and fails if the stamp didn't take.
 - Must run mobile-first with a working desktop layout (bottom tab bar on mobile, sidebar on desktop, ≥768px breakpoint per the existing implementation).
 - Cost constraint: must stay $0 to run at current scale — no paid infrastructure for a single-household-scale user base drives technology choices (GitHub Pages, Supabase free tier, free public APIs).
 

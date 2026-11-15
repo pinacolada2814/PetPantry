@@ -23,6 +23,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+
+      # Stamp the service worker's cache version.
+      #
+      # The site has no build step, so filenames are never content-hashed and
+      # the VERSION constant in sw.js is the only signal that tells an
+      # installed app its cached copy is stale. Leaving that to a human to
+      # remember is a bug waiting to happen — a missed bump means people keep
+      # being served the old app with no error anywhere.
+      #
+      # `HEAD:public` is git's tree hash for the published directory: it
+      # changes when, and only when, something actually served changes. So a
+      # README-only commit doesn't needlessly evict everyone's cache, and any
+      # real change to a page, script, or stylesheet always does.
+      - name: Stamp service worker cache version
+        run: |
+          set -euo pipefail
+          version="$(git rev-parse HEAD:public | cut -c1-12)"
+          sed -i "s/^const VERSION = '[^']*';/const VERSION = '${version}';/" public/sw.js
+          grep -q "^const VERSION = '${version}';" public/sw.js
+          echo "Service worker cache version: ${version}"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
