@@ -85,6 +85,17 @@ textarea:focus-visible, [tabindex]:focus-visible {
   cursor: pointer; text-decoration: none; display: inline-block;
 }
 .demo-banner .db-btn:hover { opacity: .88; }
+/* The banner is a saturated gradient, so the browser's own focus ring can
+   disappear into it. White reads against both ends of the gradient. */
+.demo-banner .db-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* The way out of the demo, matching the sign-in page's "Back to home". */
+.demo-banner .db-btn-home { display: inline-flex; align-items: center; gap: .35rem; }
+.demo-banner .db-btn-home svg { transition: transform .22s cubic-bezier(.2, .8, .2, 1); }
+.demo-banner .db-btn-home:hover svg { transform: translateX(-3px); }
+@media (prefers-reduced-motion: reduce) {
+  .demo-banner .db-btn-home svg { transition: none; }
+  .demo-banner .db-btn-home:hover svg { transform: none; }
+}
 
 /* ---------- Top Nav ---------- */
 .topnav {
