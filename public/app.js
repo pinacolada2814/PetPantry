@@ -507,11 +507,23 @@ function injectDemoBanner() {
   bar.id = 'demoBanner';
   bar.className = 'demo-banner';
   bar.setAttribute('role', 'status');
+  // The banner is the one piece of chrome every demo page carries, so the way
+  // out of the demo belongs here rather than being wired into each page.
   bar.innerHTML = `
     <span>🐾 Demo Mode- nothing here is saved to an account, changes stay on this device.</span>
     <button type="button" class="db-btn" id="demoResetBtn">Reset Demo Data</button>
+    <a class="db-btn db-btn-home" id="demoHomeBtn" href="index.html">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false"><path d="M9.6 3.4 5 8l4.6 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Back to home
+    </a>
   `;
   document.body.insertBefore(bar, document.body.firstChild);
+
+  // Leaving the demo also leaves demo mode, or the next visit would open
+  // straight back into it. The link then follows as normal: localStorage is
+  // written synchronously, so there is nothing to wait for.
+  document.getElementById('demoHomeBtn').addEventListener('click', () => exitDemoMode());
+
   document.getElementById('demoResetBtn').addEventListener('click', async () => {
     const ok = await confirmModal({
       title: 'Reset demo data?',
